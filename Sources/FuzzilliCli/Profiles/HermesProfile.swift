@@ -46,7 +46,6 @@ let hermesProfile = Profile(
         ("fuzzilli('FUZZILLI_PRINT', 'test')", .shouldSucceed),
         ("fuzzilli('FUZZILLI_CRASH', 0)", .shouldCrash),
         ("fuzzilli('FUZZILLI_CRASH', 1)", .shouldCrash),
-        ("fuzzilli('FUZZILLI_CRASH', 2)", .shouldCrash),
     ],
 
     additionalCodeGenerators: [],

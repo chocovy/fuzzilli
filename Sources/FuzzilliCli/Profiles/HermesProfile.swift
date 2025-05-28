@@ -59,12 +59,27 @@ let hermesProfile = Profile(
         "ClassConstructorGenerator",
         "ClassStaticMethodGenerator",
         "ClassPrivateInstanceMethodGenerator",
+        "ClassPrivateInstancePropertyGenerator",
+        "ClassPrivateStaticPropertyGenerator",
         "PrivatePropertyAssignmentGenerator",
         "PrivateMethodCallGenerator",
+        "ClassInstancePropertyGenerator",
+        "ClassInstanceElementGenerator",
+        "ClassInstanceComputedPropertyGenerator",
+        "ClassStaticPropertyGenerator",
+        "ClassStaticElementGenerator",
+        "ClassStaticComputedPropertyGenerator",
         "AsyncDisposableVariableGenerator",
         "DisposableVariableGenerator",
-        "WeirdClassGenerator",
+        "AsyncArrowFunctionGenerator",
+        "AsyncGeneratorFunctionGenerator",
+        "SuperMethodCallGenerator",
+        "SuperPropertyAssignmentGenerator",
+        "SuperPropertyUpdateGenerator",
+        "WithStatementGenerator",
+        "WeirdClassGenerator"
     ],
+
     
     disabledMutators: [],
 

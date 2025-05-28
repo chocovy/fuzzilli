@@ -52,7 +52,20 @@ let hermesProfile = Profile(
 
     additionalProgramTemplates: WeightedList<ProgramTemplate>([]),
 
-    disabledCodeGenerators: ["AsyncArrowFunctionGenerator", "AsyncGeneratorFunctionGenerator", "ClassGenerator", "WithStatementGenerator", "JITFunctionGenerator", "GrowableSharedArrayBufferGenerator"],
+    // disabledCodeGenerators: ["AsyncArrowFunctionGenerator", "AsyncGeneratorFunctionGenerator", "ClassGenerator", "WithStatementGenerator", "JITFunctionGenerator", "GrowableSharedArrayBufferGenerator"],
+
+    disabledCodeGenerators: [
+        "ClassDefinitionGenerator",
+        "ClassConstructorGenerator",
+        "ClassStaticMethodGenerator",
+        "ClassPrivateInstanceMethodGenerator",
+        "PrivatePropertyAssignmentGenerator",
+        "PrivateMethodCallGenerator",
+        "AsyncDisposableVariableGenerator",
+        "DisposableVariableGenerator",
+        "WeirdClassGenerator",
+    ],
+    
     disabledMutators: [],
 
     additionalBuiltins: [

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 /// Default weights for the builtin code generators.
+// swift-format-ignore
 public let codeGeneratorWeights = [
     // Value generators. These are used to bootstrap code
     // generation and therefore control the types of variables

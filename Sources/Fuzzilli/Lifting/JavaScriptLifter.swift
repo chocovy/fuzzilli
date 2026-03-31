@@ -431,6 +431,11 @@ public class JavaScriptLifter: Lifter {
                 currentObjectLiteral.beginMethod("get \(PROPERTY)() {", &w)
                 bindVariableToThis(instr.innerOutput(0))
 
+            case .beginObjectLiteralComputedGetter:
+                let PROPERTY = input(0)
+                currentObjectLiteral.beginMethod("get [\(PROPERTY)]() {", &w)
+                bindVariableToThis(instr.innerOutput(0))
+
             case .beginObjectLiteralSetter(let op):
                 assert(instr.numInnerOutputs == 2)
                 let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
@@ -439,8 +444,17 @@ public class JavaScriptLifter: Lifter {
                 currentObjectLiteral.beginMethod("set \(PROPERTY)(\(PARAMS)) {", &w)
                 bindVariableToThis(instr.innerOutput(0))
 
+            case .beginObjectLiteralComputedSetter:
+                let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
+                let PARAMS = liftParameters(Parameters(count: 1), as: vars)
+                let PROPERTY = input(0)
+                currentObjectLiteral.beginMethod("set [\(PROPERTY)](\(PARAMS)) {", &w)
+                bindVariableToThis(instr.innerOutput(0))
+
             case .endObjectLiteralGetter,
-                 .endObjectLiteralSetter:
+                 .endObjectLiteralSetter,
+                 .endObjectLiteralComputedGetter,
+                 .endObjectLiteralComputedSetter:
                 currentObjectLiteral.endMethod(&w)
 
             case .endObjectLiteral:
@@ -559,6 +573,13 @@ public class JavaScriptLifter: Lifter {
                 w.enterNewBlock()
                 bindVariableToThis(instr.innerOutput(0))
 
+            case .beginClassComputedGetter(let op):
+                let PROPERTY = input(0)
+                let staticStr = op.isStatic ? "static " : ""
+                w.emit("\(staticStr)get [\(PROPERTY)]() {")
+                w.enterNewBlock()
+                bindVariableToThis(instr.innerOutput(0))
+
             case .beginClassSetter(let op):
                 assert(instr.numInnerOutputs == 2)
                 let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
@@ -569,10 +590,21 @@ public class JavaScriptLifter: Lifter {
                 w.enterNewBlock()
                 bindVariableToThis(instr.innerOutput(0))
 
+            case .beginClassComputedSetter(let op):
+                let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
+                let PARAMS = liftParameters(op.parameters, as: vars)
+                let PROPERTY = input(0)
+                let staticStr = op.isStatic ? "static " : ""
+                w.emit("\(staticStr)set [\(PROPERTY)](\(PARAMS)) {")
+                w.enterNewBlock()
+                bindVariableToThis(instr.innerOutput(0))
+
             case .endClassMethod,
                  .endClassComputedMethod,
                  .endClassGetter,
-                 .endClassSetter:
+                 .endClassComputedGetter,
+                 .endClassSetter,
+                 .endClassComputedSetter:
                 w.leaveCurrentBlock()
                 w.emit("}")
 

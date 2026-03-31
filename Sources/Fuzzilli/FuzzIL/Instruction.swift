@@ -598,10 +598,18 @@ extension Instruction: ProtobufConvertible {
                 $0.beginObjectLiteralGetter = Fuzzilli_Protobuf_BeginObjectLiteralGetter.with { $0.propertyName = op.propertyName }
             case .endObjectLiteralGetter:
                 $0.endObjectLiteralGetter = Fuzzilli_Protobuf_EndObjectLiteralGetter()
+            case .beginObjectLiteralComputedGetter:
+                $0.beginObjectLiteralComputedGetter = Fuzzilli_Protobuf_BeginObjectLiteralComputedGetter()
+            case .endObjectLiteralComputedGetter:
+                $0.endObjectLiteralComputedGetter = Fuzzilli_Protobuf_EndObjectLiteralComputedGetter()
             case .beginObjectLiteralSetter(let op):
                 $0.beginObjectLiteralSetter = Fuzzilli_Protobuf_BeginObjectLiteralSetter.with { $0.propertyName = op.propertyName }
             case .endObjectLiteralSetter:
                 $0.endObjectLiteralSetter = Fuzzilli_Protobuf_EndObjectLiteralSetter()
+            case .beginObjectLiteralComputedSetter:
+                $0.beginObjectLiteralComputedSetter = Fuzzilli_Protobuf_BeginObjectLiteralComputedSetter()
+            case .endObjectLiteralComputedSetter:
+                $0.endObjectLiteralComputedSetter = Fuzzilli_Protobuf_EndObjectLiteralComputedSetter()
             case .endObjectLiteral:
                 $0.endObjectLiteral = Fuzzilli_Protobuf_EndObjectLiteral()
             case .beginClassDefinition(let op):
@@ -660,6 +668,10 @@ extension Instruction: ProtobufConvertible {
                 }
             case .endClassGetter:
                 $0.endClassGetter = Fuzzilli_Protobuf_EndClassGetter()
+            case .beginClassComputedGetter(let op):
+                $0.beginClassComputedGetter = Fuzzilli_Protobuf_BeginClassComputedGetter.with { $0.isStatic = op.isStatic }
+            case .endClassComputedGetter:
+                $0.endClassComputedGetter = Fuzzilli_Protobuf_EndClassComputedGetter()
             case .beginClassSetter(let op):
                 $0.beginClassSetter = Fuzzilli_Protobuf_BeginClassSetter.with {
                     $0.propertyName = op.propertyName
@@ -667,6 +679,10 @@ extension Instruction: ProtobufConvertible {
                 }
             case .endClassSetter:
                 $0.endClassSetter = Fuzzilli_Protobuf_EndClassSetter()
+            case .beginClassComputedSetter(let op):
+                $0.beginClassComputedSetter = Fuzzilli_Protobuf_BeginClassComputedSetter.with { $0.isStatic = op.isStatic }
+            case .endClassComputedSetter:
+                $0.endClassComputedSetter = Fuzzilli_Protobuf_EndClassComputedSetter()
             case .beginClassStaticInitializer:
                 $0.beginClassStaticInitializer = Fuzzilli_Protobuf_BeginClassStaticInitializer()
             case .endClassStaticInitializer:
@@ -1851,10 +1867,18 @@ extension Instruction: ProtobufConvertible {
             op = BeginObjectLiteralGetter(propertyName: p.propertyName)
         case .endObjectLiteralGetter:
             op = EndObjectLiteralGetter()
+        case .beginObjectLiteralComputedGetter:
+            op = BeginObjectLiteralComputedGetter()
+        case .endObjectLiteralComputedGetter:
+            op = EndObjectLiteralComputedGetter()
         case .beginObjectLiteralSetter(let p):
             op = BeginObjectLiteralSetter(propertyName: p.propertyName)
         case .endObjectLiteralSetter:
             op = EndObjectLiteralSetter()
+        case .beginObjectLiteralComputedSetter:
+            op = BeginObjectLiteralComputedSetter()
+        case .endObjectLiteralComputedSetter:
+            op = EndObjectLiteralComputedSetter()
         case .endObjectLiteral:
             op = EndObjectLiteral()
         case .beginClassDefinition(let p):
@@ -1881,10 +1905,18 @@ extension Instruction: ProtobufConvertible {
             op = BeginClassGetter(propertyName: p.propertyName, isStatic: p.isStatic)
         case .endClassGetter:
             op = EndClassGetter()
+        case .beginClassComputedGetter(let p):
+            op = BeginClassComputedGetter(isStatic: p.isStatic)
+        case .endClassComputedGetter:
+            op = EndClassComputedGetter()
         case .beginClassSetter(let p):
             op = BeginClassSetter(propertyName: p.propertyName, isStatic: p.isStatic)
         case .endClassSetter:
             op = EndClassSetter()
+        case .beginClassComputedSetter(let p):
+            op = BeginClassComputedSetter(isStatic: p.isStatic)
+        case .endClassComputedSetter:
+            op = EndClassComputedSetter()
         case .beginClassStaticInitializer:
             op = BeginClassStaticInitializer()
         case .endClassStaticInitializer:

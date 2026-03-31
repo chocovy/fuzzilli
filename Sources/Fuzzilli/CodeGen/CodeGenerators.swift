@@ -719,17 +719,8 @@ public let CodeGenerators: [CodeGenerator] = [
         inputs: .one
     ) { b, value in
         // Try to find a computed property that hasn't already been added to this literal.
-        var propertyName: Variable
-        var attempts = 0
-        repeat {
-            if attempts >= 10 {
-                // Could not find anything.
-                // Since this CodeGenerator does not produce anything it is fine to bail.
-                return
-            }
-            propertyName = b.randomJsVariable()
-            attempts += 1
-        } while b.currentObjectLiteral.computedProperties.contains(propertyName)
+        let propertyName = b.randomJsVariable(
+            notIn: b.currentObjectLiteral.computedProperties)
         b.currentObjectLiteral.addComputedProperty(propertyName, as: value)
     },
 
@@ -782,19 +773,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method]
             ) { b in
                 // Try to find a computed method name that hasn't already been added to this literal.
-
-                var methodName: Variable
-                var attempts = 0
-                repeat {
-                    methodName = b.randomJsVariable()
-                    if attempts >= 10 {
-                        // This might lead to having two computed methods with the same name (so one
-                        // will overwrite the other).
-                        break
-                    }
-                    attempts += 1
-                } while b.currentObjectLiteral.computedMethods.contains(
-                    methodName)
+                let methodName = b.randomJsVariable(
+                    notIn: b.currentObjectLiteral.computedMethods)
                 let parameters = b.randomParameters()
                 b.setParameterTypesForNextSubroutine(parameters.parameterTypes)
                 b.emit(
@@ -809,7 +789,6 @@ public let CodeGenerators: [CodeGenerator] = [
             ) { b, inp in
                 b.doReturn(inp)
                 b.emit(EndObjectLiteralComputedMethod())
-
             },
         ]),
 
@@ -825,7 +804,6 @@ public let CodeGenerators: [CodeGenerator] = [
                 let propertyName = b.generateString(b.randomCustomPropertyName,
                     notIn: b.currentObjectLiteral.properties + b.currentObjectLiteral.getters)
                 b.emit(BeginObjectLiteralGetter(propertyName: propertyName))
-
             },
             GeneratorStub(
                 "ObjectLiteralGetterEndGenerator",
@@ -855,6 +833,46 @@ public let CodeGenerators: [CodeGenerator] = [
                 inContext: .single([.javascript, .subroutine, .method])
             ) { b in
                 b.emit(EndObjectLiteralSetter())
+            },
+        ]),
+
+    CodeGenerator(
+        "ObjectLiteralComputedGetterGenerator",
+        [
+            GeneratorStub(
+                "ObjectLiteralComputedGetterBeginGenerator",
+                inContext: .single(.objectLiteral),
+                provides: [.javascript, .subroutine, .method]
+            ) { b in
+                let propertyName = b.randomJsVariable(notIn: b.currentObjectLiteral.computedGetters)
+                b.emit(BeginObjectLiteralComputedGetter(), withInputs: [propertyName])
+            },
+            GeneratorStub(
+                "ObjectLiteralComputedGetterEndGenerator",
+                inContext: .single([.javascript, .subroutine, .method]),
+                inputs: .one
+            ) { b, inp in
+                b.doReturn(inp)
+                b.emit(EndObjectLiteralComputedGetter())
+            },
+        ]),
+
+    CodeGenerator(
+        "ObjectLiteralComputedSetterGenerator",
+        [
+            GeneratorStub(
+                "ObjectLiteralComputedSetterBeginGenerator",
+                inContext: .single(.objectLiteral),
+                provides: [.javascript, .subroutine, .method]
+            ) { b in
+                let propertyName = b.randomJsVariable(notIn: b.currentObjectLiteral.computedSetters)
+                b.emit(BeginObjectLiteralComputedSetter(), withInputs: [propertyName])
+            },
+            GeneratorStub(
+                "ObjectLiteralComputedSetterEndGenerator",
+                inContext: .single([.javascript, .subroutine, .method])
+            ) { b in
+                b.emit(EndObjectLiteralComputedSetter())
             },
         ]),
 
@@ -939,15 +957,8 @@ public let CodeGenerators: [CodeGenerator] = [
         "ClassInstanceComputedPropertyGenerator", inContext: .single(.classDefinition)
     ) { b in
         // Try to find a computed property that hasn't already been added to this literal.
-        var propertyName: Variable
-        var attempts = 0
-        repeat {
-            guard attempts < 10 else { return }
-            propertyName = b.randomJsVariable()
-            attempts += 1
-        } while b.currentClassDefinition.instanceComputedProperties.contains(
-            propertyName)
-
+        let propertyName = b.randomJsVariable(
+            notIn: b.currentClassDefinition.instanceComputedProperties)
         let value = probability(0.5) ? b.randomJsVariable() : nil
         b.currentClassDefinition.addInstanceComputedProperty(
             propertyName, value: value)
@@ -991,15 +1002,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 // Try to find a method that hasn't already been added to this class.
-                var methodName = b.randomJsVariable()
-                var attempts = 0
-                repeat {
-                    guard attempts < 10 else { break }
-                    methodName = b.randomJsVariable()
-                    attempts += 1
-                } while b.currentClassDefinition.instanceComputedMethods.contains(
-                    methodName)
-
+                let methodName = b.randomJsVariable(
+                    notIn: b.currentClassDefinition.instanceComputedMethods)
                 let parameters = b.randomParameters()
                 b.setParameterTypesForNextSubroutine(parameters.parameterTypes)
                 b.emit(
@@ -1089,18 +1093,8 @@ public let CodeGenerators: [CodeGenerator] = [
         "ClassStaticComputedPropertyGenerator", inContext: .single(.classDefinition)
     ) { b in
         // Try to find a computed property that hasn't already been added to this literal.
-        var propertyName: Variable
-        var attempts = 0
-        repeat {
-            guard attempts < 10 else {
-                // We are in .classDefinition context here and cannot create new JavaScript variables, so just bail here.
-                return
-            }
-            propertyName = b.randomJsVariable()
-            attempts += 1
-        } while b.currentClassDefinition.staticComputedProperties.contains(
-            propertyName)
-
+        let propertyName = b.randomJsVariable(
+            notIn: b.currentClassDefinition.staticComputedProperties)
         let value = probability(0.5) ? b.randomJsVariable() : nil
         b.currentClassDefinition.addStaticComputedProperty(
             propertyName, value: value)
@@ -1163,15 +1157,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 // Try to find a method that hasn't already been added to this class.
-                var methodName = b.randomJsVariable()
-                var attempts = 0
-                repeat {
-                    guard attempts < 10 else { break }
-                    methodName = b.randomJsVariable()
-                    attempts += 1
-                } while b.currentClassDefinition.staticComputedMethods.contains(
-                    methodName)
-
+                let methodName = b.randomJsVariable(
+                    notIn: b.currentClassDefinition.staticComputedMethods)
                 let parameters = b.randomParameters()
                 b.setParameterTypesForNextSubroutine(parameters.parameterTypes)
                 b.emit(
@@ -1231,6 +1218,53 @@ public let CodeGenerators: [CodeGenerator] = [
                 inContext: .single([.javascript, .subroutine, .method, .classMethod])
             ) { b in
                 b.emit(EndClassSetter())
+            },
+        ]),
+
+    CodeGenerator(
+        "ClassComputedGetterGenerator",
+        [
+            GeneratorStub(
+                "ClassComputedGetterBeginGenerator",
+                inContext: .single(.classDefinition),
+                provides: [.javascript, .subroutine, .method, .classMethod]
+            ) { b in
+                let isStatic = probability(0.3)
+                let existing = isStatic
+                    ? b.currentClassDefinition.staticComputedGetters
+                    : b.currentClassDefinition.instanceComputedGetters
+                let propertyName = b.randomJsVariable(notIn: existing)
+                b.emit(BeginClassComputedGetter(isStatic: isStatic), withInputs: [propertyName])
+            },
+            GeneratorStub(
+                "ClassComputedGetterEndGenerator",
+                inContext: .single([.javascript, .subroutine, .method, .classMethod])
+            ) { b in
+                b.doReturn(b.randomJsVariable())
+                b.emit(EndClassComputedGetter())
+            },
+        ]),
+
+    CodeGenerator(
+        "ClassComputedSetterGenerator",
+        [
+            GeneratorStub(
+                "ClassComputedSetterBeginGenerator",
+                inContext: .single(.classDefinition),
+                provides: [.javascript, .subroutine, .method, .classMethod]
+            ) { b in
+                let isStatic = probability(0.3)
+                let existing = isStatic
+                    ? b.currentClassDefinition.staticComputedSetters
+                    : b.currentClassDefinition.instanceComputedSetters
+                let propertyName = b.randomJsVariable(notIn: existing)
+                b.emit(BeginClassComputedSetter(isStatic: isStatic), withInputs: [propertyName])
+            },
+            GeneratorStub(
+                "ClassComputedSetterEndGenerator",
+                inContext: .single([.javascript, .subroutine, .method, .classMethod])
+            ) { b in
+                b.emit(EndClassComputedSetter())
             },
         ]),
 

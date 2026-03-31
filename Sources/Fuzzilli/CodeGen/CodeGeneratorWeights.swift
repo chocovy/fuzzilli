@@ -68,6 +68,8 @@ public let codeGeneratorWeights = [
     "ObjectLiteralComputedMethodGenerator":     3,
     "ObjectLiteralGetterGenerator":             3,
     "ObjectLiteralSetterGenerator":             3,
+    "ObjectLiteralComputedGetterGenerator":     3,
+    "ObjectLiteralComputedSetterGenerator":     3,
 //
 //    // The following generators determine how frequently different
 //    // types of fields are generated in class definitions.
@@ -91,6 +93,8 @@ public let codeGeneratorWeights = [
     "ClassPrivateInstanceMethodGenerator":      5,
     "ClassPrivateStaticPropertyGenerator":      5,
     "ClassPrivateStaticMethodGenerator":        5,
+    "ClassComputedGetterGenerator":             3,
+    "ClassComputedSetterGenerator":             3,
 
 
     "ObjectWithSpreadGenerator":                2,

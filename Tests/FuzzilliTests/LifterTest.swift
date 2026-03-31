@@ -542,6 +542,12 @@ class LifterTests: XCTestCase {
             obj.addSetter(for: "prop") { this, v in
                 b.setProperty("p", of: this, to: v)
             }
+            obj.addComputedGetter(for: v3) { this in
+                b.doReturn(v1)
+            }
+            obj.addComputedSetter(for: v3) { this, v in
+                b.setProperty("p", of: this, to: v)
+            }
             obj.copyProperties(from: otherObject)
         }
 
@@ -551,7 +557,7 @@ class LifterTests: XCTestCase {
         let expected = """
         const v4 = "foobar" + 42;
         const v7 = Symbol.toPrimitive;
-        const v17 = {
+        const v20 = {
             p1: 42,
             __proto__: null,
             0: 13.37,
@@ -571,6 +577,12 @@ class LifterTests: XCTestCase {
             },
             set prop(a16) {
                 this.p = a16;
+            },
+            get ["foobar"]() {
+                return 42;
+            },
+            set ["foobar"](a19) {
+                this.p = a19;
             },
             ...SomeObject,
         };
@@ -620,6 +632,69 @@ class LifterTests: XCTestCase {
             },
             "42_invalid_id": 42,
             "42_invalid_id"() {
+            },
+        };
+
+        """
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testObjectLiteralGetterSetterLiftingWeirdNames() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let v = b.loadInt(42)
+        b.buildObjectLiteral { obj in
+            for name in ["???", "0","01", "1", "0.1", "-1", "$valid_id_42", "42_invalid_id"] {
+                obj.addGetter(for: name) { _ in b.doReturn(v) }
+                obj.addSetter(for: name) { _, _ in }
+            }
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+        const v25 = {
+            get "???"() {
+                return 42;
+            },
+            set "???"(a3) {
+            },
+            get 0() {
+                return 42;
+            },
+            set 0(a6) {
+            },
+            get "01"() {
+                return 42;
+            },
+            set "01"(a9) {
+            },
+            get 1() {
+                return 42;
+            },
+            set 1(a12) {
+            },
+            get "0.1"() {
+                return 42;
+            },
+            set "0.1"(a15) {
+            },
+            get "-1"() {
+                return 42;
+            },
+            set "-1"(a18) {
+            },
+            get $valid_id_42() {
+                return 42;
+            },
+            set $valid_id_42(a21) {
+            },
+            get "42_invalid_id"() {
+                return 42;
+            },
+            set "42_invalid_id"(a24) {
             },
         };
 
@@ -730,6 +805,11 @@ class LifterTests: XCTestCase {
             }
             cls.addInstanceSetter(for: "baz") { this, v in
             }
+            cls.addInstanceComputedGetter(for: baz) { this in
+                b.doReturn(b.loadInt(1337))
+            }
+            cls.addInstanceComputedSetter(for: baz) { this, v in
+            }
 
             cls.addStaticProperty("foo")
             cls.addStaticInitializer { this in
@@ -755,6 +835,11 @@ class LifterTests: XCTestCase {
                 b.doReturn(b.loadInt(1337))
             }
             cls.addStaticSetter(for: "baz") { this, v in
+            }
+            cls.addStaticComputedGetter(for: baz) { this in
+                b.doReturn(b.loadInt(1337))
+            }
+            cls.addStaticComputedSetter(for: baz) { this, v in
             }
 
             cls.addPrivateInstanceProperty("ifoo")
@@ -815,6 +900,11 @@ class LifterTests: XCTestCase {
             }
             set baz(a17) {
             }
+            get ["baz"]() {
+                return 1337;
+            }
+            set ["baz"](a21) {
+            }
             static foo;
             static {
                 this.foo = 42;
@@ -834,29 +924,34 @@ class LifterTests: XCTestCase {
             static get baz() {
                 return 1337;
             }
-            static set baz(a26) {
+            static set baz(a30) {
+            }
+            static get ["baz"]() {
+                return 1337;
+            }
+            static set ["baz"](a34) {
             }
             #ifoo;
             #ibar = "baz";
             #im() {
-                const v28 = this.#ifoo;
-                this.#ibar = v28;
-                return v28;
+                const v36 = this.#ifoo;
+                this.#ibar = v36;
+                return v36;
             }
-            #in(a30) {
+            #in(a38) {
                 this.#im();
-                this.#ibar += a30;
+                this.#ibar += a38;
             }
             static #sfoo;
             static #sbar = "baz";
             static #sm() {
-                const v33 = this.#sfoo;
-                this.#sbar = v33;
-                return v33;
+                const v41 = this.#sfoo;
+                this.#sbar = v41;
+                return v41;
             }
-            static #sn(a35) {
+            static #sn(a43) {
                 this.#sm();
-                this.#sbar += a35;
+                this.#sbar += a43;
             }
         }
         new C7(42);
@@ -935,6 +1030,99 @@ class LifterTests: XCTestCase {
             "42_invalid_id"() {
             }
             static "42_invalid_id"() {
+            }
+        }
+
+        """
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testClassGetterSetterLiftingWeirdNames() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        b.buildClassDefinition() { cls in
+            for name in ["???", "0","01", "1", "0.1", "-1", "$valid_id_42", "42_invalid_id"] {
+                cls.addInstanceGetter(for: name) { this in
+                }
+                cls.addStaticGetter(for: name) { this in
+                }
+                cls.addInstanceSetter(for: name) { this, val in
+                }
+                cls.addStaticSetter(for: name) { this, val in
+                }
+            }
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+        class C0 {
+            get "???"() {
+            }
+            static get "???"() {
+            }
+            set "???"(a4) {
+            }
+            static set "???"(a6) {
+            }
+            get 0() {
+            }
+            static get 0() {
+            }
+            set 0(a10) {
+            }
+            static set 0(a12) {
+            }
+            get "01"() {
+            }
+            static get "01"() {
+            }
+            set "01"(a16) {
+            }
+            static set "01"(a18) {
+            }
+            get 1() {
+            }
+            static get 1() {
+            }
+            set 1(a22) {
+            }
+            static set 1(a24) {
+            }
+            get "0.1"() {
+            }
+            static get "0.1"() {
+            }
+            set "0.1"(a28) {
+            }
+            static set "0.1"(a30) {
+            }
+            get "-1"() {
+            }
+            static get "-1"() {
+            }
+            set "-1"(a34) {
+            }
+            static set "-1"(a36) {
+            }
+            get $valid_id_42() {
+            }
+            static get $valid_id_42() {
+            }
+            set $valid_id_42(a40) {
+            }
+            static set $valid_id_42(a42) {
+            }
+            get "42_invalid_id"() {
+            }
+            static get "42_invalid_id"() {
+            }
+            set "42_invalid_id"(a46) {
+            }
+            static set "42_invalid_id"(a48) {
             }
         }
 

@@ -76,18 +76,26 @@ public class JavaScriptCompiler {
             guard let field = field.field else {
                 throw CompilerError.invalidNodeError("missing concrete field in class declaration")
             }
-            if case .property(let property) = field {
+
+            let key: Compiler_Protobuf_PropertyKey?
+            switch field {
+            case .property(let property):
                 if property.hasValue {
                     propertyValues.append(try compileExpression(property.value))
                 }
-                if case .expression(let expression) = property.key.body {
-                    computedKeys.append(try compileExpression(expression))
-                }
+                key = property.key
+            case .method(let method):
+                key = method.key
+            case .getter(let getter):
+                key = getter.key
+            case .setter(let setter):
+                key = setter.key
+            case .ctor, .staticInitializer:
+                key = nil
             }
-            if case .method(let method) = field {
-                if case .expression(let expression) = method.key.body {
-                    computedKeys.append(try compileExpression(expression))
-                }
+
+            if let key, case .expression(let expression) = key.body {
+                computedKeys.append(try compileExpression(expression))
             }
         }
 
@@ -179,7 +187,18 @@ public class JavaScriptCompiler {
                 }
 
             case .getter(let getter):
-                let head = emit(BeginClassGetter(propertyName: getter.name, isStatic: getter.isStatic))
+                let head: Instruction
+                guard let key = getter.key.body else {
+                    throw CompilerError.invalidNodeError("Missing key in class getter")
+                }
+                switch key {
+                case .name(let name):
+                    head = emit(BeginClassGetter(propertyName: name, isStatic: getter.isStatic))
+                case .index(let index):
+                    head = emit(BeginClassGetter(propertyName: String(index), isStatic: getter.isStatic))
+                case .expression:
+                    head = emit(BeginClassComputedGetter(isStatic: getter.isStatic), withInputs: [computedKeys.removeLast()])
+                }
 
                 try enterNewScope {
                     map("this", to: head.innerOutput)
@@ -188,10 +207,26 @@ public class JavaScriptCompiler {
                     }
                 }
 
-                emit(EndClassGetter())
+                switch key {
+                case .name, .index:
+                    emit(EndClassGetter())
+                case .expression:
+                    emit(EndClassComputedGetter())
+                }
 
             case .setter(let setter):
-                let head = emit(BeginClassSetter(propertyName: setter.name, isStatic: setter.isStatic))
+                let head: Instruction
+                guard let key = setter.key.body else {
+                    throw CompilerError.invalidNodeError("Missing key in class setter")
+                }
+                switch key {
+                case .name(let name):
+                    head = emit(BeginClassSetter(propertyName: name, isStatic: setter.isStatic))
+                case .index(let index):
+                    head = emit(BeginClassSetter(propertyName: String(index), isStatic: setter.isStatic))
+                case .expression:
+                    head = emit(BeginClassComputedSetter(isStatic: setter.isStatic), withInputs: [computedKeys.removeLast()])
+                }
 
                 try enterNewScope {
                     var parameters = head.innerOutputs
@@ -203,7 +238,12 @@ public class JavaScriptCompiler {
                     }
                 }
 
-                emit(EndClassSetter())
+                switch key {
+                case .name, .index:
+                    emit(EndClassSetter())
+                case .expression:
+                    emit(EndClassComputedSetter())
+                }
 
             case .staticInitializer(let staticInitializer):
                 let head = emit(BeginClassStaticInitializer())
@@ -855,7 +895,7 @@ public class JavaScriptCompiler {
                     case .index(let index):
                         head = emit(BeginObjectLiteralGetter(propertyName: String(index)))
                     case .expression:
-                        fatalError("Computed getters are not yet supported")
+                        head = emit(BeginObjectLiteralComputedGetter(), withInputs: [computedKeys.removeLast()])
                     }
                     try enterNewScope {
                         map("this", to: head.innerOutput)
@@ -863,7 +903,12 @@ public class JavaScriptCompiler {
                             try compileStatement(statement)
                         }
                     }
-                    emit(EndObjectLiteralGetter())
+                    switch key {
+                    case .name, .index:
+                        emit(EndObjectLiteralGetter())
+                    case .expression:
+                        emit(EndObjectLiteralComputedGetter())
+                    }
                 case .setter(let setter):
                     guard let key = setter.key.body else {
                         throw CompilerError.invalidNodeError("Missing key in object expression setter")
@@ -875,7 +920,7 @@ public class JavaScriptCompiler {
                     case .index(let index):
                         head = emit(BeginObjectLiteralSetter(propertyName: String(index)))
                     case .expression:
-                        fatalError("Computed setters are not yet supported")
+                        head = emit(BeginObjectLiteralComputedSetter(), withInputs: [computedKeys.removeLast()])
                     }
                     try enterNewScope {
                         var parameters = head.innerOutputs
@@ -886,7 +931,12 @@ public class JavaScriptCompiler {
                             try compileStatement(statement)
                         }
                     }
-                    emit(EndObjectLiteralSetter())
+                    switch key {
+                    case .name, .index:
+                        emit(EndObjectLiteralSetter())
+                    case .expression:
+                        emit(EndObjectLiteralComputedSetter())
+                    }
                 }
             }
             return emit(EndObjectLiteral()).output

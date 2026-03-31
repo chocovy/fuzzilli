@@ -439,7 +439,14 @@ public struct Compiler_Protobuf_ClassGetter: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var name: String = String()
+  public var key: Compiler_Protobuf_PropertyKey {
+    get {_key ?? Compiler_Protobuf_PropertyKey()}
+    set {_key = newValue}
+  }
+  /// Returns true if `key` has been explicitly set.
+  public var hasKey: Bool {self._key != nil}
+  /// Clears the value of `key`. Subsequent reads from it will return its default value.
+  public mutating func clearKey() {self._key = nil}
 
   public var isStatic: Bool = false
 
@@ -448,6 +455,8 @@ public struct Compiler_Protobuf_ClassGetter: Sendable {
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _key: Compiler_Protobuf_PropertyKey? = nil
 }
 
 public struct Compiler_Protobuf_ClassSetter: Sendable {
@@ -455,7 +464,14 @@ public struct Compiler_Protobuf_ClassSetter: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var name: String = String()
+  public var key: Compiler_Protobuf_PropertyKey {
+    get {_key ?? Compiler_Protobuf_PropertyKey()}
+    set {_key = newValue}
+  }
+  /// Returns true if `key` has been explicitly set.
+  public var hasKey: Bool {self._key != nil}
+  /// Clears the value of `key`. Subsequent reads from it will return its default value.
+  public mutating func clearKey() {self._key = nil}
 
   public var isStatic: Bool = false
 
@@ -474,6 +490,7 @@ public struct Compiler_Protobuf_ClassSetter: Sendable {
 
   public init() {}
 
+  fileprivate var _key: Compiler_Protobuf_PropertyKey? = nil
   fileprivate var _parameter: Compiler_Protobuf_Parameter? = nil
 }
 
@@ -3000,7 +3017,7 @@ extension Compiler_Protobuf_ClassMethod: SwiftProtobuf.Message, SwiftProtobuf._M
 
 extension Compiler_Protobuf_ClassGetter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ClassGetter"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}isStatic\0\u{1}body\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}key\0\u{1}isStatic\0\u{1}body\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3008,7 +3025,7 @@ extension Compiler_Protobuf_ClassGetter: SwiftProtobuf.Message, SwiftProtobuf._M
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._key) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.isStatic) }()
       case 3: try { try decoder.decodeRepeatedMessageField(value: &self.body) }()
       default: break
@@ -3017,9 +3034,13 @@ extension Compiler_Protobuf_ClassGetter: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.name.isEmpty {
-      try visitor.visitSingularStringField(value: self.name, fieldNumber: 1)
-    }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._key {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
     if self.isStatic != false {
       try visitor.visitSingularBoolField(value: self.isStatic, fieldNumber: 2)
     }
@@ -3030,7 +3051,7 @@ extension Compiler_Protobuf_ClassGetter: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 
   public static func ==(lhs: Compiler_Protobuf_ClassGetter, rhs: Compiler_Protobuf_ClassGetter) -> Bool {
-    if lhs.name != rhs.name {return false}
+    if lhs._key != rhs._key {return false}
     if lhs.isStatic != rhs.isStatic {return false}
     if lhs.body != rhs.body {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -3040,7 +3061,7 @@ extension Compiler_Protobuf_ClassGetter: SwiftProtobuf.Message, SwiftProtobuf._M
 
 extension Compiler_Protobuf_ClassSetter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ClassSetter"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}isStatic\0\u{1}parameter\0\u{1}body\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}key\0\u{1}isStatic\0\u{1}parameter\0\u{1}body\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3048,7 +3069,7 @@ extension Compiler_Protobuf_ClassSetter: SwiftProtobuf.Message, SwiftProtobuf._M
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._key) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.isStatic) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._parameter) }()
       case 4: try { try decoder.decodeRepeatedMessageField(value: &self.body) }()
@@ -3062,9 +3083,9 @@ extension Compiler_Protobuf_ClassSetter: SwiftProtobuf.Message, SwiftProtobuf._M
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.name.isEmpty {
-      try visitor.visitSingularStringField(value: self.name, fieldNumber: 1)
-    }
+    try { if let v = self._key {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
     if self.isStatic != false {
       try visitor.visitSingularBoolField(value: self.isStatic, fieldNumber: 2)
     }
@@ -3078,7 +3099,7 @@ extension Compiler_Protobuf_ClassSetter: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 
   public static func ==(lhs: Compiler_Protobuf_ClassSetter, rhs: Compiler_Protobuf_ClassSetter) -> Bool {
-    if lhs.name != rhs.name {return false}
+    if lhs._key != rhs._key {return false}
     if lhs.isStatic != rhs.isStatic {return false}
     if lhs._parameter != rhs._parameter {return false}
     if lhs.body != rhs.body {return false}

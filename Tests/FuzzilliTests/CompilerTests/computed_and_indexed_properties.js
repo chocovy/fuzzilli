@@ -39,7 +39,6 @@ console.log("String literal object method");
   console.log(obj["?"]());
 })();
 
-/*
 console.log("Computed object property (getter/setter)");
 (() => {
   const p = 'theAnswerIs';
@@ -60,7 +59,6 @@ console.log("Computed object property (getter/setter)");
   obj.foo = 42;
   console.log(obj.foo);
 })();
-*/
 
 console.log("Indexed object property (getter/setter)");
 (() => {
@@ -122,7 +120,6 @@ console.log("Computed static class property (field)");
   console.log((classify("theAnswerIs")).theAnswerIs);
 })();
 
-/*
 console.log("Computed class property (getter/setter)");
 (() => {
   function classify (name) {
@@ -147,9 +144,7 @@ console.log("Computed class property (getter/setter)");
   c.theAnswerIs = 42;
   console.log(c.theAnswerIs);
 })();
-*/
 
-/*
 console.log("Computed static class property (getter/setter)");
 (() => {
   function classify (name) {
@@ -174,7 +169,6 @@ console.log("Computed static class property (getter/setter)");
   c.theAnswerIs = 42;
   console.log(c.theAnswerIs);
 })();
-*/
 
 console.log("Computed class property (method)");
 (() => {
@@ -244,7 +238,6 @@ console.log("Indexed static class property (method)");
   console.log(C[42]());
 })();
 
-/*
 console.log("Indexed class property (getter/setter)");
 (() => {
   class C {
@@ -266,9 +259,7 @@ console.log("Indexed class property (getter/setter)");
   c[42] = 42;
   console.log(c[42]);
 })();
-*/
 
-/*
 console.log("Indexed static class property (getter/setter)");
 (() => {
   class C {
@@ -289,7 +280,6 @@ console.log("Indexed static class property (getter/setter)");
   C[42] = 42;
   console.log(C[42]);
 })();
-*/
 
 console.log("String-indexed class property (field)");
 (() => {
@@ -331,7 +321,6 @@ console.log("String-indexed static class property (method)");
   console.log(C["42"]());
 })();
 
-/*
 console.log("String-indexed class property (getter/setter)");
 (() => {
   class C {
@@ -355,9 +344,7 @@ console.log("String-indexed class property (getter/setter)");
   c["42"] = 42;
   console.log(c["42"]);
 })();
-*/
 
-/*
 console.log("String-indexed static class property (getter/setter)");
 (() => {
   class C {
@@ -378,7 +365,6 @@ console.log("String-indexed static class property (getter/setter)");
   C["42"] = 42;
   console.log(C["42"]);
 })();
-*/
 
 console.log("String-literal class property (field)");
 (() => {
@@ -420,7 +406,6 @@ console.log("String-literal static class property (method)");
   console.log(C["theAnswerIs?"]());
 })();
 
-/*
 console.log("String-literal class property (getter/setter)");
 (() => {
   class C {
@@ -442,9 +427,7 @@ console.log("String-literal class property (getter/setter)");
   c.theAnswerIs = 42;
   console.log(c.theAnswerIs);
 })();
-*/
 
-/*
 console.log("String-literal static class property (getter/setter)");
 (() => {
   class C {
@@ -465,4 +448,3 @@ console.log("String-literal static class property (getter/setter)");
   C.theAnswerIs = 42;
   console.log(C.theAnswerIs);
 })();
-*/

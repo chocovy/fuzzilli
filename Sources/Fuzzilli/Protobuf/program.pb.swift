@@ -2657,6 +2657,70 @@ public struct Fuzzilli_Protobuf_Instruction: Sendable {
     set {operation = .wasmRefCast(newValue)}
   }
 
+  public var beginObjectLiteralComputedGetter: Fuzzilli_Protobuf_BeginObjectLiteralComputedGetter {
+    get {
+      if case .beginObjectLiteralComputedGetter(let v)? = operation {return v}
+      return Fuzzilli_Protobuf_BeginObjectLiteralComputedGetter()
+    }
+    set {operation = .beginObjectLiteralComputedGetter(newValue)}
+  }
+
+  public var endObjectLiteralComputedGetter: Fuzzilli_Protobuf_EndObjectLiteralComputedGetter {
+    get {
+      if case .endObjectLiteralComputedGetter(let v)? = operation {return v}
+      return Fuzzilli_Protobuf_EndObjectLiteralComputedGetter()
+    }
+    set {operation = .endObjectLiteralComputedGetter(newValue)}
+  }
+
+  public var beginObjectLiteralComputedSetter: Fuzzilli_Protobuf_BeginObjectLiteralComputedSetter {
+    get {
+      if case .beginObjectLiteralComputedSetter(let v)? = operation {return v}
+      return Fuzzilli_Protobuf_BeginObjectLiteralComputedSetter()
+    }
+    set {operation = .beginObjectLiteralComputedSetter(newValue)}
+  }
+
+  public var endObjectLiteralComputedSetter: Fuzzilli_Protobuf_EndObjectLiteralComputedSetter {
+    get {
+      if case .endObjectLiteralComputedSetter(let v)? = operation {return v}
+      return Fuzzilli_Protobuf_EndObjectLiteralComputedSetter()
+    }
+    set {operation = .endObjectLiteralComputedSetter(newValue)}
+  }
+
+  public var beginClassComputedGetter: Fuzzilli_Protobuf_BeginClassComputedGetter {
+    get {
+      if case .beginClassComputedGetter(let v)? = operation {return v}
+      return Fuzzilli_Protobuf_BeginClassComputedGetter()
+    }
+    set {operation = .beginClassComputedGetter(newValue)}
+  }
+
+  public var endClassComputedGetter: Fuzzilli_Protobuf_EndClassComputedGetter {
+    get {
+      if case .endClassComputedGetter(let v)? = operation {return v}
+      return Fuzzilli_Protobuf_EndClassComputedGetter()
+    }
+    set {operation = .endClassComputedGetter(newValue)}
+  }
+
+  public var beginClassComputedSetter: Fuzzilli_Protobuf_BeginClassComputedSetter {
+    get {
+      if case .beginClassComputedSetter(let v)? = operation {return v}
+      return Fuzzilli_Protobuf_BeginClassComputedSetter()
+    }
+    set {operation = .beginClassComputedSetter(newValue)}
+  }
+
+  public var endClassComputedSetter: Fuzzilli_Protobuf_EndClassComputedSetter {
+    get {
+      if case .endClassComputedSetter(let v)? = operation {return v}
+      return Fuzzilli_Protobuf_EndClassComputedSetter()
+    }
+    set {operation = .endClassComputedSetter(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_Operation: Equatable, Sendable {
@@ -2986,6 +3050,14 @@ public struct Fuzzilli_Protobuf_Instruction: Sendable {
     case wasmRefTest(Fuzzilli_Protobuf_WasmRefTest)
     case wasmDefineAdHocModuleSignatureType(Fuzzilli_Protobuf_WasmDefineAdHocModuleSignatureType)
     case wasmRefCast(Fuzzilli_Protobuf_WasmRefCast)
+    case beginObjectLiteralComputedGetter(Fuzzilli_Protobuf_BeginObjectLiteralComputedGetter)
+    case endObjectLiteralComputedGetter(Fuzzilli_Protobuf_EndObjectLiteralComputedGetter)
+    case beginObjectLiteralComputedSetter(Fuzzilli_Protobuf_BeginObjectLiteralComputedSetter)
+    case endObjectLiteralComputedSetter(Fuzzilli_Protobuf_EndObjectLiteralComputedSetter)
+    case beginClassComputedGetter(Fuzzilli_Protobuf_BeginClassComputedGetter)
+    case endClassComputedGetter(Fuzzilli_Protobuf_EndClassComputedGetter)
+    case beginClassComputedSetter(Fuzzilli_Protobuf_BeginClassComputedSetter)
+    case endClassComputedSetter(Fuzzilli_Protobuf_EndClassComputedSetter)
 
   }
 
@@ -3034,7 +3106,7 @@ fileprivate let _protobuf_package = "fuzzilli.protobuf"
 
 extension Fuzzilli_Protobuf_Instruction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Instruction"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}inouts\0\u{1}opIdx\0\u{1}nop\0\u{1}loadInteger\0\u{1}loadBigInt\0\u{1}loadFloat\0\u{1}loadString\0\u{1}loadBoolean\0\u{1}loadUndefined\0\u{1}loadNull\0\u{1}loadThis\0\u{1}loadArguments\0\u{1}createNamedVariable\0\u{1}loadDisposableVariable\0\u{1}loadAsyncDisposableVariable\0\u{1}loadRegExp\0\u{1}beginObjectLiteral\0\u{1}objectLiteralAddProperty\0\u{1}objectLiteralAddElement\0\u{1}objectLiteralAddComputedProperty\0\u{1}objectLiteralCopyProperties\0\u{1}objectLiteralSetPrototype\0\u{1}beginObjectLiteralMethod\0\u{1}endObjectLiteralMethod\0\u{1}beginObjectLiteralComputedMethod\0\u{1}endObjectLiteralComputedMethod\0\u{1}beginObjectLiteralGetter\0\u{1}endObjectLiteralGetter\0\u{1}beginObjectLiteralSetter\0\u{1}endObjectLiteralSetter\0\u{1}endObjectLiteral\0\u{1}beginClassDefinition\0\u{1}beginClassConstructor\0\u{1}endClassConstructor\0\u{1}classAddProperty\0\u{1}classAddElement\0\u{1}classAddComputedProperty\0\u{1}beginClassMethod\0\u{1}endClassMethod\0\u{1}beginClassComputedMethod\0\u{1}endClassComputedMethod\0\u{1}beginClassGetter\0\u{1}endClassGetter\0\u{1}beginClassSetter\0\u{1}endClassSetter\0\u{1}beginClassStaticInitializer\0\u{1}endClassStaticInitializer\0\u{1}classAddPrivateProperty\0\u{1}beginClassPrivateMethod\0\u{1}endClassPrivateMethod\0\u{1}endClassDefinition\0\u{1}createArray\0\u{1}createIntArray\0\u{1}createFloatArray\0\u{1}createArrayWithSpread\0\u{1}createTemplateString\0\u{1}getProperty\0\u{1}setProperty\0\u{1}updateProperty\0\u{1}deleteProperty\0\u{1}configureProperty\0\u{1}getElement\0\u{1}setElement\0\u{1}updateElement\0\u{1}deleteElement\0\u{1}configureElement\0\u{1}getComputedProperty\0\u{1}setComputedProperty\0\u{1}updateComputedProperty\0\u{1}deleteComputedProperty\0\u{1}configureComputedProperty\0\u{1}typeOf\0\u{1}void\0\u{1}testInstanceOf\0\u{1}testIn\0\u{1}beginPlainFunction\0\u{1}endPlainFunction\0\u{1}beginArrowFunction\0\u{1}endArrowFunction\0\u{1}beginGeneratorFunction\0\u{1}endGeneratorFunction\0\u{1}beginAsyncFunction\0\u{1}endAsyncFunction\0\u{1}beginAsyncArrowFunction\0\u{1}endAsyncArrowFunction\0\u{1}beginAsyncGeneratorFunction\0\u{1}endAsyncGeneratorFunction\0\u{1}beginConstructor\0\u{1}endConstructor\0\u{1}directive\0\u{1}return\0\u{1}yield\0\u{1}yieldEach\0\u{1}await\0\u{1}callFunction\0\u{1}callFunctionWithSpread\0\u{1}construct\0\u{1}constructWithSpread\0\u{1}callMethod\0\u{1}callMethodWithSpread\0\u{1}callComputedMethod\0\u{1}callComputedMethodWithSpread\0\u{1}unaryOperation\0\u{1}binaryOperation\0\u{1}ternaryOperation\0\u{1}update\0\u{1}dup\0\u{1}reassign\0\u{1}destructArray\0\u{1}destructArrayAndReassign\0\u{1}destructObject\0\u{1}destructObjectAndReassign\0\u{1}compare\0\u{1}eval\0\u{1}beginWith\0\u{1}endWith\0\u{1}callSuperConstructor\0\u{1}callSuperMethod\0\u{1}getPrivateProperty\0\u{1}setPrivateProperty\0\u{1}updatePrivateProperty\0\u{1}callPrivateMethod\0\u{1}getSuperProperty\0\u{1}setSuperProperty\0\u{1}getComputedSuperProperty\0\u{1}setComputedSuperProperty\0\u{1}updateSuperProperty\0\u{1}beginIf\0\u{1}beginElse\0\u{1}endIf\0\u{1}beginWhileLoopHeader\0\u{1}beginWhileLoopBody\0\u{1}endWhileLoop\0\u{1}beginDoWhileLoopBody\0\u{1}beginDoWhileLoopHeader\0\u{1}endDoWhileLoop\0\u{1}beginForLoopInitializer\0\u{1}beginForLoopCondition\0\u{1}beginForLoopAfterthought\0\u{1}beginForLoopBody\0\u{1}endForLoop\0\u{1}beginForInLoop\0\u{1}endForInLoop\0\u{1}beginForOfLoop\0\u{1}beginForOfLoopWithDestruct\0\u{1}endForOfLoop\0\u{1}beginRepeatLoop\0\u{1}endRepeatLoop\0\u{1}loopBreak\0\u{1}loopContinue\0\u{1}beginTry\0\u{1}beginCatch\0\u{1}beginFinally\0\u{1}endTryCatchFinally\0\u{1}throwException\0\u{1}beginCodeString\0\u{1}endCodeString\0\u{1}beginBlockStatement\0\u{1}endBlockStatement\0\u{1}beginSwitch\0\u{1}beginSwitchCase\0\u{1}beginSwitchDefaultCase\0\u{1}endSwitchCase\0\u{1}endSwitch\0\u{1}switchBreak\0\u{1}loadNewTarget\0\u{1}print\0\u{1}explore\0\u{1}probe\0\u{1}fixup\0\u{1}beginWasmModule\0\u{1}endWasmModule\0\u{1}createWasmGlobal\0\u{1}createWasmMemory\0\u{1}createWasmTable\0\u{1}createWasmJSTag\0\u{1}createWasmTag\0\u{1}wrapPromising\0\u{1}wrapSuspending\0\u{1}bindMethod\0\u{1}bindFunction\0\u{1}consti64\0\u{1}consti32\0\u{1}constf32\0\u{1}constf64\0\u{1}wasmReturn\0\u{1}wasmJsCall\0\u{1}wasmi32CompareOp\0\u{1}wasmi64CompareOp\0\u{1}wasmf32CompareOp\0\u{1}wasmf64CompareOp\0\u{1}wasmi32EqualZero\0\u{1}wasmi64EqualZero\0\u{1}wasmi32BinOp\0\u{1}wasmi64BinOp\0\u{1}wasmi32UnOp\0\u{1}wasmi64UnOp\0\u{1}wasmf32BinOp\0\u{1}wasmf64BinOp\0\u{1}wasmf32UnOp\0\u{1}wasmf64UnOp\0\u{1}wasmWrapi64Toi32\0\u{1}wasmTruncatef32Toi32\0\u{1}wasmTruncatef64Toi32\0\u{1}wasmExtendi32Toi64\0\u{1}wasmTruncatef32Toi64\0\u{1}wasmTruncatef64Toi64\0\u{1}wasmConverti32Tof32\0\u{1}wasmConverti64Tof32\0\u{1}wasmDemotef64Tof32\0\u{1}wasmConverti32Tof64\0\u{1}wasmConverti64Tof64\0\u{1}wasmPromotef32Tof64\0\u{1}wasmReinterpretf32Asi32\0\u{1}wasmReinterpretf64Asi64\0\u{1}wasmReinterpreti32Asf32\0\u{1}wasmReinterpreti64Asf64\0\u{1}wasmSignExtend8Intoi32\0\u{1}wasmSignExtend16Intoi32\0\u{1}wasmSignExtend8Intoi64\0\u{1}wasmSignExtend16Intoi64\0\u{1}wasmSignExtend32Intoi64\0\u{1}wasmTruncateSatf32Toi32\0\u{1}wasmTruncateSatf64Toi32\0\u{1}wasmTruncateSatf32Toi64\0\u{1}wasmTruncateSatf64Toi64\0\u{1}wasmReassign\0\u{1}wasmDefineGlobal\0\u{1}wasmDefineTable\0\u{1}wasmDefineMemory\0\u{1}wasmDefineDataSegment\0\u{1}wasmLoadGlobal\0\u{1}wasmStoreGlobal\0\u{1}wasmTableGet\0\u{1}wasmTableSet\0\u{1}wasmTableSize\0\u{1}wasmTableGrow\0\u{1}wasmCallIndirect\0\u{1}wasmCallDirect\0\u{1}wasmReturnCallDirect\0\u{1}wasmReturnCallIndirect\0\u{1}wasmMemoryLoad\0\u{1}wasmMemoryStore\0\u{1}wasmAtomicLoad\0\u{1}wasmAtomicStore\0\u{1}wasmAtomicRMW\0\u{1}wasmAtomicCmpxchg\0\u{1}wasmMemorySize\0\u{1}wasmMemoryGrow\0\u{1}wasmMemoryFill\0\u{1}wasmMemoryInit\0\u{1}wasmDropDataSegment\0\u{1}beginWasmFunction\0\u{1}endWasmFunction\0\u{1}wasmBeginBlock\0\u{1}wasmEndBlock\0\u{1}wasmBeginLoop\0\u{1}wasmEndLoop\0\u{1}wasmBranch\0\u{1}wasmBranchIf\0\u{1}wasmBranchTable\0\u{1}wasmNop\0\u{1}wasmBeginIf\0\u{1}wasmBeginElse\0\u{1}wasmEndIf\0\u{1}wasmBeginTryTable\0\u{1}wasmEndTryTable\0\u{1}wasmBeginTry\0\u{1}wasmBeginCatchAll\0\u{1}wasmBeginCatch\0\u{1}wasmEndTry\0\u{1}wasmBeginTryDelegate\0\u{1}wasmEndTryDelegate\0\u{1}wasmThrow\0\u{1}wasmRethrow\0\u{1}wasmThrowRef\0\u{1}wasmDefineTag\0\u{1}constSimd128\0\u{1}wasmSimd128Compare\0\u{1}wasmSimd128IntegerUnOp\0\u{1}wasmSimd128IntegerBinOp\0\u{1}wasmSimd128IntegerTernaryOp\0\u{1}wasmSimd128FloatUnOp\0\u{1}wasmSimd128FloatBinOp\0\u{1}wasmSimd128FloatTernaryOp\0\u{1}wasmSimdSplat\0\u{1}wasmSimdExtractLane\0\u{1}wasmSimdReplaceLane\0\u{1}wasmSimdStoreLane\0\u{1}wasmSimdLoadLane\0\u{1}wasmSimdLoad\0\u{1}wasmUnreachable\0\u{1}wasmSelect\0\u{1}wasmBeginTypeGroup\0\u{1}wasmEndTypeGroup\0\u{1}wasmDefineArrayType\0\u{1}wasmDefineStructType\0\u{1}wasmDefineForwardOrSelfReference\0\u{1}wasmResolveForwardReference\0\u{1}wasmArrayNewFixed\0\u{1}wasmArrayNewDefault\0\u{1}wasmArrayLen\0\u{1}wasmArrayGet\0\u{1}wasmArraySet\0\u{1}wasmStructNewDefault\0\u{1}wasmStructGet\0\u{1}wasmStructSet\0\u{1}wasmRefNull\0\u{1}wasmRefIsNull\0\u{1}wasmRefI31\0\u{1}wasmI31Get\0\u{1}wasmAnyConvertExtern\0\u{1}wasmExternConvertAny\0\u{1}wasmMemoryCopy\0\u{1}wasmDefineElementSegment\0\u{1}wasmTableInit\0\u{1}wasmDropElementSegment\0\u{1}wasmTableCopy\0\u{1}wasmDefineSignatureType\0\u{1}createNamedDisposableVariable\0\u{1}createNamedAsyncDisposableVariable\0\u{1}wasmDefineAdHocSignatureType\0\u{1}wasmStructNew\0\u{1}wasmRefEq\0\u{1}wasmRefTest\0\u{1}wasmDefineAdHocModuleSignatureType\0\u{1}wasmRefCast\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}inouts\0\u{1}opIdx\0\u{1}nop\0\u{1}loadInteger\0\u{1}loadBigInt\0\u{1}loadFloat\0\u{1}loadString\0\u{1}loadBoolean\0\u{1}loadUndefined\0\u{1}loadNull\0\u{1}loadThis\0\u{1}loadArguments\0\u{1}createNamedVariable\0\u{1}loadDisposableVariable\0\u{1}loadAsyncDisposableVariable\0\u{1}loadRegExp\0\u{1}beginObjectLiteral\0\u{1}objectLiteralAddProperty\0\u{1}objectLiteralAddElement\0\u{1}objectLiteralAddComputedProperty\0\u{1}objectLiteralCopyProperties\0\u{1}objectLiteralSetPrototype\0\u{1}beginObjectLiteralMethod\0\u{1}endObjectLiteralMethod\0\u{1}beginObjectLiteralComputedMethod\0\u{1}endObjectLiteralComputedMethod\0\u{1}beginObjectLiteralGetter\0\u{1}endObjectLiteralGetter\0\u{1}beginObjectLiteralSetter\0\u{1}endObjectLiteralSetter\0\u{1}endObjectLiteral\0\u{1}beginClassDefinition\0\u{1}beginClassConstructor\0\u{1}endClassConstructor\0\u{1}classAddProperty\0\u{1}classAddElement\0\u{1}classAddComputedProperty\0\u{1}beginClassMethod\0\u{1}endClassMethod\0\u{1}beginClassComputedMethod\0\u{1}endClassComputedMethod\0\u{1}beginClassGetter\0\u{1}endClassGetter\0\u{1}beginClassSetter\0\u{1}endClassSetter\0\u{1}beginClassStaticInitializer\0\u{1}endClassStaticInitializer\0\u{1}classAddPrivateProperty\0\u{1}beginClassPrivateMethod\0\u{1}endClassPrivateMethod\0\u{1}endClassDefinition\0\u{1}createArray\0\u{1}createIntArray\0\u{1}createFloatArray\0\u{1}createArrayWithSpread\0\u{1}createTemplateString\0\u{1}getProperty\0\u{1}setProperty\0\u{1}updateProperty\0\u{1}deleteProperty\0\u{1}configureProperty\0\u{1}getElement\0\u{1}setElement\0\u{1}updateElement\0\u{1}deleteElement\0\u{1}configureElement\0\u{1}getComputedProperty\0\u{1}setComputedProperty\0\u{1}updateComputedProperty\0\u{1}deleteComputedProperty\0\u{1}configureComputedProperty\0\u{1}typeOf\0\u{1}void\0\u{1}testInstanceOf\0\u{1}testIn\0\u{1}beginPlainFunction\0\u{1}endPlainFunction\0\u{1}beginArrowFunction\0\u{1}endArrowFunction\0\u{1}beginGeneratorFunction\0\u{1}endGeneratorFunction\0\u{1}beginAsyncFunction\0\u{1}endAsyncFunction\0\u{1}beginAsyncArrowFunction\0\u{1}endAsyncArrowFunction\0\u{1}beginAsyncGeneratorFunction\0\u{1}endAsyncGeneratorFunction\0\u{1}beginConstructor\0\u{1}endConstructor\0\u{1}directive\0\u{1}return\0\u{1}yield\0\u{1}yieldEach\0\u{1}await\0\u{1}callFunction\0\u{1}callFunctionWithSpread\0\u{1}construct\0\u{1}constructWithSpread\0\u{1}callMethod\0\u{1}callMethodWithSpread\0\u{1}callComputedMethod\0\u{1}callComputedMethodWithSpread\0\u{1}unaryOperation\0\u{1}binaryOperation\0\u{1}ternaryOperation\0\u{1}update\0\u{1}dup\0\u{1}reassign\0\u{1}destructArray\0\u{1}destructArrayAndReassign\0\u{1}destructObject\0\u{1}destructObjectAndReassign\0\u{1}compare\0\u{1}eval\0\u{1}beginWith\0\u{1}endWith\0\u{1}callSuperConstructor\0\u{1}callSuperMethod\0\u{1}getPrivateProperty\0\u{1}setPrivateProperty\0\u{1}updatePrivateProperty\0\u{1}callPrivateMethod\0\u{1}getSuperProperty\0\u{1}setSuperProperty\0\u{1}getComputedSuperProperty\0\u{1}setComputedSuperProperty\0\u{1}updateSuperProperty\0\u{1}beginIf\0\u{1}beginElse\0\u{1}endIf\0\u{1}beginWhileLoopHeader\0\u{1}beginWhileLoopBody\0\u{1}endWhileLoop\0\u{1}beginDoWhileLoopBody\0\u{1}beginDoWhileLoopHeader\0\u{1}endDoWhileLoop\0\u{1}beginForLoopInitializer\0\u{1}beginForLoopCondition\0\u{1}beginForLoopAfterthought\0\u{1}beginForLoopBody\0\u{1}endForLoop\0\u{1}beginForInLoop\0\u{1}endForInLoop\0\u{1}beginForOfLoop\0\u{1}beginForOfLoopWithDestruct\0\u{1}endForOfLoop\0\u{1}beginRepeatLoop\0\u{1}endRepeatLoop\0\u{1}loopBreak\0\u{1}loopContinue\0\u{1}beginTry\0\u{1}beginCatch\0\u{1}beginFinally\0\u{1}endTryCatchFinally\0\u{1}throwException\0\u{1}beginCodeString\0\u{1}endCodeString\0\u{1}beginBlockStatement\0\u{1}endBlockStatement\0\u{1}beginSwitch\0\u{1}beginSwitchCase\0\u{1}beginSwitchDefaultCase\0\u{1}endSwitchCase\0\u{1}endSwitch\0\u{1}switchBreak\0\u{1}loadNewTarget\0\u{1}print\0\u{1}explore\0\u{1}probe\0\u{1}fixup\0\u{1}beginWasmModule\0\u{1}endWasmModule\0\u{1}createWasmGlobal\0\u{1}createWasmMemory\0\u{1}createWasmTable\0\u{1}createWasmJSTag\0\u{1}createWasmTag\0\u{1}wrapPromising\0\u{1}wrapSuspending\0\u{1}bindMethod\0\u{1}bindFunction\0\u{1}consti64\0\u{1}consti32\0\u{1}constf32\0\u{1}constf64\0\u{1}wasmReturn\0\u{1}wasmJsCall\0\u{1}wasmi32CompareOp\0\u{1}wasmi64CompareOp\0\u{1}wasmf32CompareOp\0\u{1}wasmf64CompareOp\0\u{1}wasmi32EqualZero\0\u{1}wasmi64EqualZero\0\u{1}wasmi32BinOp\0\u{1}wasmi64BinOp\0\u{1}wasmi32UnOp\0\u{1}wasmi64UnOp\0\u{1}wasmf32BinOp\0\u{1}wasmf64BinOp\0\u{1}wasmf32UnOp\0\u{1}wasmf64UnOp\0\u{1}wasmWrapi64Toi32\0\u{1}wasmTruncatef32Toi32\0\u{1}wasmTruncatef64Toi32\0\u{1}wasmExtendi32Toi64\0\u{1}wasmTruncatef32Toi64\0\u{1}wasmTruncatef64Toi64\0\u{1}wasmConverti32Tof32\0\u{1}wasmConverti64Tof32\0\u{1}wasmDemotef64Tof32\0\u{1}wasmConverti32Tof64\0\u{1}wasmConverti64Tof64\0\u{1}wasmPromotef32Tof64\0\u{1}wasmReinterpretf32Asi32\0\u{1}wasmReinterpretf64Asi64\0\u{1}wasmReinterpreti32Asf32\0\u{1}wasmReinterpreti64Asf64\0\u{1}wasmSignExtend8Intoi32\0\u{1}wasmSignExtend16Intoi32\0\u{1}wasmSignExtend8Intoi64\0\u{1}wasmSignExtend16Intoi64\0\u{1}wasmSignExtend32Intoi64\0\u{1}wasmTruncateSatf32Toi32\0\u{1}wasmTruncateSatf64Toi32\0\u{1}wasmTruncateSatf32Toi64\0\u{1}wasmTruncateSatf64Toi64\0\u{1}wasmReassign\0\u{1}wasmDefineGlobal\0\u{1}wasmDefineTable\0\u{1}wasmDefineMemory\0\u{1}wasmDefineDataSegment\0\u{1}wasmLoadGlobal\0\u{1}wasmStoreGlobal\0\u{1}wasmTableGet\0\u{1}wasmTableSet\0\u{1}wasmTableSize\0\u{1}wasmTableGrow\0\u{1}wasmCallIndirect\0\u{1}wasmCallDirect\0\u{1}wasmReturnCallDirect\0\u{1}wasmReturnCallIndirect\0\u{1}wasmMemoryLoad\0\u{1}wasmMemoryStore\0\u{1}wasmAtomicLoad\0\u{1}wasmAtomicStore\0\u{1}wasmAtomicRMW\0\u{1}wasmAtomicCmpxchg\0\u{1}wasmMemorySize\0\u{1}wasmMemoryGrow\0\u{1}wasmMemoryFill\0\u{1}wasmMemoryInit\0\u{1}wasmDropDataSegment\0\u{1}beginWasmFunction\0\u{1}endWasmFunction\0\u{1}wasmBeginBlock\0\u{1}wasmEndBlock\0\u{1}wasmBeginLoop\0\u{1}wasmEndLoop\0\u{1}wasmBranch\0\u{1}wasmBranchIf\0\u{1}wasmBranchTable\0\u{1}wasmNop\0\u{1}wasmBeginIf\0\u{1}wasmBeginElse\0\u{1}wasmEndIf\0\u{1}wasmBeginTryTable\0\u{1}wasmEndTryTable\0\u{1}wasmBeginTry\0\u{1}wasmBeginCatchAll\0\u{1}wasmBeginCatch\0\u{1}wasmEndTry\0\u{1}wasmBeginTryDelegate\0\u{1}wasmEndTryDelegate\0\u{1}wasmThrow\0\u{1}wasmRethrow\0\u{1}wasmThrowRef\0\u{1}wasmDefineTag\0\u{1}constSimd128\0\u{1}wasmSimd128Compare\0\u{1}wasmSimd128IntegerUnOp\0\u{1}wasmSimd128IntegerBinOp\0\u{1}wasmSimd128IntegerTernaryOp\0\u{1}wasmSimd128FloatUnOp\0\u{1}wasmSimd128FloatBinOp\0\u{1}wasmSimd128FloatTernaryOp\0\u{1}wasmSimdSplat\0\u{1}wasmSimdExtractLane\0\u{1}wasmSimdReplaceLane\0\u{1}wasmSimdStoreLane\0\u{1}wasmSimdLoadLane\0\u{1}wasmSimdLoad\0\u{1}wasmUnreachable\0\u{1}wasmSelect\0\u{1}wasmBeginTypeGroup\0\u{1}wasmEndTypeGroup\0\u{1}wasmDefineArrayType\0\u{1}wasmDefineStructType\0\u{1}wasmDefineForwardOrSelfReference\0\u{1}wasmResolveForwardReference\0\u{1}wasmArrayNewFixed\0\u{1}wasmArrayNewDefault\0\u{1}wasmArrayLen\0\u{1}wasmArrayGet\0\u{1}wasmArraySet\0\u{1}wasmStructNewDefault\0\u{1}wasmStructGet\0\u{1}wasmStructSet\0\u{1}wasmRefNull\0\u{1}wasmRefIsNull\0\u{1}wasmRefI31\0\u{1}wasmI31Get\0\u{1}wasmAnyConvertExtern\0\u{1}wasmExternConvertAny\0\u{1}wasmMemoryCopy\0\u{1}wasmDefineElementSegment\0\u{1}wasmTableInit\0\u{1}wasmDropElementSegment\0\u{1}wasmTableCopy\0\u{1}wasmDefineSignatureType\0\u{1}createNamedDisposableVariable\0\u{1}createNamedAsyncDisposableVariable\0\u{1}wasmDefineAdHocSignatureType\0\u{1}wasmStructNew\0\u{1}wasmRefEq\0\u{1}wasmRefTest\0\u{1}wasmDefineAdHocModuleSignatureType\0\u{1}wasmRefCast\0\u{1}beginObjectLiteralComputedGetter\0\u{1}endObjectLiteralComputedGetter\0\u{1}beginObjectLiteralComputedSetter\0\u{1}endObjectLiteralComputedSetter\0\u{1}beginClassComputedGetter\0\u{1}endClassComputedGetter\0\u{1}beginClassComputedSetter\0\u{1}endClassComputedSetter\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -7276,6 +7348,110 @@ extension Fuzzilli_Protobuf_Instruction: SwiftProtobuf.Message, SwiftProtobuf._M
           self.operation = .wasmRefCast(v)
         }
       }()
+      case 328: try {
+        var v: Fuzzilli_Protobuf_BeginObjectLiteralComputedGetter?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .beginObjectLiteralComputedGetter(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .beginObjectLiteralComputedGetter(v)
+        }
+      }()
+      case 329: try {
+        var v: Fuzzilli_Protobuf_EndObjectLiteralComputedGetter?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .endObjectLiteralComputedGetter(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .endObjectLiteralComputedGetter(v)
+        }
+      }()
+      case 330: try {
+        var v: Fuzzilli_Protobuf_BeginObjectLiteralComputedSetter?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .beginObjectLiteralComputedSetter(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .beginObjectLiteralComputedSetter(v)
+        }
+      }()
+      case 331: try {
+        var v: Fuzzilli_Protobuf_EndObjectLiteralComputedSetter?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .endObjectLiteralComputedSetter(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .endObjectLiteralComputedSetter(v)
+        }
+      }()
+      case 332: try {
+        var v: Fuzzilli_Protobuf_BeginClassComputedGetter?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .beginClassComputedGetter(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .beginClassComputedGetter(v)
+        }
+      }()
+      case 333: try {
+        var v: Fuzzilli_Protobuf_EndClassComputedGetter?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .endClassComputedGetter(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .endClassComputedGetter(v)
+        }
+      }()
+      case 334: try {
+        var v: Fuzzilli_Protobuf_BeginClassComputedSetter?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .beginClassComputedSetter(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .beginClassComputedSetter(v)
+        }
+      }()
+      case 335: try {
+        var v: Fuzzilli_Protobuf_EndClassComputedSetter?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .endClassComputedSetter(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .endClassComputedSetter(v)
+        }
+      }()
       default: break
       }
     }
@@ -8593,6 +8769,38 @@ extension Fuzzilli_Protobuf_Instruction: SwiftProtobuf.Message, SwiftProtobuf._M
     case .wasmRefCast?: try {
       guard case .wasmRefCast(let v)? = self.operation else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 327)
+    }()
+    case .beginObjectLiteralComputedGetter?: try {
+      guard case .beginObjectLiteralComputedGetter(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 328)
+    }()
+    case .endObjectLiteralComputedGetter?: try {
+      guard case .endObjectLiteralComputedGetter(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 329)
+    }()
+    case .beginObjectLiteralComputedSetter?: try {
+      guard case .beginObjectLiteralComputedSetter(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 330)
+    }()
+    case .endObjectLiteralComputedSetter?: try {
+      guard case .endObjectLiteralComputedSetter(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 331)
+    }()
+    case .beginClassComputedGetter?: try {
+      guard case .beginClassComputedGetter(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 332)
+    }()
+    case .endClassComputedGetter?: try {
+      guard case .endClassComputedGetter(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 333)
+    }()
+    case .beginClassComputedSetter?: try {
+      guard case .beginClassComputedSetter(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 334)
+    }()
+    case .endClassComputedSetter?: try {
+      guard case .endClassComputedSetter(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 335)
     }()
     case nil: break
     }

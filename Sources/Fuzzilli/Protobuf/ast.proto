@@ -109,13 +109,13 @@ message ClassMethod {
 }
 
 message ClassGetter {
-    string name = 1;
+    PropertyKey key = 1;
     bool isStatic = 2;
     repeated Statement body = 3;
 }
 
 message ClassSetter {
-    string name = 1;
+    PropertyKey key = 1;
     bool isStatic = 2;
     Parameter parameter = 3;
     repeated Statement body = 4;

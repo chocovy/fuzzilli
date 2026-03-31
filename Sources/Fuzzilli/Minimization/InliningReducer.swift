@@ -59,14 +59,17 @@ struct InliningReducer: Reducer {
                  .beginObjectLiteralMethod,
                  .beginObjectLiteralComputedMethod,
                  .beginObjectLiteralGetter,
+                 .beginObjectLiteralComputedGetter,
                  .beginObjectLiteralSetter,
+                 .beginObjectLiteralComputedSetter,
                  .beginClassConstructor,
                  .beginClassMethod,
                  .beginClassComputedMethod,
                  .beginClassGetter,
+                 .beginClassComputedGetter,
                  .beginClassSetter,
-                 .beginClassStaticInitializer,
-                 .beginClassPrivateMethod:
+                 .beginClassComputedSetter,
+                 .beginClassStaticInitializer,                 .beginClassPrivateMethod:
                 activeSubroutineDefinitions.append(instr.hasOneOutput ? instr.output : nil)
             case .endPlainFunction,
                  .endArrowFunction,
@@ -78,14 +81,17 @@ struct InliningReducer: Reducer {
                  .endObjectLiteralMethod,
                  .endObjectLiteralComputedMethod,
                  .endObjectLiteralGetter,
+                 .endObjectLiteralComputedGetter,
                  .endObjectLiteralSetter,
+                 .endObjectLiteralComputedSetter,
                  .endClassConstructor,
                  .endClassMethod,
                  .endClassComputedMethod,
                  .endClassGetter,
+                 .endClassComputedGetter,
                  .endClassSetter,
-                 .endClassStaticInitializer,
-                 .endClassPrivateMethod:
+                 .endClassComputedSetter,
+                 .endClassStaticInitializer,                 .endClassPrivateMethod:
                 activeSubroutineDefinitions.removeLast()
             default:
                 assert(!instr.op.contextOpened.contains(.subroutine))

@@ -133,6 +133,15 @@ public class FuzzILLifter: Lifter {
             w.decreaseIndentionLevel()
             w.emit("EndObjectLiteralGetter")
 
+        case .beginObjectLiteralComputedGetter:
+            let params = instr.innerOutputs.map(lift).joined(separator: ", ")
+            w.emit("BeginObjectLiteralComputedGetter \(input(0)) -> \(params)")
+            w.increaseIndentionLevel()
+
+        case .endObjectLiteralComputedGetter:
+            w.decreaseIndentionLevel()
+            w.emit("EndObjectLiteralComputedGetter")
+
         case .beginObjectLiteralSetter(let op):
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
             w.emit("BeginObjectLiteralSetter `\(op.propertyName)` -> \(params)")
@@ -141,6 +150,15 @@ public class FuzzILLifter: Lifter {
         case .endObjectLiteralSetter:
             w.decreaseIndentionLevel()
             w.emit("EndObjectLiteralSetter")
+
+        case .beginObjectLiteralComputedSetter:
+            let params = instr.innerOutputs.map(lift).joined(separator: ", ")
+            w.emit("BeginObjectLiteralComputedSetter \(input(0)) -> \(params)")
+            w.increaseIndentionLevel()
+
+        case .endObjectLiteralComputedSetter:
+            w.decreaseIndentionLevel()
+            w.emit("EndObjectLiteralComputedSetter")
 
         case .objectLiteralCopyProperties:
             w.emit("ObjectLiteralCopyProperties \(input(0))")
@@ -238,6 +256,26 @@ public class FuzzILLifter: Lifter {
         case .endClassStaticInitializer:
             w.decreaseIndentionLevel()
             w.emit("EndClassStaticInitializer")
+
+        case .beginClassComputedGetter(let op):
+            let maybeStatic = op.isStatic ? "static " : ""
+            let params = instr.innerOutputs.map(lift).joined(separator: ", ")
+            w.emit("BeginClassComputedGetter \(maybeStatic)\(input(0)) -> \(params)")
+            w.increaseIndentionLevel()
+
+        case .endClassComputedGetter:
+            w.decreaseIndentionLevel()
+            w.emit("EndClassComputedGetter")
+
+        case .beginClassComputedSetter(let op):
+            let maybeStatic = op.isStatic ? "static " : ""
+            let params = instr.innerOutputs.map(lift).joined(separator: ", ")
+            w.emit("BeginClassComputedSetter \(maybeStatic)\(input(0)) -> \(params)")
+            w.increaseIndentionLevel()
+
+        case .endClassComputedSetter:
+            w.decreaseIndentionLevel()
+            w.emit("EndClassComputedSetter")
 
         case .classAddPrivateProperty(let op):
             let maybeStatic = op.isStatic ? "static " : ""

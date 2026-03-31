@@ -29,7 +29,9 @@ struct BlockReducer: Reducer {
             case .beginObjectLiteralMethod,
                  .beginObjectLiteralComputedMethod,
                  .beginObjectLiteralGetter,
-                 .beginObjectLiteralSetter:
+                 .beginObjectLiteralComputedGetter,
+                 .beginObjectLiteralSetter,
+                 .beginObjectLiteralComputedSetter:
                 assert(group.numBlocks == 1)
                 reduceFunctionInObjectLiteral(group.block(0), with: helper)
 
@@ -40,9 +42,10 @@ struct BlockReducer: Reducer {
                  .beginClassMethod,
                  .beginClassComputedMethod,
                  .beginClassGetter,
+                 .beginClassComputedGetter,
                  .beginClassSetter,
-                 .beginClassStaticInitializer,
-                 .beginClassPrivateMethod:
+                 .beginClassComputedSetter,
+                 .beginClassStaticInitializer,                 .beginClassPrivateMethod:
                 reduceFunctionInClassDefinition(group.block(0), with: helper)
 
             case .beginWhileLoopHeader,

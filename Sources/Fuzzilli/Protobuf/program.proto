@@ -351,6 +351,14 @@ message Instruction {
         WasmRefTest wasmRefTest = 325;
         WasmDefineAdHocModuleSignatureType wasmDefineAdHocModuleSignatureType = 326;
         WasmRefCast wasmRefCast = 327;
+        BeginObjectLiteralComputedGetter beginObjectLiteralComputedGetter = 328;
+        EndObjectLiteralComputedGetter endObjectLiteralComputedGetter = 329;
+        BeginObjectLiteralComputedSetter beginObjectLiteralComputedSetter = 330;
+        EndObjectLiteralComputedSetter endObjectLiteralComputedSetter = 331;
+        BeginClassComputedGetter beginClassComputedGetter = 332;
+        EndClassComputedGetter endClassComputedGetter = 333;
+        BeginClassComputedSetter beginClassComputedSetter = 334;
+        EndClassComputedSetter endClassComputedSetter = 335;
     }
 }
 

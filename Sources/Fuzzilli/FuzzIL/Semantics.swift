@@ -138,8 +138,12 @@ extension Operation {
             return endOp is EndObjectLiteralComputedMethod
         case .beginObjectLiteralGetter:
             return endOp is EndObjectLiteralGetter
+        case .beginObjectLiteralComputedGetter:
+            return endOp is EndObjectLiteralComputedGetter
         case .beginObjectLiteralSetter:
             return endOp is EndObjectLiteralSetter
+        case .beginObjectLiteralComputedSetter:
+            return endOp is EndObjectLiteralComputedSetter
         case .beginClassDefinition:
              return endOp is EndClassDefinition
         case .beginClassConstructor:
@@ -150,8 +154,12 @@ extension Operation {
             return endOp is EndClassComputedMethod
         case .beginClassGetter:
             return endOp is EndClassGetter
+        case .beginClassComputedGetter:
+            return endOp is EndClassComputedGetter
         case .beginClassSetter:
             return endOp is EndClassSetter
+        case .beginClassComputedSetter:
+            return endOp is EndClassComputedSetter
         case .beginClassStaticInitializer:
             return endOp is EndClassStaticInitializer
         case .beginClassPrivateMethod:

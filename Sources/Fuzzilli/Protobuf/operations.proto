@@ -107,11 +107,23 @@ message BeginObjectLiteralGetter {
 message EndObjectLiteralGetter {
 }
 
+message BeginObjectLiteralComputedGetter {
+}
+
+message EndObjectLiteralComputedGetter {
+}
+
 message BeginObjectLiteralSetter {
     string propertyName = 1;
 }
 
 message EndObjectLiteralSetter {
+}
+
+message BeginObjectLiteralComputedSetter {
+}
+
+message EndObjectLiteralComputedSetter {
 }
 
 message EndObjectLiteral {
@@ -171,12 +183,26 @@ message BeginClassGetter {
 message EndClassGetter {
 }
 
+message BeginClassComputedGetter {
+    bool is_static = 1;
+}
+
+message EndClassComputedGetter {
+}
+
 message BeginClassSetter {
     string propertyName = 1;
     bool is_static = 2;
 }
 
 message EndClassSetter {
+}
+
+message BeginClassComputedSetter {
+    bool is_static = 1;
+}
+
+message EndClassComputedSetter {
 }
 
 message BeginClassStaticInitializer {

@@ -903,6 +903,15 @@ public class ProgramBuilder {
         return randomVariable(ofType: .jsAnything)!
     }
 
+    /// Tries to find a JavaScript variable that hasn't already been added
+    /// to the given list.
+    public func randomJsVariable(notIn variables: [Variable]) -> Variable {
+        let variable = findVariable {
+            !variables.contains($0) && type(of: $0).Is(.jsAnything)
+        }
+        return variable ?? randomJsVariable()
+    }
+
     /// Returns up to N (different) random JavaScript variables.
     /// This method will only return fewer than N variables if the number of currently visible variables is less than N.
     public func randomJsVariables(upTo n: Int) -> [Variable] {
@@ -2529,7 +2538,9 @@ public class ProgramBuilder {
         public fileprivate(set) var methods: [String] = []
         public fileprivate(set) var computedMethods: [Variable] = []
         public fileprivate(set) var getters: [String] = []
+        public fileprivate(set) var computedGetters: [Variable] = []
         public fileprivate(set) var setters: [String] = []
+        public fileprivate(set) var computedSetters: [Variable] = []
         public fileprivate(set) var hasPrototype = false
 
         fileprivate init(in b: ProgramBuilder) {
@@ -2577,10 +2588,22 @@ public class ProgramBuilder {
             b.emit(EndObjectLiteralGetter())
         }
 
+        public func addComputedGetter(for name: Variable, _ body: (_ this: Variable) -> ()) {
+            let instr = b.emit(BeginObjectLiteralComputedGetter(), withInputs: [name])
+            body(instr.innerOutput)
+            b.emit(EndObjectLiteralComputedGetter())
+        }
+
         public func addSetter(for name: String, _ body: (_ this: Variable, _ val: Variable) -> ()) {
             let instr = b.emit(BeginObjectLiteralSetter(propertyName: name))
             body(instr.innerOutput(0), instr.innerOutput(1))
             b.emit(EndObjectLiteralSetter())
+        }
+
+        public func addComputedSetter(for name: Variable, _ body: (_ this: Variable, _ val: Variable) -> ()) {
+            let instr = b.emit(BeginObjectLiteralComputedSetter(), withInputs: [name])
+            body(instr.innerOutput(0), instr.innerOutput(1))
+            b.emit(EndObjectLiteralComputedSetter())
         }
     }
 
@@ -2616,7 +2639,9 @@ public class ProgramBuilder {
         public fileprivate(set) var instanceMethods: [String] = []
         public fileprivate(set) var instanceComputedMethods: [Variable] = []
         public fileprivate(set) var instanceGetters: [String] = []
+        public fileprivate(set) var instanceComputedGetters: [Variable] = []
         public fileprivate(set) var instanceSetters: [String] = []
+        public fileprivate(set) var instanceComputedSetters: [Variable] = []
 
         public fileprivate(set) var staticProperties: [String] = []
         public fileprivate(set) var staticElements: [Int64] = []
@@ -2624,7 +2649,9 @@ public class ProgramBuilder {
         public fileprivate(set) var staticMethods: [String] = []
         public fileprivate(set) var staticComputedMethods: [Variable] = []
         public fileprivate(set) var staticGetters: [String] = []
+        public fileprivate(set) var staticComputedGetters: [Variable] = []
         public fileprivate(set) var staticSetters: [String] = []
+        public fileprivate(set) var staticComputedSetters: [Variable] = []
 
         // These sets are required to ensure syntactic correctness, not just as an optimization to
         // avoid adding duplicate fields:
@@ -2688,10 +2715,22 @@ public class ProgramBuilder {
             b.emit(EndClassGetter())
         }
 
+        public func addInstanceComputedGetter(for name: Variable, _ body: (_ this: Variable) -> ()) {
+            let instr = b.emit(BeginClassComputedGetter(isStatic: false), withInputs: [name])
+            body(instr.innerOutput)
+            b.emit(EndClassComputedGetter())
+        }
+
         public func addInstanceSetter(for name: String, _ body: (_ this: Variable, _ val: Variable) -> ()) {
             let instr = b.emit(BeginClassSetter(propertyName: name, isStatic: false))
             body(instr.innerOutput(0), instr.innerOutput(1))
             b.emit(EndClassSetter())
+        }
+
+        public func addInstanceComputedSetter(for name: Variable, _ body: (_ this: Variable, _ val: Variable) -> ()) {
+            let instr = b.emit(BeginClassComputedSetter(isStatic: false), withInputs: [name])
+            body(instr.innerOutput(0), instr.innerOutput(1))
+            b.emit(EndClassComputedSetter())
         }
 
         public func addStaticProperty(_ name: String, value: Variable? = nil) {
@@ -2735,10 +2774,22 @@ public class ProgramBuilder {
             b.emit(EndClassGetter())
         }
 
+        public func addStaticComputedGetter(for name: Variable, _ body: (_ this: Variable) -> ()) {
+            let instr = b.emit(BeginClassComputedGetter(isStatic: true), withInputs: [name])
+            body(instr.innerOutput)
+            b.emit(EndClassComputedGetter())
+        }
+
         public func addStaticSetter(for name: String, _ body: (_ this: Variable, _ val: Variable) -> ()) {
             let instr = b.emit(BeginClassSetter(propertyName: name, isStatic: true))
             body(instr.innerOutput(0), instr.innerOutput(1))
             b.emit(EndClassSetter())
+        }
+
+        public func addStaticComputedSetter(for name: Variable, _ body: (_ this: Variable, _ val: Variable) -> ()) {
+            let instr = b.emit(BeginClassComputedSetter(isStatic: true), withInputs: [name])
+            body(instr.innerOutput(0), instr.innerOutput(1))
+            b.emit(EndClassComputedSetter())
         }
 
         public func addPrivateInstanceProperty(_ name: String, value: Variable? = nil) {
@@ -4973,12 +5024,18 @@ public class ProgramBuilder {
             currentObjectLiteral.computedMethods.append(instr.input(0))
         case .beginObjectLiteralGetter(let op):
             currentObjectLiteral.getters.append(op.propertyName)
+        case .beginObjectLiteralComputedGetter:
+            currentObjectLiteral.computedGetters.append(instr.input(0))
         case .beginObjectLiteralSetter(let op):
             currentObjectLiteral.setters.append(op.propertyName)
+        case .beginObjectLiteralComputedSetter:
+            currentObjectLiteral.computedSetters.append(instr.input(0))
         case .endObjectLiteralMethod,
                 .endObjectLiteralComputedMethod,
                 .endObjectLiteralGetter,
-                .endObjectLiteralSetter:
+                .endObjectLiteralComputedGetter,
+                .endObjectLiteralSetter,
+                .endObjectLiteralComputedSetter:
             break
         case .endObjectLiteral:
             activeObjectLiterals.pop()
@@ -5023,11 +5080,23 @@ public class ProgramBuilder {
             } else {
                 activeClassDefinitions.top.instanceGetters.append(op.propertyName)
             }
+        case .beginClassComputedGetter(let op):
+            if op.isStatic {
+                activeClassDefinitions.top.staticComputedGetters.append(instr.input(0))
+            } else {
+                activeClassDefinitions.top.instanceComputedGetters.append(instr.input(0))
+            }
         case .beginClassSetter(let op):
             if op.isStatic {
                 activeClassDefinitions.top.staticSetters.append(op.propertyName)
             } else {
                 activeClassDefinitions.top.instanceSetters.append(op.propertyName)
+            }
+        case .beginClassComputedSetter(let op):
+            if op.isStatic {
+                activeClassDefinitions.top.staticComputedSetters.append(instr.input(0))
+            } else {
+                activeClassDefinitions.top.instanceComputedSetters.append(instr.input(0))
             }
         case .classAddPrivateProperty(let op):
             activeClassDefinitions.top.privateProperties.append(op.propertyName)

@@ -1285,7 +1285,9 @@ public struct JSTyper: Analyzer {
         case .beginObjectLiteralMethod,
              .beginObjectLiteralComputedMethod,
              .beginObjectLiteralGetter,
+             .beginObjectLiteralComputedGetter,
              .beginObjectLiteralSetter,
+             .beginObjectLiteralComputedSetter,
              .beginPlainFunction,
              .beginArrowFunction,
              .beginGeneratorFunction,
@@ -1297,14 +1299,18 @@ public struct JSTyper: Analyzer {
              .beginClassMethod,
              .beginClassComputedMethod,
              .beginClassGetter,
+             .beginClassComputedGetter,
              .beginClassSetter,
+             .beginClassComputedSetter,
              .beginClassPrivateMethod:
             activeFunctionDefinitions.push(instr)
             state.startSubroutine()
         case .endObjectLiteralMethod,
              .endObjectLiteralComputedMethod,
              .endObjectLiteralGetter,
+             .endObjectLiteralComputedGetter,
              .endObjectLiteralSetter,
+             .endObjectLiteralComputedSetter,
              .endPlainFunction,
              .endArrowFunction,
              .endGeneratorFunction,
@@ -1316,7 +1322,9 @@ public struct JSTyper: Analyzer {
              .endClassMethod,
              .endClassComputedMethod,
              .endClassGetter,
+             .endClassComputedGetter,
              .endClassSetter,
+             .endClassComputedSetter,
              .endClassPrivateMethod:
             //
             // Infer the return type of the subroutine (if necessary for the signature).
@@ -1571,12 +1579,21 @@ public struct JSTyper: Analyzer {
             assert(instr.numInnerOutputs == 1)
             dynamicObjectGroupManager.addProperty(propertyName: op.propertyName)
 
+        case .beginObjectLiteralComputedGetter(_):
+            // The first inner output is the explicit |this| parameter for the constructor
+            set(instr.innerOutput(0), dynamicObjectGroupManager.top.instanceType)
+
         case .beginObjectLiteralSetter(let op):
             // The first inner output is the explicit |this| parameter for the constructor
             set(instr.innerOutput(0), dynamicObjectGroupManager.top.instanceType)
             assert(instr.numInnerOutputs == 2)
             processParameterDeclarations(instr.innerOutputs(1...), parameters: inferSubroutineParameterList(of: op, at: instr.index))
             dynamicObjectGroupManager.addProperty(propertyName: op.propertyName)
+
+        case .beginObjectLiteralComputedSetter(let op):
+            // The first inner output is the explicit |this| parameter for the constructor
+            set(instr.innerOutput(0), dynamicObjectGroupManager.top.instanceType)
+            processParameterDeclarations(instr.innerOutputs(1...), parameters: inferSubroutineParameterList(of: op, at: instr.index))
 
         case .endObjectLiteral:
             let instanceType = dynamicObjectGroupManager.finalizeObjectLiteral()
@@ -1635,6 +1652,13 @@ public struct JSTyper: Analyzer {
                 dynamicObjectGroupManager.addProperty(propertyName: op.propertyName)
             }
 
+        case .beginClassComputedGetter(let op):
+            if op.isStatic {
+                set(instr.innerOutput(0), dynamicObjectGroupManager.activeClasses.top.objectGroup.instanceType)
+            } else {
+                set(instr.innerOutput(0), dynamicObjectGroupManager.top.instanceType)
+            }
+
         case .beginClassSetter(let op):
             // The first inner output is the explicit |this| parameter for the constructor
             if op.isStatic {
@@ -1645,6 +1669,14 @@ public struct JSTyper: Analyzer {
                 dynamicObjectGroupManager.addProperty(propertyName: op.propertyName)
             }
             assert(instr.numInnerOutputs == 2)
+            processParameterDeclarations(instr.innerOutputs(1...), parameters: inferSubroutineParameterList(of: op, at: instr.index))
+
+        case .beginClassComputedSetter(let op):
+            if op.isStatic {
+                set(instr.innerOutput(0), dynamicObjectGroupManager.activeClasses.top.objectGroup.instanceType)
+            } else {
+                set(instr.innerOutput(0), dynamicObjectGroupManager.top.instanceType)
+            }
             processParameterDeclarations(instr.innerOutputs(1...), parameters: inferSubroutineParameterList(of: op, at: instr.index))
 
         case .beginClassPrivateMethod(let op):

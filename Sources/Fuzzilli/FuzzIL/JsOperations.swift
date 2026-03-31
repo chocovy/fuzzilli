@@ -596,6 +596,20 @@ final class EndObjectLiteralGetter: EndAnySubroutine {
     override var opcode: Opcode { .endObjectLiteralGetter(self) }
 }
 
+final class BeginObjectLiteralComputedGetter: BeginAnySubroutine {
+    override var opcode: Opcode { .beginObjectLiteralComputedGetter(self) }
+
+    init() {
+        // First inner output is the explicit |this| parameter
+        // The first input is the computed property name
+        super.init(parameters: Parameters(count: 0), numInputs: 1, numInnerOutputs: 1, attributes: .isBlockStart, requiredContext: .objectLiteral, contextOpened: [.javascript, .subroutine, .method])
+    }
+}
+
+final class EndObjectLiteralComputedGetter: EndAnySubroutine {
+    override var opcode: Opcode { .endObjectLiteralComputedGetter(self) }
+}
+
 // A setter, for example `set prop(a5) {`
 final class BeginObjectLiteralSetter: BeginAnySubroutine {
     override var opcode: Opcode { .beginObjectLiteralSetter(self) }
@@ -611,6 +625,20 @@ final class BeginObjectLiteralSetter: BeginAnySubroutine {
 
 final class EndObjectLiteralSetter: EndAnySubroutine {
     override var opcode: Opcode { .endObjectLiteralSetter(self) }
+}
+
+final class BeginObjectLiteralComputedSetter: BeginAnySubroutine {
+    override var opcode: Opcode { .beginObjectLiteralComputedSetter(self) }
+
+    init() {
+        // First inner output is the explicit |this| parameter
+        // The first input is the computed property name
+        super.init(parameters: Parameters(count: 1), numInputs: 1, numInnerOutputs: 2, attributes: .isBlockStart, requiredContext: .objectLiteral, contextOpened: [.javascript, .subroutine, .method])
+    }
+}
+
+final class EndObjectLiteralComputedSetter: EndAnySubroutine {
+    override var opcode: Opcode { .endObjectLiteralComputedSetter(self) }
 }
 
 final class EndObjectLiteral: JsOperation {
@@ -793,6 +821,22 @@ final class EndClassGetter: EndAnySubroutine {
     override var opcode: Opcode { .endClassGetter(self) }
 }
 
+final class BeginClassComputedGetter: BeginAnySubroutine {
+    override var opcode: Opcode { .beginClassComputedGetter(self) }
+    let isStatic: Bool
+
+    init(isStatic: Bool) {
+        self.isStatic = isStatic
+        // First inner output is the explicit |this| parameter
+        // The first input is the computed property name
+        super.init(parameters: Parameters(count: 0), numInputs: 1, numInnerOutputs: 1, attributes: .isBlockStart, requiredContext: .classDefinition, contextOpened: [.javascript, .subroutine, .method, .classMethod])
+    }
+}
+
+final class EndClassComputedGetter: EndAnySubroutine {
+    override var opcode: Opcode { .endClassComputedGetter(self) }
+}
+
 final class BeginClassSetter: BeginAnySubroutine {
     override var opcode: Opcode { .beginClassSetter(self) }
 
@@ -809,6 +853,22 @@ final class BeginClassSetter: BeginAnySubroutine {
 
 final class EndClassSetter: EndAnySubroutine {
     override var opcode: Opcode { .endClassSetter(self) }
+}
+
+final class BeginClassComputedSetter: BeginAnySubroutine {
+    override var opcode: Opcode { .beginClassComputedSetter(self) }
+    let isStatic: Bool
+
+    init(isStatic: Bool) {
+        self.isStatic = isStatic
+        // First inner output is the explicit |this| parameter
+        // The first input is the computed property name
+        super.init(parameters: Parameters(count: 1), numInputs: 1, numInnerOutputs: 2, attributes: .isBlockStart, requiredContext: .classDefinition, contextOpened: [.javascript, .subroutine, .method, .classMethod])
+    }
+}
+
+final class EndClassComputedSetter: EndAnySubroutine {
+    override var opcode: Opcode { .endClassComputedSetter(self) }
 }
 
 final class BeginClassStaticInitializer: JsOperation {

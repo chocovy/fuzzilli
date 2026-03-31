@@ -355,4 +355,12 @@ enum Opcode {
     case wasmRefTest(WasmRefTest)
     case wasmDefineAdHocModuleSignatureType(WasmDefineAdHocModuleSignatureType)
     case wasmRefCast(WasmRefCast)
+    case beginObjectLiteralComputedGetter(BeginObjectLiteralComputedGetter)
+    case endObjectLiteralComputedGetter(EndObjectLiteralComputedGetter)
+    case beginObjectLiteralComputedSetter(BeginObjectLiteralComputedSetter)
+    case endObjectLiteralComputedSetter(EndObjectLiteralComputedSetter)
+    case beginClassComputedGetter(BeginClassComputedGetter)
+    case endClassComputedGetter(EndClassComputedGetter)
+    case beginClassComputedSetter(BeginClassComputedSetter)
+    case endClassComputedSetter(EndClassComputedSetter)
 }

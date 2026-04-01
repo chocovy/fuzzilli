@@ -2104,7 +2104,7 @@ public let CodeGenerators: [CodeGenerator] = [
     CodeGenerator("UpdateGenerator", inputs: .one) { b, v in
         let newValue = b.randomVariable(forUseAs: b.type(of: v))
         b.reassign(
-            variable: newValue, value: v, with: chooseUniform(from: BinaryOperator.allCases))
+            variable: v, value: newValue, with: chooseUniform(from: BinaryOperator.allCases))
     },
 
     CodeGenerator("DupGenerator") { b in
@@ -2114,7 +2114,7 @@ public let CodeGenerators: [CodeGenerator] = [
     CodeGenerator("ReassignmentGenerator", inputs: .one) { b, v in
         let newValue = b.randomVariable(forUseAs: b.type(of: v))
         guard newValue != v else { return }
-        b.reassign(variable: newValue, value: v)
+        b.reassign(variable: v, value: newValue)
     },
 
     CodeGenerator("DestructArrayGenerator", inputs: .preferred(.iterable)) {

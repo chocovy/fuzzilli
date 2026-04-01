@@ -210,13 +210,13 @@ public let codeGeneratorWeights = [
     "EvalGenerator":                            3,
     "NumberComputationGenerator":               40,
     "ImitationGenerator":                       30,
-    "ResizableArrayBufferGenerator":            5*6, // TODO(tacet): Revert increased fuzzing probability factors by 02/2026 or later.
-    "ResizableBufferResizeGenerator":           5*3,
-    "GrowableSharedArrayBufferGenerator":       5*6,
-    "GrowableSharedBufferGrowGenerator":        5*3,
-    "TypedArrayFromBufferGenerator":            10*3,
-    "DataViewFromBufferGenerator":              5*3,
-    "TypedArrayLastIndexGenerator":             5*3,
+    "ResizableArrayBufferGenerator":            5,
+    "ResizableBufferResizeGenerator":           5,
+    "GrowableSharedArrayBufferGenerator":       5,
+    "GrowableSharedBufferGrowGenerator":        5,
+    "TypedArrayFromBufferGenerator":            10,
+    "DataViewFromBufferGenerator":              5,
+    "TypedArrayLastIndexGenerator":             5,
     "FastToSlowPropertiesGenerator":            10,
     "IteratorGenerator":                        5,
     "ConstructWithDifferentNewTargetGenerator": 5,
@@ -230,9 +230,9 @@ public let codeGeneratorWeights = [
     // JS generators for wasm features (e.g. APIs on the WebAssembly global object).
     "WasmGlobalGenerator":                      4,
     "WasmMemoryGenerator":                      4,
-    "WasmMemoryToResizableBufferGenerator":     5*3, // TODO(tacet): Revert increased fuzzing probability factors by 02/2026 or later.
-    "WasmMemoryToFixedLengthBufferGenerator":   5*3,
-    "WasmMemoryJSGrowGenerator":                5*3,
+    "WasmMemoryToResizableBufferGenerator":     5,
+    "WasmMemoryToFixedLengthBufferGenerator":   5,
+    "WasmMemoryJSGrowGenerator":                5,
     "WasmTagGenerator":                         4,
     "WasmLegacyTryCatchComplexGenerator":       5,
 

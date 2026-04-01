@@ -1420,7 +1420,7 @@ public let CodeGenerators: [CodeGenerator] = [
     CodeGenerator("BuiltinOverwriteGenerator", inputs: .one) { b, value in
         let builtin = b.createNamedVariable(
             b.randomBuiltin(), declarationMode: .none)
-        b.reassign(builtin, to: value)
+        b.reassign(variable: builtin, value: value)
     },
 
     CodeGenerator("PlainFunctionGenerator", [
@@ -2104,7 +2104,7 @@ public let CodeGenerators: [CodeGenerator] = [
     CodeGenerator("UpdateGenerator", inputs: .one) { b, v in
         let newValue = b.randomVariable(forUseAs: b.type(of: v))
         b.reassign(
-            newValue, to: v, with: chooseUniform(from: BinaryOperator.allCases))
+            variable: newValue, value: v, with: chooseUniform(from: BinaryOperator.allCases))
     },
 
     CodeGenerator("DupGenerator") { b in
@@ -2114,7 +2114,7 @@ public let CodeGenerators: [CodeGenerator] = [
     CodeGenerator("ReassignmentGenerator", inputs: .one) { b, v in
         let newValue = b.randomVariable(forUseAs: b.type(of: v))
         guard newValue != v else { return }
-        b.reassign(newValue, to: v)
+        b.reassign(variable: newValue, value: v)
     },
 
     CodeGenerator("DestructArrayGenerator", inputs: .preferred(.iterable)) {

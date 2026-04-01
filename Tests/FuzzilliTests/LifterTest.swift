@@ -334,7 +334,7 @@ class LifterTests: XCTestCase {
         b.createArray(with: [n1, n1, n1])
         // ... but when it's reassigned, the identifier needs to be stored to a local variable.
         let n2 = b.loadFloat(Double.nan)
-        b.reassign(n2, to: b.loadFloat(13.37))
+        b.reassign(variable: n2, value: b.loadFloat(13.37))
 
         let program = b.finalize()
         let actual = fuzzer.lifter.lift(program)
@@ -870,7 +870,7 @@ class LifterTests: XCTestCase {
             }
         }
         b.construct(C, withArgs: [b.loadInt(42)])
-        b.reassign(C, to: b.createNamedVariable(forBuiltin: "Uint8Array"))
+        b.reassign(variable: C, value: b.createNamedVariable(forBuiltin: "Uint8Array"))
 
         let program = b.finalize()
         let actual = fuzzer.lifter.lift(program)
@@ -1194,7 +1194,7 @@ class LifterTests: XCTestCase {
         initialValues.append(b.loadUndefined())
         initialValues.append(b.loadInt(6))
         let v = b.loadString("foobar")
-        b.reassign(v, to: b.loadUndefined())
+        b.reassign(variable: v, value: b.loadUndefined())
         initialValues.append(v)
         let va = b.createArray(with: initialValues)
         b.createArray(with: [b.loadInt(301), b.loadUndefined()])
@@ -1363,7 +1363,7 @@ class LifterTests: XCTestCase {
         let f2 = b.buildArrowFunction(with: .parameters(n: 0)) { args in
             b.doReturn(b.loadString("foobar"))
         }
-        b.reassign(f, to: f2)
+        b.reassign(variable: f, value: f2)
         b.callFunction(f)
 
         let program = b.finalize()
@@ -1483,7 +1483,7 @@ class LifterTests: XCTestCase {
         }
         b.construct(c1, withArgs: [b.loadInt(42), b.loadInt(43)])
         let c2 = b.createNamedVariable(forBuiltin: "Object")
-        b.reassign(c1, to: c2)
+        b.reassign(variable: c1, value: c2)
         b.construct(c1, withArgs: [b.loadInt(44), b.loadInt(45)])
 
         let program = b.finalize()
@@ -1569,9 +1569,9 @@ class LifterTests: XCTestCase {
 
         let v0 = b.loadInt(1337)
         let v1 = b.loadFloat(13.37)
-        b.reassign(v0, to: v1, with: .Add)
+        b.reassign(variable: v0, value: v1, with: .Add)
         let v2 = b.loadString("Hello")
-        b.reassign(v1, to: v2)
+        b.reassign(variable: v1, value: v2)
         let v3 = b.loadInt(1336)
         let v4 = b.unary(.PreInc, v3)
         b.unary(.PostInc, v4)
@@ -1599,12 +1599,12 @@ class LifterTests: XCTestCase {
 
         let v0 = b.loadInt(1337)
         let v1 = b.loadFloat(13.37)
-        b.reassign(v0, to: v1, with: .Add)
-        b.reassign(v0, to: v1, with: .Mul)
-        b.reassign(v0, to: v1, with: .LShift)
+        b.reassign(variable: v0, value: v1, with: .Add)
+        b.reassign(variable: v0, value: v1, with: .Mul)
+        b.reassign(variable: v0, value: v1, with: .LShift)
         let v2 = b.loadString("hello")
         let v3 = b.loadString("world")
-        b.reassign(v2, to: v3, with: .Add)
+        b.reassign(variable: v2, value: v3, with: .Add)
 
         let program = b.finalize()
         let actual = fuzzer.lifter.lift(program)
@@ -1630,38 +1630,38 @@ class LifterTests: XCTestCase {
         let bar = b.createNamedVariable(forBuiltin: "bar")
         let baz = b.createNamedVariable(forBuiltin: "baz")
         let i = b.loadInt(42)
-        b.reassign(i, to: b.loadInt(43))
+        b.reassign(variable: i, value: b.loadInt(43))
         b.callFunction(foo, withArgs: [i])
         b.callFunction(bar, withArgs: [i])
 
         let j = b.loadInt(44)
-        b.reassign(j, to: b.loadInt(45))
-        b.reassign(j, to: b.loadInt(46))
+        b.reassign(variable: j, value: b.loadInt(45))
+        b.reassign(variable: j, value: b.loadInt(46))
         b.callFunction(foo, withArgs: [j])
 
         let k = b.loadInt(47)
         b.buildRepeatLoop(n: 10) { i in
-            b.reassign(k, to: i)
+            b.reassign(variable: k, value: i)
         }
         b.callFunction(foo, withArgs: [k])
 
         let l = b.loadInt(48)
-        b.reassign(l, to: b.loadInt(49))
+        b.reassign(variable: l, value: b.loadInt(49))
         b.callFunction(foo, withArgs: [l, l, l])
 
         let m = b.loadInt(50)
-        b.reassign(m, to: b.loadInt(51))
+        b.reassign(variable: m, value: b.loadInt(51))
         var t = b.callFunction(baz)
         t = b.callFunction(bar, withArgs: [m, m, t, m])
         b.callFunction(foo, withArgs: [t])
 
         // Some operations such as element stores force the lhs to be an identifier, so test that here.
         let n = b.loadInt(52)
-        b.reassign(n, to: b.createArray(with: []))
+        b.reassign(variable: n, value: b.createArray(with: []))
         b.setElement(42, of: n, to: n)
 
         let o = b.loadInt(53)
-        b.buildWhileLoop({ b.reassign(o, to: i); return b.loadBool(false) }) {
+        b.buildWhileLoop({ b.reassign(variable: o, value: i); return b.loadBool(false) }) {
         }
         b.callFunction(foo, withArgs: [o])
 
@@ -1803,7 +1803,7 @@ class LifterTests: XCTestCase {
             b.doReturn(v)
         }
         let f2 = b.buildPlainFunction(with: .parameters(n: 1)) { args in
-            b.reassign(v, to: args[0])
+            b.reassign(variable: v, value: args[0])
         }
         let num = b.loadInt(42)
         b.configureProperty("foo", of: obj, usingFlags: [.enumerable, .configurable], as: .getter(f1))
@@ -1942,9 +1942,9 @@ class LifterTests: XCTestCase {
         let v3 = b.callMethod("n", on: o, guard: true)
         b.callComputedMethod(b.loadString("o"), on: o, withArgs: [v1, v2, v3], guard: true)
         let v4 = b.callComputedMethod(b.loadString("p"), on: o, withArgs: [v1, v2, v3], guard: true)
-        b.reassign(v3, to: b.loadString("foo"))
-        b.reassign(v4, to: b.loadString("bar"))
-        b.reassign(v3, to: b.loadString("baz"))
+        b.reassign(variable: v3, value: b.loadString("foo"))
+        b.reassign(variable: v4, value: b.loadString("bar"))
+        b.reassign(variable: v3, value: b.loadString("baz"))
 
         let program = b.finalize()
 
@@ -2687,7 +2687,7 @@ class LifterTests: XCTestCase {
         b.callFunction(print, withArgs: [vb1])
         b.createNamedVariable("c", declarationMode: .global, initialValue: i2)
         let vb2 = b.createNamedVariable("b", declarationMode: .var, initialValue: i2)
-        b.reassign(vb2, to: i1)
+        b.reassign(variable: vb2, value: i1)
         let vc = b.createNamedVariable("c", declarationMode: .none)
         b.callFunction(print, withArgs: [vc])
         let undefined = b.loadUndefined()
@@ -3196,7 +3196,7 @@ class LifterTests: XCTestCase {
 
         b.buildForLoop({ let x = b.callFunction(b.createNamedVariable(forBuiltin: "f")); let y = b.callFunction(b.createNamedVariable(forBuiltin: "g")); b.callFunction(b.createNamedVariable(forBuiltin: "h")); return [x, y] },
                        { vs in return b.compare(vs[0], with: vs[1], using: .lessThan) },
-                       { vs in b.reassign(vs[0], to: vs[1], with: .Add) }) { vs in
+                       { vs in b.reassign(variable: vs[0], value: vs[1], with: .Add) }) { vs in
             b.callFunction(b.createNamedVariable(forBuiltin: "print"), withArgs: vs)
         }
 
@@ -3228,7 +3228,7 @@ class LifterTests: XCTestCase {
                        {
                             let shouldContinue = b.callFunction(b.createNamedVariable(forBuiltin: "shouldContinue"))
                             b.buildIf(b.callFunction(b.createNamedVariable(forBuiltin: "shouldNotContinue"))) {
-                                b.reassign(shouldContinue, to: b.loadBool(false))
+                                b.reassign(variable: shouldContinue, value: b.loadBool(false))
                             }
                             return shouldContinue
                        }) {
@@ -3260,7 +3260,7 @@ class LifterTests: XCTestCase {
         let fuzzer = makeMockFuzzer()
         let b = fuzzer.makeBuilder()
 
-        b.buildForLoop(i: { b.loadInt(0) }, { b.compare($0, with: b.loadInt(100), using: .lessThan) }, { b.reassign($0, to: b.loadInt(10), with: .Add) }) { i in
+        b.buildForLoop(i: { b.loadInt(0) }, { b.compare($0, with: b.loadInt(100), using: .lessThan) }, { b.reassign(variable: $0, value: b.loadInt(10), with: .Add) }) { i in
             b.callFunction(b.createNamedVariable(forBuiltin: "print"), withArgs: [i])
         }
 
@@ -3308,7 +3308,7 @@ class LifterTests: XCTestCase {
         let b = fuzzer.makeBuilder()
 
         b.buildPlainFunction(with: .parameters(n: 3)) { args in
-            b.buildForLoop(i: { args[0] }, { i in b.compare(i, with: args[1], using: .greaterThanOrEqual) }, { i in b.reassign(i, to: args[2], with: .Sub)}) { vars in
+            b.buildForLoop(i: { args[0] }, { i in b.compare(i, with: args[1], using: .greaterThanOrEqual) }, { i in b.reassign(variable: i, value: args[2], with: .Sub)}) { vars in
             }
         }
 
@@ -3368,7 +3368,7 @@ class LifterTests: XCTestCase {
             // Test that context-dependent operations such as LoadArguments are handled correctly inside loop headers
             b.buildForLoop(i: { b.loadInt(0) }, { i in b.compare(i, with: b.getProperty("length", of: b.loadArguments()), using: .lessThan) }, { i in b.unary(.PostInc, i) }) { i in
                 let arg = b.getComputedProperty(i, of: b.loadArguments())
-                b.reassign(s, to: arg, with: .Add)
+                b.reassign(variable: s, value: arg, with: .Add)
             }
             b.doReturn(s)
         }
@@ -3396,7 +3396,7 @@ class LifterTests: XCTestCase {
 
         let s = b.loadInt(0)
         b.buildRepeatLoop(n: 1337) { i in
-            b.reassign(s, to: i, with: .Add)
+            b.reassign(variable: s, value: i, with: .Add)
         }
         let print = b.createNamedVariable(forBuiltin: "print")
         b.callFunction(print, withArgs: [s])
@@ -3457,10 +3457,10 @@ class LifterTests: XCTestCase {
         b.buildForInLoop(v1) { v2 in
             b.blockStatement {
                 let v3 = b.loadInt(1337)
-                b.reassign(v2, to: v3)
+                b.reassign(variable: v2, value: v3)
                 b.blockStatement {
                     let v4 = b.createObject(with: ["a" : v1])
-                    b.reassign(v2, to: v4)
+                    b.reassign(variable: v2, value: v4)
                 }
 
             }
@@ -3581,24 +3581,24 @@ class LifterTests: XCTestCase {
 
         let this = b.loadThis()
         let v = b.loadInt(42)
-        b.reassign(this, to: v)
+        b.reassign(variable: this, value: v)
 
         b.buildConstructor(with: .parameters(n: 0)) { args in
-            b.reassign(args[0], to: v)
+            b.reassign(variable: args[0], value: v)
         }
 
         b.buildObjectLiteral { obj in
             obj.addMethod("foo", with: .parameters(n: 0)) { args in
-                b.reassign(args[0], to: v)
+                b.reassign(variable: args[0], value: v)
             }
         }
 
         b.buildClassDefinition { cls in
             cls.addInstanceMethod("bar", with: .parameters(n: 0)) { args in
-                b.reassign(args[0], to: v)
+                b.reassign(variable: args[0], value: v)
             }
             cls.addStaticGetter(for: "baz") { this in
-                b.reassign(this, to: v)
+                b.reassign(variable: this, value: v)
             }
         }
 
@@ -3657,7 +3657,7 @@ class LifterTests: XCTestCase {
         b.unary(.BitwiseNot, v0)
         b.binary(v0, v2, with: .Add)
         let v3 = b.loadInt(42)
-        b.reassign(v3, to: v0)
+        b.reassign(variable: v3, value: v0)
         let print = b.createNamedVariable(forBuiltin: "print")
         b.callFunction(print, withArgs: [v0, v1, v2])
         b.getProperty("foo", of: v1)
@@ -3691,7 +3691,7 @@ class LifterTests: XCTestCase {
         let variable = b.loadNull()
         b.buildPlainFunction(with: .parameters(n: 0)) { args in
             let t = b.loadNewTarget()
-            b.reassign(variable, to: t)
+            b.reassign(variable: variable, value: t)
         }
 
         let program = b.finalize()
@@ -3836,7 +3836,7 @@ class LifterTests: XCTestCase {
         // We will mutate this to reassign table to be f.
         // The steps for this to happen during fuzzing are as follows, we emit all of this during generation time, then we emit this reassign later, e.g. during CodeGenMutation or we change an existing reassign during InputMutation.
         // Then we need to be able to recover from this in the importAnalysis as this is the first code that tries to use the mistyped inputs.
-        b.reassign(table, to: table)
+        b.reassign(variable: table, value: table)
 
         b.buildWasmModule { m in
             m.addWasmFunction(with: [] => []) { f, _, _ in

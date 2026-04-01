@@ -522,11 +522,11 @@ public let V8RegExpFuzzer = ProgramTemplate("RegExpFuzzer") { b in
             let symbol = b.createNamedVariable(forBuiltin: "Symbol")
             withEqualProbability({
                 let res = b.callMethod("exec", on: regExpVar, withArgs: [subjectVar])
-                b.reassign(resultVar, to: res)
+                b.reassign(variable: resultVar, value: res)
             }, {
                 let prop = b.getProperty("match", of: symbol)
                 let res = b.callComputedMethod(prop, on: regExpVar, withArgs: [subjectVar])
-                b.reassign(resultVar, to: res)
+                b.reassign(variable: resultVar, value: res)
             }, {
                 let prop = b.getProperty("replace", of: symbol)
                 let replacement = withEqualProbability({
@@ -535,11 +535,11 @@ public let V8RegExpFuzzer = ProgramTemplate("RegExpFuzzer") { b in
                     b.loadString(chooseUniform(from: replacementCandidates))
                 })
                 let res = b.callComputedMethod(prop, on: regExpVar, withArgs: [subjectVar, replacement])
-                b.reassign(resultVar, to: res)
+                b.reassign(variable: resultVar, value: res)
             }, {
                 let prop = b.getProperty("search", of: symbol)
                 let res = b.callComputedMethod(prop, on: regExpVar, withArgs: [subjectVar])
-                b.reassign(resultVar, to: res)
+                b.reassign(variable: resultVar, value: res)
             }, {
                 let prop = b.getProperty("split", of: symbol)
                 let randomSplitLimit = withEqualProbability({
@@ -551,10 +551,10 @@ public let V8RegExpFuzzer = ProgramTemplate("RegExpFuzzer") { b in
                 })
                 let limit = b.loadString(randomSplitLimit)
                 let res = b.callComputedMethod(symbol, on: regExpVar, withArgs: [subjectVar, limit])
-                b.reassign(resultVar, to: res)
+                b.reassign(variable: resultVar, value: res)
             }, {
                 let res = b.callMethod("test", on: regExpVar, withArgs: [subjectVar])
-                b.reassign(resultVar, to: res)
+                b.reassign(variable: resultVar, value: res)
             })
         }, catchBody: { _ in
         })
@@ -590,7 +590,7 @@ public let LazyDeoptFuzzer = ProgramTemplate("LazyDeoptFuzzer") { b in
         b.build(n: 10)
 
         b.buildIf(b.compare(counter, with: max, using: .lessThan)) {
-            b.reassign(counter, to: b.binary(counter, b.loadInt(1), with: .Add))
+            b.reassign(variable: counter, value: b.binary(counter, b.loadInt(1), with: .Add))
             b.callFunction(dummyFct, withArgs: b.randomArguments(forCalling: dummyFct))
         }
         // Mark the function for deoptimization. Due to the recursive pattern above, on the outer
@@ -601,7 +601,7 @@ public let LazyDeoptFuzzer = ProgramTemplate("LazyDeoptFuzzer") { b in
     }
 
     // Turn the call into a recursive call.
-    b.reassign(dummyFct, to: realFct)
+    b.reassign(variable: dummyFct, value: realFct)
     let args = b.randomArguments(forCalling: realFct)
     let guardCalls = probability(0.5)
     b.eval("%PrepareFunctionForOptimization(%@)", with: [realFct]);

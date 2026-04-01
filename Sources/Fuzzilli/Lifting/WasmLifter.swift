@@ -772,7 +772,7 @@ public class WasmLifter {
                 temp += mutability ? [0x1] : [0x0]
                 continue
             }
-            if type.Is(.object(ofGroup: "WasmTag")) {
+            if type.Is(.object(ofGroup: "WasmTag")) && signature != nil  {
                 temp += [0x4, 0x0] + Leb128.unsignedEncode(try getSignatureIndex(signature!))
                 continue
             }

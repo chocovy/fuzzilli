@@ -1870,6 +1870,38 @@ public let CodeGenerators: [CodeGenerator] = [
         b.void(val)
     },
 
+    CodeGenerator("IteratorZipGenerator", inputs: .one) { b, val in
+        // Create an iterable of iterables
+        let iterable : Variable;
+        let topLevelIterableSize = Int.random(in: 0...10)
+        if probability(0.8) {
+            // Use Array as the top level iterable
+            let iterables = (0..<topLevelIterableSize).map {_ in b.randomVariable(ofType: .iterable) ?? val}
+            iterable = b.createArray(with: iterables)
+        } else {
+            // Use Map as the top level iterable
+            let Map = b.createNamedVariable(forBuiltin: "Map")
+            // We want the created object to be used by following code generators, not the constructor
+            b.hide(Map)
+            iterable = b.construct(Map)
+            for _ in 0..<topLevelIterableSize {
+                // The key and the value don't need to be iterables themselves, any values will do.
+                let key = b.randomJsVariable()
+                let value = b.randomJsVariable()
+                b.callMethod("set", on: iterable, withArgs: [key, value])
+            }
+        }
+
+        let iteratorConstructor = b.createNamedVariable(forBuiltin: "Iterator")
+        let arguments : [Variable];
+        if probability(0.5) {
+            arguments = [iterable]
+        } else {
+            arguments = [iterable, b.createOptionsBag(.jsIteratorZipSettings)]
+        }
+        b.callMethod("zip", on: iteratorConstructor, withArgs: arguments)
+    },
+
     CodeGenerator(
         "InstanceOfGenerator", inputs: .preferred(.jsAnything, .constructor())
     ) { b, val, cls in

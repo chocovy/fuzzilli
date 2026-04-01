@@ -413,7 +413,7 @@ struct JavaScriptRuntimeAssistedMutatorLifting {
         //
         // Action constructors.
         //
-        function Action(operation, inputs = EmptyArray()) {
+        function Action(operation, inputs) {
             this.operation = operation;
             this.inputs = inputs;
             this.isGuarded = false;
@@ -431,7 +431,7 @@ struct JavaScriptRuntimeAssistedMutatorLifting {
         //
         // If a guarded action succeeds (doesn't raise an exception), it will be converted to
         // a regular action to limit the number of generated try-catch blocks.
-        function GuardedAction(operation, inputs = EmptyArray()) {
+        function GuardedAction(operation, inputs) {
             this.operation = operation;
             this.inputs = inputs;
             this.isGuarded = true;

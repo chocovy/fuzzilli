@@ -342,7 +342,7 @@ struct JavaScriptExploreLifting {
             // Somewhat arbitrarily give comparisons a lower probability when choosing the operation to perform.
             let operation = randomElement(probability(0.5) ? ALL_NUMBER_OPERATIONS : ALL_NUMBER_OPERATIONS_AND_COMPARISONS);
 
-            let action = new Action(operation);
+            let action = new Action(operation, EmptyArray());
             push(action.inputs, exploredValueInput);
             if (includes(COMPARISON_OPS, operation)) {
                 if (isNaN(n)) {
@@ -374,7 +374,7 @@ struct JavaScriptExploreLifting {
             // Somewhat arbitrarily give comparisons a lower probability when choosing the operation to perform.
             let operation = randomElement(probability(0.5) ? ALL_BIGINT_OPERATIONS : ALL_BIGINT_OPERATIONS_AND_COMPARISONS);
 
-            let action = new Action(operation);
+            let action = new Action(operation, EmptyArray());
             push(action.inputs, exploredValueInput);
             if (includes(COMPARISON_OPS, operation)) {
                 push(action.inputs, Inputs.randomBigintCloseTo(b));
@@ -395,7 +395,7 @@ struct JavaScriptExploreLifting {
         function exploreBoolean(b) {
             let operation = randomElement(ALL_BOOLEAN_OPERATIONS);
 
-            let action = new Action(operation);
+            let action = new Action(operation, EmptyArray());
             push(action.inputs, exploredValueInput);
             if (includes(BOOLEAN_BINARY_OPS, operation)) {
                 // It probably doesn't make sense to hardcode boolean constants, so always use an existing argument.

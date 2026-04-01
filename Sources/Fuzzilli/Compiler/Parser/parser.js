@@ -83,6 +83,7 @@ function parse(script, proto) {
         return Statement.create(statement);
     }
 
+    // TODO(bettscheider): Add support for default parameters.
     function visitParameter(param) {
         switch (param.type) {
             case 'Identifier':

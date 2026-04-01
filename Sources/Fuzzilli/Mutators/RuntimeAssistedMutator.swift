@@ -137,8 +137,30 @@ public class RuntimeAssistedMutator: Mutator {
             }
 
             // If we reach here, the process()'d program did not crash, so we need to report the instrumented program.
+            // First, get the instrumented JS program and try to compile it back to FuzzIL, so it can be minimized more effectively.
+            // We need this because instrumentation adds boilerplate JS code.
+            let instrumentedJavaScriptProgram = fuzzer.lifter.lift(instrumentedProgram)
+            var maybeProgramToMinimize: Program? = nil
+            let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".js")
+            if let nodejs = JavaScriptExecutor(type: .nodejs, withArguments: ["--allow-natives-syntax"]),
+                let parser = JavaScriptParser(executor: nodejs) {
+                    do {
+                        try instrumentedJavaScriptProgram.write(to: tempFile, atomically: true, encoding: .utf8)
+                        let ast = try parser.parse(tempFile.path)
+                        maybeProgramToMinimize = try JavaScriptCompiler().compile(ast)
+                        logger.warning("Successfully compiled instrumented JS program to FuzzIL")
+                    } catch {
+                        logger.warning("Failed to compile instrumented JS program to FuzzIL: \(error)")
+                    }
+                    try? FileManager.default.removeItem(at: tempFile)
+                }
+                else {
+                    logger.warning("Unable to compile instrumented JS program to FuzzIL because node.js is not available")
+                }
+
+
             logger.warning("Mutated program did not crash, reporting original crash of the instrumented program")
-            fuzzer.processCrash(instrumentedProgram, withSignal: signal, withStderr: oldStderr, withStdout: stdout, origin: .local, withExectime: execution.execTime)
+            fuzzer.processCrash(maybeProgramToMinimize ?? instrumentedProgram, withSignal: signal, withStderr: oldStderr, withStdout: stdout, origin: .local, withExectime: execution.execTime)
         case .succeeded:
             // The expected case.
             break

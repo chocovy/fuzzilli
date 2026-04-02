@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import XCTest
+
 @testable import Fuzzilli
 
 class WasmTableTests: XCTestCase {
@@ -22,7 +23,8 @@ class WasmTableTests: XCTestCase {
 
         let js = buildAndLiftProgram { b in
             let module = b.buildWasmModule { wasmModule in
-                let table = wasmModule.addTable(elementType: .wasmFuncRef(), minSize: 10, maxSize: 20, isTable64: false)
+                let table = wasmModule.addTable(
+                    elementType: .wasmFuncRef(), minSize: 10, maxSize: 20, isTable64: false)
 
                 wasmModule.addWasmFunction(with: [] => [.wasmi32]) { f, _, _ in
                     let size = f.wasmTableSize(table: table)

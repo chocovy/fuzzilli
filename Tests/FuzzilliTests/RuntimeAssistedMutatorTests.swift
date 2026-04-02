@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import XCTest
+
 @testable import Fuzzilli
 
 class RuntimeAssistedMutatorTests: XCTestCase {
@@ -21,10 +22,14 @@ class RuntimeAssistedMutatorTests: XCTestCase {
         var env: [(String, String)] = []
         func run(_ script: String, withTimeout timeout: UInt32) -> Execution {
             // Minimization can change quotation marks. Checking for both here to be on the safe side.
-            if script.contains("fuzzilli('FUZZILLI_CRASH', 0)") || script.contains("fuzzilli(\"FUZZILLI_CRASH\", 0)") {
-                return MockExecution(outcome: .crashed(9), stdout: "", stderr: "", fuzzout: "", execTime: 0.1)
+            if script.contains("fuzzilli('FUZZILLI_CRASH', 0)")
+                || script.contains("fuzzilli(\"FUZZILLI_CRASH\", 0)")
+            {
+                return MockExecution(
+                    outcome: .crashed(9), stdout: "", stderr: "", fuzzout: "", execTime: 0.1)
             } else {
-                return MockExecution(outcome: .succeeded, stdout: "", stderr: "", fuzzout: "", execTime: 0.1)
+                return MockExecution(
+                    outcome: .succeeded, stdout: "", stderr: "", fuzzout: "", execTime: 0.1)
             }
         }
         func setEnvironmentVariable(_ key: String, to value: String) {}
@@ -45,7 +50,8 @@ class RuntimeAssistedMutatorTests: XCTestCase {
         b.loadInt(42)
         let program = b.finalize()
 
-        let crashEventTriggered = self.expectation(description: "Crash reported on processed program")
+        let crashEventTriggered = self.expectation(
+            description: "Crash reported on processed program")
         fuzzer.registerEventListener(for: fuzzer.events.CrashFound) { ev in
             let lifted = fuzzer.lifter.lift(ev.program)
             if lifted.contains("This is the processed program") {
@@ -69,7 +75,8 @@ class RuntimeAssistedMutatorTests: XCTestCase {
         b.loadInt(42)
         let program = b.finalize()
 
-        let crashEventTriggered = self.expectation(description: "Crash reported on instrumented program")
+        let crashEventTriggered = self.expectation(
+            description: "Crash reported on instrumented program")
         fuzzer.registerEventListener(for: fuzzer.events.CrashFound) { ev in
             let lifted = fuzzer.lifter.lift(ev.program)
             if !lifted.contains("This is the processed program") {
@@ -83,15 +90,22 @@ class RuntimeAssistedMutatorTests: XCTestCase {
 
     // This test checks that if *only* the instrumented program crashes, this program is minimized.
 
-   func testOnlyInstrumentedProgramCrashesAndIsMinimized() throws {
-        guard let nodejs = JavaScriptExecutor(type: .nodejs, withArguments: ["--allow-natives-syntax"]) else {
-            throw XCTSkip("Could not find NodeJS executable. See Sources/Fuzzilli/Compiler/Parser/README.md for details on how to set up the parser.")
+    func testOnlyInstrumentedProgramCrashesAndIsMinimized() throws {
+        guard
+            let nodejs = JavaScriptExecutor(
+                type: .nodejs, withArguments: ["--allow-natives-syntax"])
+        else {
+            throw XCTSkip(
+                "Could not find NodeJS executable. See Sources/Fuzzilli/Compiler/Parser/README.md for details on how to set up the parser."
+            )
         }
 
         // Initialize the parser. This can fail if no node.js executable is found or if the
         // parser's node.js dependencies are not installed. In that case, skip these tests.
         guard JavaScriptParser(executor: nodejs) != nil else {
-            throw XCTSkip("The JavaScript parser does not appear to be working. See Sources/Fuzzilli/Compiler/Parser/README.md for details on how to set up the parser.")
+            throw XCTSkip(
+                "The JavaScript parser does not appear to be working. See Sources/Fuzzilli/Compiler/Parser/README.md for details on how to set up the parser."
+            )
         }
 
         class CrashEvaluator: MockEvaluator {
@@ -116,13 +130,15 @@ class RuntimeAssistedMutatorTests: XCTestCase {
         b.loadInt(42)
         let program = b.finalize()
 
-        let crashEventTriggered = self.expectation(description: "Crash reported on instrumented program")
+        let crashEventTriggered = self.expectation(
+            description: "Crash reported on instrumented program")
         fuzzer.registerEventListener(for: fuzzer.events.CrashFound) { ev in
             let actualProgram = ev.program
-            XCTAssertEqual(expectedProgram, actualProgram,
-                "The reported program should be the minimized version of the instrumented program.\n" +
-                "Expected:\n\(FuzzILLifter().lift(expectedProgram.code))\n\n" +
-                "Actual:\n\(FuzzILLifter().lift(actualProgram.code))")
+            XCTAssertEqual(
+                expectedProgram, actualProgram,
+                "The reported program should be the minimized version of the instrumented program.\n"
+                    + "Expected:\n\(FuzzILLifter().lift(expectedProgram.code))\n\n"
+                    + "Actual:\n\(FuzzILLifter().lift(actualProgram.code))")
             crashEventTriggered.fulfill()
         }
 

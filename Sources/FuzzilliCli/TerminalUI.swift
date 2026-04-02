@@ -17,8 +17,8 @@ import Fuzzilli
 
 let Seconds = 1.0
 let Minutes = 60.0 * Seconds
-let Hours   = 60.0 * Minutes
-let Days    = 24.0 * Hours
+let Hours = 60.0 * Minutes
+let Days = 24.0 * Hours
 
 // A very basic terminal UI.
 class TerminalUI {
@@ -44,11 +44,15 @@ class TerminalUI {
         fuzzer.registerEventListener(for: fuzzer.events.Log) { ev in
             let color = self.colorForLevel[ev.level]!
             if ev.origin == fuzzer.id {
-                print("\u{001B}[0;\(color.rawValue)m[\(ev.label)] \(ev.message)\u{001B}[0;\(Color.reset.rawValue)m")
+                print(
+                    "\u{001B}[0;\(color.rawValue)m[\(ev.label)] \(ev.message)\u{001B}[0;\(Color.reset.rawValue)m"
+                )
             } else {
                 // Mark message as coming from a worker by including its id
                 let shortId = ev.origin.uuidString.split(separator: "-")[0]
-                print("\u{001B}[0;\(color.rawValue)m[\(shortId):\(ev.label)] \(ev.message)\u{001B}[0;\(Color.reset.rawValue)m")
+                print(
+                    "\u{001B}[0;\(color.rawValue)m[\(shortId):\(ev.label)] \(ev.message)\u{001B}[0;\(Color.reset.rawValue)m"
+                )
             }
         }
 
@@ -74,7 +78,8 @@ class TerminalUI {
             }
         }
 
-        fuzzer.registerEventListener(for: fuzzer.events.InterestingProgramFound) { program, origin in
+        fuzzer.registerEventListener(for: fuzzer.events.InterestingProgramFound) {
+            program, origin in
             self.lastInterestingProgramFound = Date()
             if self.printNextInterestingProgram {
                 print("--------- Randomly Sampled Interesting Program -----------")
@@ -125,40 +130,43 @@ class TerminalUI {
 
         let timeSinceLastInterestingProgram = -lastInterestingProgramFound.timeIntervalSinceNow
 
-        let maybeAvgCorpusSize = stats.numChildNodes > 0 ? " (global average: \(Int(stats.avgCorpusSize)))" : ""
+        let maybeAvgCorpusSize =
+            stats.numChildNodes > 0 ? " (global average: \(Int(stats.avgCorpusSize)))" : ""
 
         if let tag = fuzzer.config.tag {
             print("Fuzzer Statistics (tag: \(tag))")
         } else {
             print("Fuzzer Statistics")
         }
-        let differentialsLine = fuzzer.isDifferentialFuzzing
+        let differentialsLine =
+            fuzzer.isDifferentialFuzzing
             ? "\nDifferentials Found:          \(stats.differentialSamples)"
             : ""
 
-        print("""
-        -----------------
-        Fuzzer state:                 \(state)
-        Uptime:                       \(formatTimeInterval(fuzzer.uptime()))
-        Total Samples:                \(stats.totalSamples)
-        Interesting Samples Found:    \(stats.interestingSamples)
-        Last Interesting Sample:      \(formatTimeInterval(timeSinceLastInterestingProgram))
-        Valid Samples Found:          \(stats.validSamples)
-        Corpus Size:                  \(fuzzer.corpus.size)\(maybeAvgCorpusSize)
-        Correctness Rate:             \(String(format: "%.2f%%", stats.correctnessRate * 100)) (overall: \(String(format: "%.2f%%", stats.overallCorrectnessRate * 100)))
-        Timeout Rate:                 \(String(format: "%.2f%%", stats.timeoutRate * 100)) (overall: \(String(format: "%.2f%%", stats.overallTimeoutRate * 100)))
-        Crashes Found:                \(stats.crashingSamples)\(differentialsLine)
-        Timeouts Hit:                 \(stats.timedOutSamples)
-        Coverage:                     \(String(format: "%.2f%%", stats.coverage * 100))
-        Avg. program size:            \(String(format: "%.2f", stats.avgProgramSize))
-        Avg. corpus program size:     \(String(format: "%.2f", stats.avgCorpusProgramSize))
-        Avg. program execution time:  \(Int(stats.avgExecutionTime * 1000))ms
-        Connected nodes:              \(stats.numChildNodes)
-        Execs / Second:               \(String(format: "%.2f", stats.execsPerSecond))
-        Fuzzer Overhead:              \(String(format: "%.2f", stats.fuzzerOverhead * 100))%
-        Minimization Overhead:        \(String(format: "%.2f", stats.minimizationOverhead * 100))%
-        Total Execs:                  \(stats.totalExecs)
-        """)
+        print(
+            """
+            -----------------
+            Fuzzer state:                 \(state)
+            Uptime:                       \(formatTimeInterval(fuzzer.uptime()))
+            Total Samples:                \(stats.totalSamples)
+            Interesting Samples Found:    \(stats.interestingSamples)
+            Last Interesting Sample:      \(formatTimeInterval(timeSinceLastInterestingProgram))
+            Valid Samples Found:          \(stats.validSamples)
+            Corpus Size:                  \(fuzzer.corpus.size)\(maybeAvgCorpusSize)
+            Correctness Rate:             \(String(format: "%.2f%%", stats.correctnessRate * 100)) (overall: \(String(format: "%.2f%%", stats.overallCorrectnessRate * 100)))
+            Timeout Rate:                 \(String(format: "%.2f%%", stats.timeoutRate * 100)) (overall: \(String(format: "%.2f%%", stats.overallTimeoutRate * 100)))
+            Crashes Found:                \(stats.crashingSamples)\(differentialsLine)
+            Timeouts Hit:                 \(stats.timedOutSamples)
+            Coverage:                     \(String(format: "%.2f%%", stats.coverage * 100))
+            Avg. program size:            \(String(format: "%.2f", stats.avgProgramSize))
+            Avg. corpus program size:     \(String(format: "%.2f", stats.avgCorpusProgramSize))
+            Avg. program execution time:  \(Int(stats.avgExecutionTime * 1000))ms
+            Connected nodes:              \(stats.numChildNodes)
+            Execs / Second:               \(String(format: "%.2f", stats.execsPerSecond))
+            Fuzzer Overhead:              \(String(format: "%.2f", stats.fuzzerOverhead * 100))%
+            Minimization Overhead:        \(String(format: "%.2f", stats.minimizationOverhead * 100))%
+            Total Execs:                  \(stats.totalExecs)
+            """)
     }
 
     private func formatTimeInterval(_ interval: TimeInterval) -> String {
@@ -170,23 +178,23 @@ class TerminalUI {
     }
 
     private enum Color: Int {
-        case reset   = 0
-        case black   = 30
-        case red     = 31
-        case green   = 32
-        case yellow  = 33
-        case blue    = 34
+        case reset = 0
+        case black = 30
+        case red = 31
+        case green = 32
+        case yellow = 33
+        case blue = 34
         case magenta = 35
-        case cyan    = 36
-        case white   = 37
+        case cyan = 36
+        case white = 37
     }
 
     // The color with which to print log entries.
     private let colorForLevel: [LogLevel: Color] = [
         .verbose: .cyan,
-        .info:    .white,
+        .info: .white,
         .warning: .yellow,
-        .error:   .red,
-        .fatal:   .magenta
+        .error: .red,
+        .fatal: .magenta,
     ]
 }

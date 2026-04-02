@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 // Miscellaneous semantics of FuzzIL. Also see JSTyper for execution semantics of operations.
 
 extension Operation {
@@ -24,20 +23,20 @@ extension Operation {
 
         switch opcode {
         case .callFunction,
-             .callMethod,
-             .callComputedMethod:
-             // We assume that a constructor doesn't modify its arguments when called.
+            .callMethod,
+            .callComputedMethod:
+            // We assume that a constructor doesn't modify its arguments when called.
             return true
         case .setProperty,
-             .updateProperty,
-             .setElement,
-             .updateElement,
-             .setComputedProperty,
-             .updateComputedProperty,
-             .yield,
-             .deleteProperty,
-             .deleteComputedProperty,
-             .deleteElement:
+            .updateProperty,
+            .setElement,
+            .updateElement,
+            .setComputedProperty,
+            .updateComputedProperty,
+            .yield,
+            .deleteProperty,
+            .deleteComputedProperty,
+            .deleteElement:
             return inputIdx == 0
         default:
             return false
@@ -47,12 +46,12 @@ extension Operation {
     func reassigns(input inputIdx: Int) -> Bool {
         switch opcode {
         case .reassign,
-             .update:
+            .update:
             return inputIdx == 0
         case .unaryOperation(let op):
             return op.op.reassignsInput
         case .destructArrayAndReassign,
-             .destructObjectAndReassign:
+            .destructObjectAndReassign:
             return inputIdx != 0
         default:
             return false
@@ -117,7 +116,7 @@ extension Instruction {
         case (.loadNull, .loadNull):
             canFold = true
         case (.loadRegExp(let op1), .loadRegExp(let op2)):
-            canFold = op1.pattern  == op2.pattern && op1.flags == op2.flags
+            canFold = op1.pattern == op2.pattern && op1.flags == op2.flags
         default:
             assert(self.op.name != other.op.name)
         }
@@ -145,7 +144,7 @@ extension Operation {
         case .beginObjectLiteralComputedSetter:
             return endOp is EndObjectLiteralComputedSetter
         case .beginClassDefinition:
-             return endOp is EndClassDefinition
+            return endOp is EndClassDefinition
         case .beginClassConstructor:
             return endOp is EndClassConstructor
         case .beginClassMethod:
@@ -187,7 +186,7 @@ extension Operation {
         case .beginSwitch:
             return endOp is EndSwitch
         case .beginSwitchCase,
-             .beginSwitchDefaultCase:
+            .beginSwitchDefaultCase:
             return endOp is EndSwitchCase
         case .beginWhileLoopHeader:
             return endOp is BeginWhileLoopBody
@@ -208,7 +207,7 @@ extension Operation {
         case .beginForInLoop:
             return endOp is EndForInLoop
         case .beginForOfLoop,
-             .beginForOfLoopWithDestruct:
+            .beginForOfLoopWithDestruct:
             return endOp is EndForOfLoop
         case .beginRepeatLoop:
             return endOp is EndRepeatLoop
@@ -233,7 +232,7 @@ extension Operation {
         case .wasmBeginTryTable:
             return endOp is WasmEndTryTable
         case .wasmBeginTry,
-             .wasmBeginCatch:
+            .wasmBeginCatch:
             return endOp is WasmEndTry || endOp is WasmBeginCatch || endOp is WasmBeginCatchAll
         case .wasmBeginCatchAll:
             return endOp is WasmEndTry

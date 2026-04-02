@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import Foundation
+
 @testable import Fuzzilli
 
 // This mutator generates a crashing instrumented program.
@@ -30,7 +31,7 @@ class CrashingInstrumentationMutator: RuntimeAssistedMutator {
 
     override func instrument(_ program: Program, for fuzzer: Fuzzer) -> Program? {
         let b = fuzzer.makeBuilder()
-        b.eval("fuzzilli('FUZZILLI_CRASH', 0)");
+        b.eval("fuzzilli('FUZZILLI_CRASH', 0)")
 
         // Add a JsInternalOperation to satisfy the assertion in RuntimeAssistedMutator.swift:89
         let v = b.loadInt(42)
@@ -40,8 +41,10 @@ class CrashingInstrumentationMutator: RuntimeAssistedMutator {
         return b.finalize()
     }
 
-
-    override func process(_ output: String, ofInstrumentedProgram instrumentedProgram: Program, using b: ProgramBuilder) -> (Program?, Outcome) {
+    override func process(
+        _ output: String, ofInstrumentedProgram instrumentedProgram: Program,
+        using b: ProgramBuilder
+    ) -> (Program?, Outcome) {
         // Purpose of this print: Distinguish crashes originating from instrument() and process().
         let printFct = b.createNamedVariable(forBuiltin: "print")
         b.callFunction(printFct, withArgs: [b.loadString("This is the processed program")])

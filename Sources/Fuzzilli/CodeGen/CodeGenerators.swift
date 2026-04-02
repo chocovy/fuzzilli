@@ -16,9 +16,10 @@ import Foundation
 
 // Generator stubs for disposable and async-disposable object variables.
 func disposableObjVariableGeneratorStubs(
-        inContext contextRequirement : Context,
-        withSymbol symbolProperty : String,
-        genDisposableVariable : @escaping (ProgramBuilder, Variable) -> Void) -> [GeneratorStub] {
+    inContext contextRequirement: Context,
+    withSymbol symbolProperty: String,
+    genDisposableVariable: @escaping (ProgramBuilder, Variable) -> Void
+) -> [GeneratorStub] {
     return [
         GeneratorStub(
             "DisposableObjectLiteralBeginGenerator",
@@ -64,9 +65,10 @@ func disposableObjVariableGeneratorStubs(
 
 // Generator stubs for disposable and async-disposable class variables.
 func disposableClassVariableGeneratorStubs(
-        inContext contextRequirement : Context,
-        withSymbol symbolProperty : String,
-        genDisposableVariable : @escaping (ProgramBuilder, Variable) -> Void) -> [GeneratorStub] {
+    inContext contextRequirement: Context,
+    withSymbol symbolProperty: String,
+    genDisposableVariable: @escaping (ProgramBuilder, Variable) -> Void
+) -> [GeneratorStub] {
     return [
         GeneratorStub(
             "DisposableClassDefinitionBeginGenerator",
@@ -85,10 +87,12 @@ func disposableClassVariableGeneratorStubs(
                 superclass = b.randomVariable(ofType: .constructor())
             }
             let inputs = superclass != nil ? [superclass!] : []
-            let cls = b.emit(BeginClassDefinition(
+            let cls = b.emit(
+                BeginClassDefinition(
                     hasSuperclass: superclass != nil,
                     isExpression: probability(0.3)),
-                withInputs: inputs).output
+                withInputs: inputs
+            ).output
             b.runtimeData.push("class", cls)
         },
         GeneratorStub(
@@ -164,7 +168,8 @@ public let CodeGenerators: [CodeGenerator] = [
         b.loadString(b.randomString())
     },
 
-    CodeGenerator("ConcatenatedStringGenerator", inputs: .required(.string), produces: [.string]) { b, inputString in
+    CodeGenerator("ConcatenatedStringGenerator", inputs: .required(.string), produces: [.string]) {
+        b, inputString in
         // Emit a dynamically concatenated string, e.g. something like:
         // let select = someVar ? "string a" : "string b";
         // let result = select + "other string";
@@ -227,20 +232,21 @@ public let CodeGenerators: [CodeGenerator] = [
         var elements = [Variable]()
 
         // Randomly select the type of elements to surround the holes with.
-        let getElementOptions : [() -> Variable] = [
+        let getElementOptions: [() -> Variable] = [
             // Holey Smi (in most cases)
-            {b.randomVariable(ofType: .integer) ?? b.loadInt(b.randomInt())},
+            { b.randomVariable(ofType: .integer) ?? b.loadInt(b.randomInt()) },
             // Holey Double
-            {b.randomVariable(ofType: .float) ?? b.loadFloat(b.randomFloat())},
+            { b.randomVariable(ofType: .float) ?? b.loadFloat(b.randomFloat()) },
             // Holey Elements
-            {b.randomJsVariable()}
+            { b.randomJsVariable() },
         ]
         let getElement = getElementOptions.randomElement()!
 
-        let guaranteeHole = Int.random(in: 0..<size) // One element is always a hole.
+        let guaranteeHole = Int.random(in: 0..<size)  // One element is always a hole.
         for i in 0..<size {
-            elements.append((probability(0.8) || i == guaranteeHole)
-                ? undefined : getElement() )
+            elements.append(
+                (probability(0.8) || i == guaranteeHole)
+                    ? undefined : getElement())
         }
 
         let array = b.createArray(with: elements)
@@ -277,35 +283,44 @@ public let CodeGenerators: [CodeGenerator] = [
     CodeGenerator("BuiltinObjectPrototypeCallGenerator") { b in
         // TODO: It would be nice to type more prototypes and extend this list.
         let builtinName = chooseUniform(from: [
-            "Promise", "Date", "Array", "ArrayBuffer", "SharedArrayBuffer", "String"])
+            "Promise", "Date", "Array", "ArrayBuffer", "SharedArrayBuffer", "String",
+        ])
         let builtin = b.createNamedVariable(forBuiltin: builtinName)
         let prototype = b.getProperty("prototype", of: builtin)
         let prototypeType = b.type(of: prototype)
         let choiceCount = prototypeType.numProperties + prototypeType.numMethods
         guard choiceCount != 0 else {
-            fatalError("\(builtinName).prototype has no known properties or methods (type: \(prototypeType))")
+            fatalError(
+                "\(builtinName).prototype has no known properties or methods (type: \(prototypeType))"
+            )
         }
         let useProperty = Int.random(in: 0..<choiceCount) < prototypeType.numProperties
-        let fctName = (useProperty ? prototypeType.properties : prototypeType.methods).randomElement()!
+        let fctName = (useProperty ? prototypeType.properties : prototypeType.methods)
+            .randomElement()!
         let fct = b.getProperty(fctName, of: prototype)
         let fctType = b.type(of: fct)
         let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: fct)
         let receiverType = fctType.receiver ?? prototypeType
         let desiredReceiverType = fctType.receiver ?? prototypeType
         let receiver = b.randomVariable(forUseAs: desiredReceiverType)
-        let needGuard = (!fctType.Is(.function()) && !fctType.Is(.unboundFunction()))
+        let needGuard =
+            (!fctType.Is(.function()) && !fctType.Is(.unboundFunction()))
             || !b.type(of: receiver).Is(receiverType) || !matches
         if Bool.random() {
             b.callMethod("call", on: fct, withArgs: [receiver] + arguments, guard: needGuard)
         } else {
-            b.callMethod("apply", on: fct, withArgs: [receiver, b.createArray(with: arguments)], guard: needGuard)
+            b.callMethod(
+                "apply", on: fct, withArgs: [receiver, b.createArray(with: arguments)],
+                guard: needGuard)
         }
     },
 
     CodeGenerator("BuiltinTemporalGenerator") { b in
-        let _ = chooseUniform(from: [b.constructTemporalInstant, b.constructTemporalDuration,
-                             b.constructTemporalTime, b.constructTemporalYearMonth, b.constructTemporalMonthDay,
-                             b.constructTemporalDate, b.constructTemporalDateTime, b.constructTemporalZonedDateTime])()
+        let _ = chooseUniform(from: [
+            b.constructTemporalInstant, b.constructTemporalDuration,
+            b.constructTemporalTime, b.constructTemporalYearMonth, b.constructTemporalMonthDay,
+            b.constructTemporalDate, b.constructTemporalDateTime, b.constructTemporalZonedDateTime,
+        ])()
     },
     CodeGenerator("TypedArrayGenerator", produces: [.object()]) { b in
         let size = b.loadInt(b.randomSize(upTo: 0x1000))
@@ -321,7 +336,8 @@ public let CodeGenerators: [CodeGenerator] = [
         b.construct(constructor, withArgs: [size])
     },
 
-    CodeGenerator("TypedArrayFromBufferGenerator",
+    CodeGenerator(
+        "TypedArrayFromBufferGenerator",
         inContext: .single(.javascript),
         inputs: .required(.jsArrayBuffer | .jsSharedArrayBuffer)
     ) { b, buffer in
@@ -334,7 +350,8 @@ public let CodeGenerators: [CodeGenerator] = [
         // TODO(tacet): add Fixed length view. withArgs: [buffer, offset, length]
     },
 
-    CodeGenerator("DataViewFromBufferGenerator",
+    CodeGenerator(
+        "DataViewFromBufferGenerator",
         inContext: .single(.javascript),
         inputs: .required(.jsArrayBuffer | .jsSharedArrayBuffer),
         produces: [.jsDataView]
@@ -344,7 +361,8 @@ public let CodeGenerators: [CodeGenerator] = [
         // TODO(tacet): add Fixed length view. withArgs: [buffer, offset, length]
     },
 
-    CodeGenerator("TypedArrayLastIndexGenerator",
+    CodeGenerator(
+        "TypedArrayLastIndexGenerator",
         inContext: .single(.javascript),
         inputs: .required(.object(withProperties: ["buffer", "length"]))
     ) { b, view in
@@ -369,11 +387,15 @@ public let CodeGenerators: [CodeGenerator] = [
     },
 
     CodeGenerator("HexGenerator") { b in
-        let hexValues = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"]
+        let hexValues = [
+            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A",
+            "B", "C", "D", "E", "F",
+        ]
 
         let uint8ArrayBuiltin = b.createNamedVariable(forBuiltin: "Uint8Array")
 
-        withEqualProbability({
+        withEqualProbability(
+            {
                 // Generate Uint8Array construction from hex string.
                 var s = ""
                 for _ in 0..<Int.random(in: 1...40) {
@@ -385,12 +407,16 @@ public let CodeGenerators: [CodeGenerator] = [
                 if probability(0.5) {
                     b.callMethod("fromHex", on: uint8ArrayBuiltin, withArgs: [hex])
                 } else {
-                    let target = b.construct(uint8ArrayBuiltin, withArgs: [b.loadInt(Int64.random(in: 0...0x100))])
+                    let target = b.construct(
+                        uint8ArrayBuiltin, withArgs: [b.loadInt(Int64.random(in: 0...0x100))])
                     b.callMethod("setFromHex", on: target, withArgs: [hex])
                 }
-            }, {
+            },
+            {
                 // Generate hex String construction from Uint8Array.
-                let values = (0..<Int.random(in: 1...20)).map {_ in b.loadInt(Int64.random(in: 0...0xFF))}
+                let values = (0..<Int.random(in: 1...20)).map { _ in
+                    b.loadInt(Int64.random(in: 0...0xFF))
+                }
                 let bytes = b.callMethod("of", on: uint8ArrayBuiltin, withArgs: values)
                 b.callMethod("toHex", on: bytes, withArgs: [])
             }
@@ -398,16 +424,28 @@ public let CodeGenerators: [CodeGenerator] = [
     },
 
     CodeGenerator("Base64Generator") { b in
-        let base64Alphabet = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "/"]
-        let base64URLAlphabet = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "_"]
+        let base64Alphabet = [
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
+            "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h",
+            "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y",
+            "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "/",
+        ]
+        let base64URLAlphabet = [
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
+            "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h",
+            "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y",
+            "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "_",
+        ]
 
         let uint8ArrayBuiltin = b.createNamedVariable(forBuiltin: "Uint8Array")
 
-        withEqualProbability({
+        withEqualProbability(
+            {
                 var options = [String: Variable]()
                 let alphabet = chooseUniform(from: [base64Alphabet, base64URLAlphabet])
 
-                options["alphabet"] = b.loadString((alphabet == base64Alphabet) ? "base64" : "base64url")
+                options["alphabet"] = b.loadString(
+                    (alphabet == base64Alphabet) ? "base64" : "base64url")
                 options["lastChunkHandling"] = b.loadString(
                     chooseUniform(
                         from: ["loose", "strict", "stop-before-partial"]
@@ -420,35 +458,40 @@ public let CodeGenerators: [CodeGenerator] = [
                 }
 
                 // Extend by 0, 1, or 2 bytes.
-                switch (Int.random(in: 0...3)) {
-                    case 1:
-                        s += base64Alphabet[Int.random(in: 0...63)]
-                        s += base64Alphabet[Int.random(in: 0...63) & 0x30]
-                        s += "=="
-                        break
+                switch Int.random(in: 0...3) {
+                case 1:
+                    s += base64Alphabet[Int.random(in: 0...63)]
+                    s += base64Alphabet[Int.random(in: 0...63) & 0x30]
+                    s += "=="
+                    break
 
-                    case 2:
-                        s += base64Alphabet[Int.random(in: 0...63)]
-                        s += base64Alphabet[Int.random(in: 0...63)]
-                        s += base64Alphabet[Int.random(in: 0...63) & 0x3C]
-                        s += "="
-                        break
+                case 2:
+                    s += base64Alphabet[Int.random(in: 0...63)]
+                    s += base64Alphabet[Int.random(in: 0...63)]
+                    s += base64Alphabet[Int.random(in: 0...63) & 0x3C]
+                    s += "="
+                    break
 
-                    default:
-                        break
+                default:
+                    break
                 }
 
                 let base64 = b.loadString(s)
 
                 let optionsObject = b.createObject(with: options)
                 if probability(0.5) {
-                    b.callMethod("fromBase64", on: uint8ArrayBuiltin, withArgs: [base64, optionsObject])
+                    b.callMethod(
+                        "fromBase64", on: uint8ArrayBuiltin, withArgs: [base64, optionsObject])
                 } else {
-                    let target = b.construct(uint8ArrayBuiltin, withArgs: [b.loadInt(Int64.random(in: 0...0x100))])
+                    let target = b.construct(
+                        uint8ArrayBuiltin, withArgs: [b.loadInt(Int64.random(in: 0...0x100))])
                     b.callMethod("setFromBase64", on: target, withArgs: [base64, optionsObject])
                 }
-            }, {
-                let values = (0..<Int.random(in: 1...64)).map {_ in b.loadInt(Int64.random(in: 0...0xFF))}
+            },
+            {
+                let values = (0..<Int.random(in: 1...64)).map { _ in
+                    b.loadInt(Int64.random(in: 0...0xFF))
+                }
                 let bytes = b.callMethod("of", on: uint8ArrayBuiltin, withArgs: values)
                 b.callMethod("toBase64", on: bytes, withArgs: [])
             }
@@ -554,10 +597,12 @@ public let CodeGenerators: [CodeGenerator] = [
                     }
                 }
                 let inputs = superclass != nil ? [superclass!] : []
-                let cls = b.emit(BeginClassDefinition(
+                let cls = b.emit(
+                    BeginClassDefinition(
                         hasSuperclass: superclass != nil,
                         isExpression: probability(0.3)),
-                    withInputs: inputs).output
+                    withInputs: inputs
+                ).output
                 b.runtimeData.push("class", cls)
             },
             GeneratorStub(
@@ -623,58 +668,70 @@ public let CodeGenerators: [CodeGenerator] = [
         b.loadArguments()
     },
 
-    CodeGenerator("FunctionWithArgumentsAccessGenerator", [
-        GeneratorStub("FunctionWithArgumentsAccessBeginGenerator",
-                      provides: [.subroutine, .javascript]) { b in
-            let randomParameters = probability(0.5) ? .parameters(n: 0) : b.randomParameters()
-            b.setParameterTypesForNextSubroutine(
-                randomParameters.parameterTypes)
-            let f = b.emit(
-                BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil)).output
-            b.runtimeData.push("functionArgsAccess", f)
-            b.loadArguments()
-        },
-        GeneratorStub("FunctionWithArgumentsAccessEndGenerator", inContext: .single([.javascript, .subroutine])) { b in
-            // Ideally we would like to return the arguments Variable from above here.
-            b.doReturn(b.randomJsVariable())
-            b.emit(EndPlainFunction())
-            let f = b.runtimeData.pop("functionArgsAccess")
-            let args = b.randomJsVariables(n: Int.random(in: 0...5))
-            b.callFunction(f, withArgs: args)
-        },
-    ]),
+    CodeGenerator(
+        "FunctionWithArgumentsAccessGenerator",
+        [
+            GeneratorStub(
+                "FunctionWithArgumentsAccessBeginGenerator",
+                provides: [.subroutine, .javascript]
+            ) { b in
+                let randomParameters = probability(0.5) ? .parameters(n: 0) : b.randomParameters()
+                b.setParameterTypesForNextSubroutine(
+                    randomParameters.parameterTypes)
+                let f = b.emit(
+                    BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil)
+                ).output
+                b.runtimeData.push("functionArgsAccess", f)
+                b.loadArguments()
+            },
+            GeneratorStub(
+                "FunctionWithArgumentsAccessEndGenerator",
+                inContext: .single([.javascript, .subroutine])
+            ) { b in
+                // Ideally we would like to return the arguments Variable from above here.
+                b.doReturn(b.randomJsVariable())
+                b.emit(EndPlainFunction())
+                let f = b.runtimeData.pop("functionArgsAccess")
+                let args = b.randomJsVariables(n: Int.random(in: 0...5))
+                b.callFunction(f, withArgs: args)
+            },
+        ]),
 
     CodeGenerator(
         "DisposableObjVariableGenerator",
         disposableObjVariableGeneratorStubs(
             inContext: .subroutine,
-            withSymbol: "dispose") { b, variable in
-                b.loadDisposableVariable(variable)
-            }),
+            withSymbol: "dispose"
+        ) { b, variable in
+            b.loadDisposableVariable(variable)
+        }),
 
     CodeGenerator(
         "AsyncDisposableObjVariableGenerator",
         disposableObjVariableGeneratorStubs(
             inContext: .asyncFunction,
-            withSymbol: "asyncDispose") { b, variable in
-                b.loadAsyncDisposableVariable(variable)
-            }),
+            withSymbol: "asyncDispose"
+        ) { b, variable in
+            b.loadAsyncDisposableVariable(variable)
+        }),
 
     CodeGenerator(
         "DisposableClassVariableGenerator",
         disposableClassVariableGeneratorStubs(
             inContext: .subroutine,
-            withSymbol: "dispose") { b, variable in
-                b.loadDisposableVariable(variable)
-            }),
+            withSymbol: "dispose"
+        ) { b, variable in
+            b.loadDisposableVariable(variable)
+        }),
 
     CodeGenerator(
         "AsyncDisposableClassVariableGenerator",
         disposableClassVariableGeneratorStubs(
             inContext: .asyncFunction,
-            withSymbol: "asyncDispose") { b, variable in
-                b.loadAsyncDisposableVariable(variable)
-            }),
+            withSymbol: "asyncDispose"
+        ) { b, variable in
+            b.loadAsyncDisposableVariable(variable)
+        }),
 
     CodeGenerator(
         "ObjectLiteralGenerator",
@@ -695,7 +752,8 @@ public let CodeGenerators: [CodeGenerator] = [
         b in
 
         // Try to find a property that hasn't already been added to this literal.
-        let propertyName = b.generateString(b.randomCustomPropertyName,
+        let propertyName = b.generateString(
+            b.randomCustomPropertyName,
             notIn: b.currentObjectLiteral.properties)
         b.currentObjectLiteral.addProperty(
             propertyName, as: b.randomJsVariable())
@@ -731,8 +789,7 @@ public let CodeGenerators: [CodeGenerator] = [
         b.currentObjectLiteral.copyProperties(from: object)
     },
 
-    CodeGenerator("ObjectLiteralPrototypeGenerator", inContext: .single(.objectLiteral))
-    { b in
+    CodeGenerator("ObjectLiteralPrototypeGenerator", inContext: .single(.objectLiteral)) { b in
         // There should only be one __proto__ field in an object literal.
         guard !b.currentObjectLiteral.hasPrototype else { return }
 
@@ -748,7 +805,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method]
             ) { b in
                 // Try to find a method that hasn't already been added to this literal.
-                let methodName = b.generateString(b.randomCustomMethodName,
+                let methodName = b.generateString(
+                    b.randomCustomMethodName,
                     notIn: b.currentObjectLiteral.methods)
 
                 let randomParameters = b.randomParameters()
@@ -759,7 +817,10 @@ public let CodeGenerators: [CodeGenerator] = [
                         methodName: methodName,
                         parameters: randomParameters.parameters))
             },
-            GeneratorStub("ObjectLiteralMethodEndGenerator", inContext: .single([.javascript, .subroutine, .method])) { b in
+            GeneratorStub(
+                "ObjectLiteralMethodEndGenerator",
+                inContext: .single([.javascript, .subroutine, .method])
+            ) { b in
                 b.emit(EndObjectLiteralMethod())
             },
         ]),
@@ -801,7 +862,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method]
             ) { b in
                 // Try to find a property that hasn't already been added and for which a getter has not yet been installed.
-                let propertyName = b.generateString(b.randomCustomPropertyName,
+                let propertyName = b.generateString(
+                    b.randomCustomPropertyName,
                     notIn: b.currentObjectLiteral.properties + b.currentObjectLiteral.getters)
                 b.emit(BeginObjectLiteralGetter(propertyName: propertyName))
             },
@@ -824,7 +886,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method]
             ) { b in
                 // Try to find a property that hasn't already been added and for which a setter has not yet been installed.
-                let propertyName = b.generateString(b.randomCustomPropertyName,
+                let propertyName = b.generateString(
+                    b.randomCustomPropertyName,
                     notIn: b.currentObjectLiteral.properties + b.currentObjectLiteral.setters)
                 b.emit(BeginObjectLiteralSetter(propertyName: propertyName))
             },
@@ -930,18 +993,17 @@ public let CodeGenerators: [CodeGenerator] = [
             },
         ]),
 
-    CodeGenerator("ClassInstancePropertyGenerator", inContext: .single(.classDefinition))
-    { b in
+    CodeGenerator("ClassInstancePropertyGenerator", inContext: .single(.classDefinition)) { b in
         // Try to find a property that hasn't already been added to this literal.
-        let propertyName = b.generateString(b.randomCustomPropertyName,
+        let propertyName = b.generateString(
+            b.randomCustomPropertyName,
             notIn: b.currentClassDefinition.instanceProperties)
 
         var value: Variable? = probability(0.5) ? b.randomJsVariable() : nil
         b.currentClassDefinition.addInstanceProperty(propertyName, value: value)
     },
 
-    CodeGenerator("ClassInstanceElementGenerator", inContext: .single(.classDefinition))
-    { b in
+    CodeGenerator("ClassInstanceElementGenerator", inContext: .single(.classDefinition)) { b in
         // Select an element that hasn't already been added to this literal.
         var index = b.randomIndex()
         while b.currentClassDefinition.instanceElements.contains(index) {
@@ -973,7 +1035,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 // Try to find a method that hasn't already been added to this class.
-                let methodName = b.generateString(b.randomCustomMethodName,
+                let methodName = b.generateString(
+                    b.randomCustomMethodName,
                     notIn: b.currentClassDefinition.instanceMethods)
 
                 let parameters = b.randomParameters()
@@ -1030,13 +1093,15 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 // Try to find a property that hasn't already been added and for which a getter has not yet been installed.
-                let propertyName = b.generateString(b.randomCustomPropertyName,
+                let propertyName = b.generateString(
+                    b.randomCustomPropertyName,
                     notIn: b.currentClassDefinition.instanceProperties
-                         + b.currentClassDefinition.instanceGetters)
+                        + b.currentClassDefinition.instanceGetters)
                 b.emit(BeginClassGetter(propertyName: propertyName, isStatic: false))
             },
             GeneratorStub(
-                "ClassInstanceGetterEndGenerator", inContext: .single([.javascript, .subroutine, .method, .classMethod])
+                "ClassInstanceGetterEndGenerator",
+                inContext: .single([.javascript, .subroutine, .method, .classMethod])
             ) { b in
                 b.doReturn(b.randomJsVariable())
                 b.emit(EndClassGetter())
@@ -1052,9 +1117,10 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 // Try to find a property that hasn't already been added and for which a setter has not yet been installed.
-                let propertyName = b.generateString(b.randomCustomPropertyName,
+                let propertyName = b.generateString(
+                    b.randomCustomPropertyName,
                     notIn: b.currentClassDefinition.instanceProperties
-                         + b.currentClassDefinition.instanceSetters)
+                        + b.currentClassDefinition.instanceSetters)
                 b.emit(BeginClassSetter(propertyName: propertyName, isStatic: false))
             },
             GeneratorStub(
@@ -1069,7 +1135,8 @@ public let CodeGenerators: [CodeGenerator] = [
     CodeGenerator("ClassStaticPropertyGenerator", inContext: .single(.classDefinition)) {
         b in
         // Try to find a property that hasn't already been added to this literal.
-        let propertyName = b.generateString(b.randomCustomPropertyName,
+        let propertyName = b.generateString(
+            b.randomCustomPropertyName,
             notIn: b.currentClassDefinition.staticProperties)
 
         var value: Variable? = probability(0.5) ? b.randomJsVariable() : nil
@@ -1127,7 +1194,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .method, .subroutine, .classMethod]
             ) { b in
                 // Try to find a method that hasn't already been added to this class.
-                let methodName = b.generateString(b.randomCustomMethodName,
+                let methodName = b.generateString(
+                    b.randomCustomMethodName,
                     notIn: b.currentClassDefinition.staticMethods)
                 let parameters = b.randomParameters()
 
@@ -1185,9 +1253,10 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 // Try to find a property that hasn't already been added and for which a getter has not yet been installed.
-                let propertyName = b.generateString(b.randomCustomPropertyName,
+                let propertyName = b.generateString(
+                    b.randomCustomPropertyName,
                     notIn: b.currentClassDefinition.staticProperties
-                         + b.currentClassDefinition.staticGetters)
+                        + b.currentClassDefinition.staticGetters)
                 b.emit(BeginClassGetter(propertyName: propertyName, isStatic: true))
             },
             GeneratorStub(
@@ -1208,9 +1277,10 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 // Try to find a property that hasn't already been added and for which a setter has not yet been installed.
-                let propertyName = b.generateString(b.randomCustomPropertyName,
+                let propertyName = b.generateString(
+                    b.randomCustomPropertyName,
                     notIn: b.currentClassDefinition.staticProperties
-                         + b.currentClassDefinition.staticSetters)
+                        + b.currentClassDefinition.staticSetters)
                 b.emit(BeginClassSetter(propertyName: propertyName, isStatic: true))
             },
             GeneratorStub(
@@ -1230,7 +1300,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 let isStatic = probability(0.3)
-                let existing = isStatic
+                let existing =
+                    isStatic
                     ? b.currentClassDefinition.staticComputedGetters
                     : b.currentClassDefinition.instanceComputedGetters
                 let propertyName = b.randomJsVariable(notIn: existing)
@@ -1254,7 +1325,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 let isStatic = probability(0.3)
-                let existing = isStatic
+                let existing =
+                    isStatic
                     ? b.currentClassDefinition.staticComputedSetters
                     : b.currentClassDefinition.instanceComputedSetters
                 let propertyName = b.randomJsVariable(notIn: existing)
@@ -1272,7 +1344,8 @@ public let CodeGenerators: [CodeGenerator] = [
         "ClassPrivateInstancePropertyGenerator", inContext: .single(.classDefinition)
     ) { b in
         // Try to find a private field that hasn't already been added to this literal.
-        let propertyName = b.generateString(b.randomCustomPropertyName,
+        let propertyName = b.generateString(
+            b.randomCustomPropertyName,
             notIn: b.currentClassDefinition.privateFields)
 
         var value = probability(0.5) ? b.randomJsVariable() : nil
@@ -1289,7 +1362,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 // Try to find a private method that hasn't already been added to this class.
-                let methodName = b.generateString(b.randomCustomPrivateMethodName,
+                let methodName = b.generateString(
+                    b.randomCustomPrivateMethodName,
                     notIn: b.currentClassDefinition.privateFields)
                 let parameters = b.randomParameters()
                 b.emit(
@@ -1311,7 +1385,8 @@ public let CodeGenerators: [CodeGenerator] = [
         "ClassPrivateStaticPropertyGenerator", inContext: .single(.classDefinition)
     ) { b in
         // Try to find a private field that hasn't already been added to this literal.
-        let propertyName = b.generateString(b.randomCustomPropertyName,
+        let propertyName = b.generateString(
+            b.randomCustomPropertyName,
             notIn: b.currentClassDefinition.privateFields)
         var value = probability(0.5) ? b.randomJsVariable() : nil
         b.currentClassDefinition.addPrivateStaticProperty(
@@ -1327,7 +1402,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 provides: [.javascript, .subroutine, .method, .classMethod]
             ) { b in
                 // Try to find a private method that hasn't already been added to this class.
-                let methodName = b.generateString(b.randomCustomPrivateMethodName,
+                let methodName = b.generateString(
+                    b.randomCustomPrivateMethodName,
                     notIn: b.currentClassDefinition.privateFields)
                 let parameters = b.randomParameters()
                 b.emit(
@@ -1423,50 +1499,60 @@ public let CodeGenerators: [CodeGenerator] = [
         b.reassign(variable: builtin, value: value)
     },
 
-    CodeGenerator("PlainFunctionGenerator", [
-        GeneratorStub("PlainFunctionBeginGenerator", provides: [.javascript, .subroutine]) { b in
-            let randomParameters = b.randomParameters()
-            b.setParameterTypesForNextSubroutine(
-                randomParameters.parameterTypes)
-            let instr = b.emit(
-                BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil))
-            if randomParameters.parameters.hasRestParameter && probability(0.2) {
-                b.getProperty("length", of: instr.innerOutputs.last!)
-            }
-            b.runtimeData.push("plainFunction", instr.output)
-        },
-        GeneratorStub("PlainFunctionEndGenerator", inContext: .single([.javascript, .subroutine])) { b in
-            b.doReturn(b.randomJsVariable())
-            b.emit(EndPlainFunction())
-            let f = b.runtimeData.pop("plainFunction")
-            let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
-            b.callFunction(f, withArgs: arguments, guard: !matches)
-        },
-    ]),
+    CodeGenerator(
+        "PlainFunctionGenerator",
+        [
+            GeneratorStub("PlainFunctionBeginGenerator", provides: [.javascript, .subroutine]) {
+                b in
+                let randomParameters = b.randomParameters()
+                b.setParameterTypesForNextSubroutine(
+                    randomParameters.parameterTypes)
+                let instr = b.emit(
+                    BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil))
+                if randomParameters.parameters.hasRestParameter && probability(0.2) {
+                    b.getProperty("length", of: instr.innerOutputs.last!)
+                }
+                b.runtimeData.push("plainFunction", instr.output)
+            },
+            GeneratorStub(
+                "PlainFunctionEndGenerator", inContext: .single([.javascript, .subroutine])
+            ) { b in
+                b.doReturn(b.randomJsVariable())
+                b.emit(EndPlainFunction())
+                let f = b.runtimeData.pop("plainFunction")
+                let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
+                b.callFunction(f, withArgs: arguments, guard: !matches)
+            },
+        ]),
 
-    CodeGenerator("StrictModeFunctionGenerator", [
-        GeneratorStub("StrictModeFunctionBeginGenerator", provides: [.subroutine, .javascript]) { b in
-            // We could consider having a standalone DirectiveGenerator, but probably most of the time it won't do anything meaningful.
-            // We could also consider keeping a list of known directives in the JavaScriptEnvironment, but currently we only use 'use strict'.
-            let randomParameters = b.randomParameters()
-            b.setParameterTypesForNextSubroutine(
-                randomParameters.parameterTypes)
-            let instr = b.emit(
-                BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil))
-            if randomParameters.parameters.hasRestParameter && probability(0.2) {
-                b.getProperty("length", of: instr.innerOutputs.last!)
-            }
-            b.runtimeData.push("strictFunction", instr.output)
-            b.directive("use strict")
-        },
-        GeneratorStub("StrictModeFunctionEndGenerator", inContext: .single([.javascript, .subroutine])) { b in
-            b.doReturn(b.randomJsVariable())
-            b.emit(EndPlainFunction())
-            let f = b.runtimeData.pop("strictFunction")
-            let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
-            b.callFunction(f, withArgs: arguments, guard: !matches)
-        },
-    ]),
+    CodeGenerator(
+        "StrictModeFunctionGenerator",
+        [
+            GeneratorStub("StrictModeFunctionBeginGenerator", provides: [.subroutine, .javascript])
+            { b in
+                // We could consider having a standalone DirectiveGenerator, but probably most of the time it won't do anything meaningful.
+                // We could also consider keeping a list of known directives in the JavaScriptEnvironment, but currently we only use 'use strict'.
+                let randomParameters = b.randomParameters()
+                b.setParameterTypesForNextSubroutine(
+                    randomParameters.parameterTypes)
+                let instr = b.emit(
+                    BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil))
+                if randomParameters.parameters.hasRestParameter && probability(0.2) {
+                    b.getProperty("length", of: instr.innerOutputs.last!)
+                }
+                b.runtimeData.push("strictFunction", instr.output)
+                b.directive("use strict")
+            },
+            GeneratorStub(
+                "StrictModeFunctionEndGenerator", inContext: .single([.javascript, .subroutine])
+            ) { b in
+                b.doReturn(b.randomJsVariable())
+                b.emit(EndPlainFunction())
+                let f = b.runtimeData.pop("strictFunction")
+                let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
+                b.callFunction(f, withArgs: arguments, guard: !matches)
+            },
+        ]),
 
     CodeGenerator(
         "ArrowFunctionGenerator",
@@ -1493,56 +1579,72 @@ public let CodeGenerators: [CodeGenerator] = [
             },
         ]),
 
-    CodeGenerator("GeneratorFunctionGenerator", [
-        GeneratorStub("GeneratorFunctionBeginGenerator", provides: [.generatorFunction, .subroutine, .javascript]) { b in
-            let randomParameters = b.randomParameters()
-            b.setParameterTypesForNextSubroutine(
-                randomParameters.parameterTypes)
-            let instr = b.emit(
-                BeginGeneratorFunction(parameters: randomParameters.parameters, functionName: nil))
-            if randomParameters.parameters.hasRestParameter && probability(0.2) {
-                b.getProperty("length", of: instr.innerOutputs.last!)
-            }
-            b.runtimeData.push("generatorFunction", instr.output)
-        },
-        GeneratorStub("GeneratorFunctionEndGenerator", inContext: .single([.generatorFunction, .subroutine, .javascript])) { b in
-            if probability(0.5) {
-                b.yield(b.randomJsVariable())
-            } else {
-                let randomVariables = b.randomJsVariables(
-                    n: Int.random(in: 1...5))
-                let array = b.createArray(with: randomVariables)
-                b.yieldEach(array)
-            }
-            b.doReturn(b.randomJsVariable())
-            b.emit(EndGeneratorFunction())
-            let f = b.runtimeData.pop("generatorFunction")
-            let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
-            b.callFunction(f, withArgs: arguments, guard: !matches)
-        },
-    ]),
+    CodeGenerator(
+        "GeneratorFunctionGenerator",
+        [
+            GeneratorStub(
+                "GeneratorFunctionBeginGenerator",
+                provides: [.generatorFunction, .subroutine, .javascript]
+            ) { b in
+                let randomParameters = b.randomParameters()
+                b.setParameterTypesForNextSubroutine(
+                    randomParameters.parameterTypes)
+                let instr = b.emit(
+                    BeginGeneratorFunction(
+                        parameters: randomParameters.parameters, functionName: nil))
+                if randomParameters.parameters.hasRestParameter && probability(0.2) {
+                    b.getProperty("length", of: instr.innerOutputs.last!)
+                }
+                b.runtimeData.push("generatorFunction", instr.output)
+            },
+            GeneratorStub(
+                "GeneratorFunctionEndGenerator",
+                inContext: .single([.generatorFunction, .subroutine, .javascript])
+            ) { b in
+                if probability(0.5) {
+                    b.yield(b.randomJsVariable())
+                } else {
+                    let randomVariables = b.randomJsVariables(
+                        n: Int.random(in: 1...5))
+                    let array = b.createArray(with: randomVariables)
+                    b.yieldEach(array)
+                }
+                b.doReturn(b.randomJsVariable())
+                b.emit(EndGeneratorFunction())
+                let f = b.runtimeData.pop("generatorFunction")
+                let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
+                b.callFunction(f, withArgs: arguments, guard: !matches)
+            },
+        ]),
 
-    CodeGenerator("AsyncFunctionGenerator", [
-        GeneratorStub("AsyncFunctionBeginGenerator", provides: [.javascript, .subroutine, .asyncFunction]) { b in
-            let randomParameters = b.randomParameters()
-            b.setParameterTypesForNextSubroutine(
-                randomParameters.parameterTypes)
-            let instr = b.emit(
-                BeginAsyncFunction(parameters: randomParameters.parameters, functionName: nil))
-            if randomParameters.parameters.hasRestParameter && probability(0.2) {
-                b.getProperty("length", of: instr.innerOutputs.last!)
-            }
-            b.runtimeData.push("asyncFunction", instr.output)
-        },
-        GeneratorStub("AsyncFunctionEndGenerator", inContext: .single([.javascript, .subroutine, .asyncFunction])) { b in
-            b.await(b.randomJsVariable())
-            b.doReturn(b.randomJsVariable())
-            b.emit(EndAsyncFunction())
-            let f = b.runtimeData.pop("asyncFunction")
-            let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
-            b.callFunction(f, withArgs: arguments, guard: !matches)
-        },
-    ]),
+    CodeGenerator(
+        "AsyncFunctionGenerator",
+        [
+            GeneratorStub(
+                "AsyncFunctionBeginGenerator", provides: [.javascript, .subroutine, .asyncFunction]
+            ) { b in
+                let randomParameters = b.randomParameters()
+                b.setParameterTypesForNextSubroutine(
+                    randomParameters.parameterTypes)
+                let instr = b.emit(
+                    BeginAsyncFunction(parameters: randomParameters.parameters, functionName: nil))
+                if randomParameters.parameters.hasRestParameter && probability(0.2) {
+                    b.getProperty("length", of: instr.innerOutputs.last!)
+                }
+                b.runtimeData.push("asyncFunction", instr.output)
+            },
+            GeneratorStub(
+                "AsyncFunctionEndGenerator",
+                inContext: .single([.javascript, .subroutine, .asyncFunction])
+            ) { b in
+                b.await(b.randomJsVariable())
+                b.doReturn(b.randomJsVariable())
+                b.emit(EndAsyncFunction())
+                let f = b.runtimeData.pop("asyncFunction")
+                let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
+                b.callFunction(f, withArgs: arguments, guard: !matches)
+            },
+        ]),
 
     CodeGenerator(
         "AsyncArrowFunctionGenerator",
@@ -1580,36 +1682,44 @@ public let CodeGenerators: [CodeGenerator] = [
 
     // This should likely be a Generator.
     // Cannot mark this as producing, as that would turn this into a value generator, but we call into .build.
-    CodeGenerator("AsyncGeneratorFunctionGenerator", [
-        GeneratorStub("AsyncGeneratorFunctionBeginGenerator", provides: [.javascript, .subroutine, .asyncFunction, .generatorFunction]) { b in
-            let randomParameters = b.randomParameters()
-            b.setParameterTypesForNextSubroutine(
-                randomParameters.parameterTypes)
-            let instr = b.emit(
-                BeginAsyncGeneratorFunction(
-                    parameters: randomParameters.parameters, functionName: nil))
-            if randomParameters.parameters.hasRestParameter && probability(0.2) {
-                b.getProperty("length", of: instr.innerOutputs.last!)
-            }
-            b.runtimeData.push("asyncGeneratorFunction", instr.output)
-        },
-        GeneratorStub("AsyncGeneratorFunctionEndGenerator", inContext: .single([.javascript, .subroutine, .generatorFunction, .asyncFunction])) { b in
-            b.await(b.randomJsVariable())
-            if probability(0.5) {
-                b.yield(b.randomJsVariable())
-            } else {
-                let randomVariables = b.randomJsVariables(
-                    n: Int.random(in: 1...5))
-                let array = b.createArray(with: randomVariables)
-                b.yieldEach(array)
-            }
-            b.doReturn(b.randomJsVariable())
-            b.emit(EndAsyncGeneratorFunction())
-            let f = b.runtimeData.pop("asyncGeneratorFunction")
-            let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
-            b.callFunction(f, withArgs: arguments, guard: !matches)
-        },
-    ]),
+    CodeGenerator(
+        "AsyncGeneratorFunctionGenerator",
+        [
+            GeneratorStub(
+                "AsyncGeneratorFunctionBeginGenerator",
+                provides: [.javascript, .subroutine, .asyncFunction, .generatorFunction]
+            ) { b in
+                let randomParameters = b.randomParameters()
+                b.setParameterTypesForNextSubroutine(
+                    randomParameters.parameterTypes)
+                let instr = b.emit(
+                    BeginAsyncGeneratorFunction(
+                        parameters: randomParameters.parameters, functionName: nil))
+                if randomParameters.parameters.hasRestParameter && probability(0.2) {
+                    b.getProperty("length", of: instr.innerOutputs.last!)
+                }
+                b.runtimeData.push("asyncGeneratorFunction", instr.output)
+            },
+            GeneratorStub(
+                "AsyncGeneratorFunctionEndGenerator",
+                inContext: .single([.javascript, .subroutine, .generatorFunction, .asyncFunction])
+            ) { b in
+                b.await(b.randomJsVariable())
+                if probability(0.5) {
+                    b.yield(b.randomJsVariable())
+                } else {
+                    let randomVariables = b.randomJsVariables(
+                        n: Int.random(in: 1...5))
+                    let array = b.createArray(with: randomVariables)
+                    b.yieldEach(array)
+                }
+                b.doReturn(b.randomJsVariable())
+                b.emit(EndAsyncGeneratorFunction())
+                let f = b.runtimeData.pop("asyncGeneratorFunction")
+                let (arguments, matches) = b.randomArguments(forCallingGuardableFunction: f)
+                b.callFunction(f, withArgs: arguments, guard: !matches)
+            },
+        ]),
 
     CodeGenerator("PropertyRetrievalGenerator", inputs: .preferred(.object())) {
         b, obj in
@@ -1628,13 +1738,13 @@ public let CodeGenerators: [CodeGenerator] = [
     //   console.log(y() === x); // false
     CodeGenerator("MethodAsPropertyRetrievalGenerator", inputs: .preferred(.object())) { b, obj in
         let type = b.type(of: obj)
-        let propertyName = type.randomMethod() ?? type.randomProperty() ?? b.randomCustomPropertyName()
+        let propertyName =
+            type.randomMethod() ?? type.randomProperty() ?? b.randomCustomPropertyName()
         let needGuard = b.type(of: obj).MayBe(.nullish)
         b.getProperty(propertyName, of: obj, guard: needGuard)
     },
 
-    CodeGenerator("PropertyAssignmentGenerator", inputs: .preferred(.object()))
-    { b, obj in
+    CodeGenerator("PropertyAssignmentGenerator", inputs: .preferred(.object())) { b, obj in
         let propertyName: String
         // Either change an existing property or define a new one
         if probability(0.5) {
@@ -1872,11 +1982,13 @@ public let CodeGenerators: [CodeGenerator] = [
 
     CodeGenerator("IteratorZipGenerator", inputs: .one) { b, val in
         // Create an iterable of iterables
-        let iterable : Variable;
+        let iterable: Variable
         let topLevelIterableSize = Int.random(in: 0...10)
         if probability(0.8) {
             // Use Array as the top level iterable
-            let iterables = (0..<topLevelIterableSize).map {_ in b.randomVariable(ofType: .iterable) ?? val}
+            let iterables = (0..<topLevelIterableSize).map { _ in
+                b.randomVariable(ofType: .iterable) ?? val
+            }
             iterable = b.createArray(with: iterables)
         } else {
             // Use Map as the top level iterable
@@ -1893,7 +2005,7 @@ public let CodeGenerators: [CodeGenerator] = [
         }
 
         let iteratorConstructor = b.createNamedVariable(forBuiltin: "Iterator")
-        let arguments : [Variable];
+        let arguments: [Variable]
         if probability(0.5) {
             arguments = [iterable]
         } else {
@@ -1946,8 +2058,7 @@ public let CodeGenerators: [CodeGenerator] = [
             guard: needGuard)
     },
 
-    CodeGenerator("ComputedMethodCallGenerator", inputs: .preferred(.object()))
-    { b, obj in
+    CodeGenerator("ComputedMethodCallGenerator", inputs: .preferred(.object())) { b, obj in
         let methodName: String
         let needGuard: Bool
         if let existingMethod = b.type(of: obj).randomMethod() {
@@ -2023,7 +2134,8 @@ public let CodeGenerators: [CodeGenerator] = [
     CodeGenerator("UnboundFunctionCallGenerator", inputs: .preferred(.unboundFunction())) { b, f in
         let (arguments, argsMatch) = b.randomArguments(forCallingGuardableFunction: f)
         let fctType = b.type(of: f)
-        let (receiver, recMatches) = b.randomVariable(forUseAsGuarded: fctType.receiver ?? .object())
+        let (receiver, recMatches) = b.randomVariable(
+            forUseAsGuarded: fctType.receiver ?? .object())
         let needGuard = fctType.MayNotBe(.unboundFunction()) || !argsMatch || !recMatches
         // For simplicity we just hard-code the call function. If this was a separate IL
         // instruction, the JSTyper could infer the result type.
@@ -2033,11 +2145,13 @@ public let CodeGenerators: [CodeGenerator] = [
     CodeGenerator("UnboundFunctionApplyGenerator", inputs: .preferred(.unboundFunction())) { b, f in
         let (arguments, argsMatch) = b.randomArguments(forCallingGuardableFunction: f)
         let fctType = b.type(of: f)
-        let (receiver, recMatches) = b.randomVariable(forUseAsGuarded: fctType.receiver ?? .object())
+        let (receiver, recMatches) = b.randomVariable(
+            forUseAsGuarded: fctType.receiver ?? .object())
         let needGuard = fctType.MayNotBe(.unboundFunction()) || !argsMatch || !recMatches
         // For simplicity we just hard-code the apply function. If this was a separate IL
         // instruction, the JSTyper could infer the result type.
-        b.callMethod("apply", on: f, withArgs: [receiver, b.createArray(with: arguments)], guard: needGuard)
+        b.callMethod(
+            "apply", on: f, withArgs: [receiver, b.createArray(with: arguments)], guard: needGuard)
     },
 
     CodeGenerator("UnboundFunctionBindGenerator", inputs: .required(.unboundFunction())) { b, f in
@@ -2066,8 +2180,8 @@ public let CodeGenerators: [CodeGenerator] = [
         }
     },
 
-    CodeGenerator("YieldGenerator", inContext: .single(.generatorFunction), inputs: .one)
-    { b, val in
+    CodeGenerator("YieldGenerator", inContext: .single(.generatorFunction), inputs: .one) {
+        b, val in
         if probability(0.9) {
             b.yield(val)
         } else {
@@ -2320,8 +2434,7 @@ public let CodeGenerators: [CodeGenerator] = [
         b.setSuperProperty(propertyName, to: b.randomJsVariable())
     },
 
-    CodeGenerator("ComputedSuperPropertyRetrievalGenerator", inContext: .single(.method))
-    { b in
+    CodeGenerator("ComputedSuperPropertyRetrievalGenerator", inContext: .single(.method)) { b in
         let superType = b.currentSuperType()
         let property = b.randomJsVariable()
         b.getComputedSuperProperty(property)
@@ -2597,7 +2710,8 @@ public let CodeGenerators: [CodeGenerator] = [
                 let vars = b.emit(
                     BeginForOfLoopWithDestruct(
                         indices: indices, hasRestElement: hasRestElement),
-                    withInputs: [obj]).innerOutputs
+                    withInputs: [obj]
+                ).innerOutputs
                 if hasRestElement && probability(0.2) {
                     b.getProperty("length", of: vars.last!)
                 }
@@ -2759,7 +2873,8 @@ public let CodeGenerators: [CodeGenerator] = [
         b.getProperty("__proto__", of: obj, guard: needGuard)
     },
 
-    CodeGenerator("PrototypeOverwriteGenerator", inputs: .preferred(.object(), .object())) { b, obj, proto in
+    CodeGenerator("PrototypeOverwriteGenerator", inputs: .preferred(.object(), .object())) {
+        b, obj, proto in
         // Check for obj == proto to reduce the chance of cyclic prototype chains.
         let needGuard = b.type(of: obj).MayBe(.nullish) || obj == proto
         b.setProperty("__proto__", of: obj, to: proto, guard: needGuard)
@@ -2822,23 +2937,27 @@ public let CodeGenerators: [CodeGenerator] = [
         b.construct(Proxy, withArgs: [target, handler])
     },
 
-    CodeGenerator("PromiseGenerator", [
-        GeneratorStub("PromiseBeginGenerator", provides: [.subroutine, .javascript]) { b in
-            let randomParameters = b.randomParameters()
-            b.setParameterTypesForNextSubroutine(
-                randomParameters.parameterTypes)
-            let handler = b.emit(
-                BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil)).output
-            b.runtimeData.push("promiseHandler", handler)
-        },
-        GeneratorStub("PromiseEndGenerator", inContext: .single([.subroutine, .javascript])) { b in
-            b.emit(EndPlainFunction())
-            let handler = b.runtimeData.pop("promiseHandler")
-            let Promise = b.createNamedVariable(forBuiltin: "Promise")
-            b.hide(Promise)  // We want the promise to be used by following code generators, not the Promise constructor
-            b.construct(Promise, withArgs: [handler])
-        },
-    ]),
+    CodeGenerator(
+        "PromiseGenerator",
+        [
+            GeneratorStub("PromiseBeginGenerator", provides: [.subroutine, .javascript]) { b in
+                let randomParameters = b.randomParameters()
+                b.setParameterTypesForNextSubroutine(
+                    randomParameters.parameterTypes)
+                let handler = b.emit(
+                    BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil)
+                ).output
+                b.runtimeData.push("promiseHandler", handler)
+            },
+            GeneratorStub("PromiseEndGenerator", inContext: .single([.subroutine, .javascript])) {
+                b in
+                b.emit(EndPlainFunction())
+                let handler = b.runtimeData.pop("promiseHandler")
+                let Promise = b.createNamedVariable(forBuiltin: "Promise")
+                b.hide(Promise)  // We want the promise to be used by following code generators, not the Promise constructor
+                b.construct(Promise, withArgs: [handler])
+            },
+        ]),
 
     // Tries to change the length property of some object
     CodeGenerator("LengthChangeGenerator", inputs: .preferred(.object())) {
@@ -2885,18 +3004,20 @@ public let CodeGenerators: [CodeGenerator] = [
             },
         ]),
 
-    CodeGenerator("EvalGenerator", [
-        GeneratorStub("EvalBeginGenerator", provides: [.javascript]) { b in
-            let code = b.emit(BeginCodeString()).output
-            b.runtimeData.push("codeToEval", code)
-        },
-        GeneratorStub("EvalEndGenerator") { b in
-            b.emit(EndCodeString())
-            let code = b.runtimeData.pop("codeToEval")
-            let eval = b.createNamedVariable(forBuiltin: "eval")
-            b.callFunction(eval, withArgs: [code])
-        },
-    ]),
+    CodeGenerator(
+        "EvalGenerator",
+        [
+            GeneratorStub("EvalBeginGenerator", provides: [.javascript]) { b in
+                let code = b.emit(BeginCodeString()).output
+                b.runtimeData.push("codeToEval", code)
+            },
+            GeneratorStub("EvalEndGenerator") { b in
+                b.emit(EndCodeString())
+                let code = b.runtimeData.pop("codeToEval")
+                let eval = b.createNamedVariable(forBuiltin: "eval")
+                b.callFunction(eval, withArgs: [code])
+            },
+        ]),
 
     CodeGenerator(
         "BlockStatementGenerator",
@@ -2977,8 +3098,7 @@ public let CodeGenerators: [CodeGenerator] = [
             } else {
                 let toPrimitive = b.createSymbolProperty("toPrimitive")
                 imitation = b.buildObjectLiteral { obj in
-                    obj.addComputedMethod(toPrimitive, with: .parameters(n: 0))
-                    { _ in
+                    obj.addComputedMethod(toPrimitive, with: .parameters(n: 0)) { _ in
                         b.buildRecursive(n: 3)
                         b.doReturn(orig)
                     }
@@ -2995,7 +3115,9 @@ public let CodeGenerators: [CodeGenerator] = [
             // Either make a class that extends that object's constructor or make a new object with the original object as prototype.
             if probability(0.5) {
                 let constructor = b.getProperty("constructor", of: orig)
-                let cls = b.buildClassDefinition(withSuperclass: constructor, isExpression: probability(0.3)) {
+                let cls = b.buildClassDefinition(
+                    withSuperclass: constructor, isExpression: probability(0.3)
+                ) {
                     _ in
                     b.buildRecursive(n: 3)
                 }

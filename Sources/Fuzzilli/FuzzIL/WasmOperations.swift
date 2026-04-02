@@ -12,20 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 import Foundation
 
 struct WasmConstants {
-    static let specWasmMemPageSize: Int = 65536      // 64 KB
+    static let specWasmMemPageSize: Int = 65536  // 64 KB
     // These are the limits defined in v8/src/wasm/wasm-limits.h which is based on https://www.w3.org/TR/wasm-js-api-2/#limits.
     // Note that the memory64 limits will be merged later on.
     // This constant limits the amount of *declared* memory. At runtime, memory can grow up to only a limit based on the architecture type.
-    static let specMaxWasmMem32Pages: Int = 65536    // 4GB
-    static let specMaxWasmMem64Pages: Int = 262144;  // 16GB
+    static let specMaxWasmMem32Pages: Int = 65536  // 4GB
+    static let specMaxWasmMem64Pages: Int = 262144  // 16GB
 }
 
 // Base class for all wasm operations.
-public class WasmOperation : Operation {
+public class WasmOperation: Operation {
 }
 
 final class Consti64: WasmOperation {
@@ -89,8 +88,8 @@ final class WasmReturn: WasmOperation {
 //
 
 public enum WasmIntegerCompareOpKind: UInt8, CaseIterable {
-    case Eq   = 0
-    case Ne   = 1
+    case Eq = 0
+    case Ne = 1
     case Lt_s = 2
     case Lt_u = 3
     case Gt_s = 4
@@ -124,7 +123,8 @@ final class Wasmi32CompareOp: WasmOperation {
 
     init(compareOpKind: WasmIntegerCompareOpKind) {
         self.compareOpKind = compareOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -134,7 +134,8 @@ final class Wasmi64CompareOp: WasmOperation {
 
     init(compareOpKind: WasmIntegerCompareOpKind) {
         self.compareOpKind = compareOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -170,7 +171,8 @@ final class Wasmf32CompareOp: WasmOperation {
 
     init(compareOpKind: WasmFloatCompareOpKind) {
         self.compareOpKind = compareOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -180,7 +182,8 @@ final class Wasmf64CompareOp: WasmOperation {
 
     init(compareOpKind: WasmFloatCompareOpKind) {
         self.compareOpKind = compareOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -238,7 +241,8 @@ final class Wasmi32BinOp: WasmOperation {
 
     init(binOpKind: WasmIntegerBinaryOpKind) {
         self.binOpKind = binOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -248,7 +252,8 @@ final class Wasmi64BinOp: WasmOperation {
 
     init(binOpKind: WasmIntegerBinaryOpKind) {
         self.binOpKind = binOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -304,18 +309,18 @@ public enum WasmAtomicRMWType: UInt8, CaseIterable {
     func type() -> ILType {
         switch self {
         case .i32Add, .i32Add8U, .i32Add16U,
-             .i32Sub, .i32Sub8U, .i32Sub16U,
-             .i32And, .i32And8U, .i32And16U,
-             .i32Or, .i32Or8U, .i32Or16U,
-             .i32Xor, .i32Xor8U, .i32Xor16U,
-             .i32Xchg, .i32Xchg8U, .i32Xchg16U:
+            .i32Sub, .i32Sub8U, .i32Sub16U,
+            .i32And, .i32And8U, .i32And16U,
+            .i32Or, .i32Or8U, .i32Or16U,
+            .i32Xor, .i32Xor8U, .i32Xor16U,
+            .i32Xchg, .i32Xchg8U, .i32Xchg16U:
             return .wasmi32
         case .i64Add, .i64Add8U, .i64Add16U, .i64Add32U,
-             .i64Sub, .i64Sub8U, .i64Sub16U, .i64Sub32U,
-             .i64And, .i64And8U, .i64And16U, .i64And32U,
-             .i64Or, .i64Or8U, .i64Or16U, .i64Or32U,
-             .i64Xor, .i64Xor8U, .i64Xor16U, .i64Xor32U,
-             .i64Xchg, .i64Xchg8U, .i64Xchg16U, .i64Xchg32U:
+            .i64Sub, .i64Sub8U, .i64Sub16U, .i64Sub32U,
+            .i64And, .i64And8U, .i64And16U, .i64And32U,
+            .i64Or, .i64Or8U, .i64Or16U, .i64Or32U,
+            .i64Xor, .i64Xor8U, .i64Xor16U, .i64Xor32U,
+            .i64Xchg, .i64Xchg8U, .i64Xchg16U, .i64Xchg32U:
             return .wasmi64
         }
     }
@@ -323,29 +328,29 @@ public enum WasmAtomicRMWType: UInt8, CaseIterable {
     func naturalAlignment() -> Int64 {
         switch self {
         case .i32Add8U, .i64Add8U,
-             .i32Sub8U, .i64Sub8U,
-             .i32And8U, .i64And8U,
-             .i32Or8U, .i64Or8U,
-             .i32Xor8U, .i64Xor8U,
-             .i32Xchg8U, .i64Xchg8U:
+            .i32Sub8U, .i64Sub8U,
+            .i32And8U, .i64And8U,
+            .i32Or8U, .i64Or8U,
+            .i32Xor8U, .i64Xor8U,
+            .i32Xchg8U, .i64Xchg8U:
             return 1
         case .i32Add16U, .i64Add16U,
-             .i32Sub16U, .i64Sub16U,
-             .i32And16U, .i64And16U,
-             .i32Or16U, .i64Or16U,
-             .i32Xor16U, .i64Xor16U,
-             .i32Xchg16U, .i64Xchg16U:
+            .i32Sub16U, .i64Sub16U,
+            .i32And16U, .i64And16U,
+            .i32Or16U, .i64Or16U,
+            .i32Xor16U, .i64Xor16U,
+            .i32Xchg16U, .i64Xchg16U:
             return 2
         case .i32Add, .i64Add32U,
-             .i32Sub, .i64Sub32U,
-             .i32And, .i64And32U,
-             .i32Or, .i64Or32U,
-             .i32Xor, .i64Xor32U,
-             .i32Xchg, .i64Xchg32U:
+            .i32Sub, .i64Sub32U,
+            .i32And, .i64And32U,
+            .i32Or, .i64Or32U,
+            .i32Xor, .i64Xor32U,
+            .i32Xchg, .i64Xchg32U:
             return 4
         case .i64Add, .i64Sub,
-             .i64And, .i64Or,
-             .i64Xor, .i64Xchg:
+            .i64And, .i64Or,
+            .i64Xor, .i64Xchg:
             return 8
         }
     }
@@ -357,7 +362,8 @@ final class Wasmi32UnOp: WasmOperation {
 
     init(unOpKind: WasmIntegerUnaryOpKind) {
         self.unOpKind = unOpKind
-        super.init(numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -367,7 +373,8 @@ final class Wasmi64UnOp: WasmOperation {
 
     init(unOpKind: WasmIntegerUnaryOpKind) {
         self.unOpKind = unOpKind
-        super.init(numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -405,7 +412,8 @@ final class Wasmf32BinOp: WasmOperation {
 
     init(binOpKind: WasmFloatBinaryOpKind) {
         self.binOpKind = binOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -415,27 +423,30 @@ final class Wasmf64BinOp: WasmOperation {
 
     init(binOpKind: WasmFloatBinaryOpKind) {
         self.binOpKind = binOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
 final class Wasmf32UnOp: WasmOperation {
-    override var opcode: Opcode { .wasmf32UnOp(self)}
+    override var opcode: Opcode { .wasmf32UnOp(self) }
     let unOpKind: WasmFloatUnaryOpKind
 
     init(unOpKind: WasmFloatUnaryOpKind) {
         self.unOpKind = unOpKind
-        super.init(numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
 final class Wasmf64UnOp: WasmOperation {
-    override var opcode: Opcode { .wasmf64UnOp(self)}
+    override var opcode: Opcode { .wasmf64UnOp(self) }
     let unOpKind: WasmFloatUnaryOpKind
 
     init(unOpKind: WasmFloatUnaryOpKind) {
         self.unOpKind = unOpKind
-        super.init(numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -703,7 +714,6 @@ public enum WasmGlobal {
     // This is the case for imported Globals, we just need the type here.
     case imported(ILType)
 
-
     func toType() -> ILType {
         switch self {
         case .wasmi64:
@@ -728,7 +738,7 @@ public enum WasmGlobal {
         }
     }
 
-func typeString() -> String {
+    func typeString() -> String {
         switch self {
         case .wasmi64(_):
             return "i64"
@@ -749,9 +759,8 @@ func typeString() -> String {
         }
     }
 
-
     // Returns a JS string representing the initial value.
-func valueToString() -> String {
+    func valueToString() -> String {
         switch self {
         case .wasmi64(let val):
             return "\(val)n"
@@ -764,7 +773,7 @@ func valueToString() -> String {
         case .externref:
             return ""
         case .exnref,
-             .i31ref:
+            .i31ref:
             return "null"
         default:
             fatalError("Unimplemented / unhandled")
@@ -794,7 +803,10 @@ final class WasmDefineTable: WasmOperation {
     let definedEntries: [WasmTableType.IndexInTableAndWasmSignature]
     let isTable64: Bool
 
-    init(elementType: ILType, limits: Limits, definedEntries: [WasmTableType.IndexInTableAndWasmSignature], isTable64: Bool) {
+    init(
+        elementType: ILType, limits: Limits,
+        definedEntries: [WasmTableType.IndexInTableAndWasmSignature], isTable64: Bool
+    ) {
         self.elementType = elementType
         self.limits = limits
         self.isTable64 = isTable64
@@ -804,10 +816,11 @@ final class WasmDefineTable: WasmOperation {
         let isWasmFuncRef = elementType == .wasmFuncRef()
         assert(isWasmFuncRef || definedEntries.isEmpty)
 
-        super.init(numInputs: isWasmFuncRef ? definedEntries.count : 0,
-                   numOutputs: 1,
-                   attributes: [.isMutable],
-                   requiredContext: [.wasm])
+        super.init(
+            numInputs: isWasmFuncRef ? definedEntries.count : 0,
+            numOutputs: 1,
+            attributes: [.isMutable],
+            requiredContext: [.wasm])
     }
 }
 
@@ -892,7 +905,9 @@ final class WasmLoadGlobal: WasmOperation {
     init(globalType: ILType) {
         assert(globalType.Is(.wasmPrimitive))
         self.globalType = globalType
-        super.init(numInputs: 1, numOutputs: 1, attributes: [.isNotInputMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1, numOutputs: 1, attributes: [.isNotInputMutable],
+            requiredContext: [.wasmFunction])
     }
 }
 
@@ -947,7 +962,9 @@ final class WasmCallIndirect: WasmOperation {
 
     init(signature: WasmSignature) {
         self.signature = signature
-        super.init(numInputs: 2 + signature.parameterTypes.count, numOutputs: signature.outputTypes.count, requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2 + signature.parameterTypes.count, numOutputs: signature.outputTypes.count,
+            requiredContext: [.wasmFunction])
     }
 }
 
@@ -955,20 +972,24 @@ final class WasmCallDirect: WasmOperation {
     override var opcode: Opcode { .wasmCallDirect(self) }
 
     init(parameterCount: Int, outputCount: Int) {
-        super.init(numInputs: 1 + parameterCount, numOutputs: outputCount, requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + parameterCount, numOutputs: outputCount, requiredContext: [.wasmFunction]
+        )
     }
 
-    var parameterCount: Int {numInputs - 1}
+    var parameterCount: Int { numInputs - 1 }
 }
 
 final class WasmReturnCallDirect: WasmOperation {
     override var opcode: Opcode { .wasmReturnCallDirect(self) }
 
     init(parameterCount: Int) {
-        super.init(numInputs: 1 + parameterCount, numOutputs: 0, attributes: [.isJump], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + parameterCount, numOutputs: 0, attributes: [.isJump],
+            requiredContext: [.wasmFunction])
     }
 
-    var parameterCount: Int {numInputs - 1}
+    var parameterCount: Int { numInputs - 1 }
 }
 
 final class WasmReturnCallIndirect: WasmOperation {
@@ -977,7 +998,9 @@ final class WasmReturnCallIndirect: WasmOperation {
 
     init(signature: WasmSignature) {
         self.signature = signature
-        super.init(numInputs: 2 + signature.parameterTypes.count, numOutputs: 0, attributes: [.isJump], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2 + signature.parameterTypes.count, numOutputs: 0, attributes: [.isJump],
+            requiredContext: [.wasmFunction])
     }
 }
 
@@ -1012,24 +1035,24 @@ public enum WasmMemoryLoadType: UInt8, CaseIterable {
 
     func numberType() -> ILType {
         switch self {
-            case .I32LoadMem,
-                 .I32LoadMem8S,
-                 .I32LoadMem8U,
-                 .I32LoadMem16S,
-                 .I32LoadMem16U:
-                return .wasmi32
-            case .I64LoadMem,
-                 .I64LoadMem8S,
-                 .I64LoadMem8U,
-                 .I64LoadMem16S,
-                 .I64LoadMem16U,
-                 .I64LoadMem32S,
-                 .I64LoadMem32U:
-                return .wasmi64
-            case .F32LoadMem:
-                return .wasmf32
-            case .F64LoadMem:
-                return .wasmf64
+        case .I32LoadMem,
+            .I32LoadMem8S,
+            .I32LoadMem8U,
+            .I32LoadMem16S,
+            .I32LoadMem16U:
+            return .wasmi32
+        case .I64LoadMem,
+            .I64LoadMem8S,
+            .I64LoadMem8U,
+            .I64LoadMem16S,
+            .I64LoadMem16U,
+            .I64LoadMem32S,
+            .I64LoadMem32U:
+            return .wasmi64
+        case .F32LoadMem:
+            return .wasmf32
+        case .F64LoadMem:
+            return .wasmf64
         }
     }
 }
@@ -1043,7 +1066,8 @@ final class WasmMemoryLoad: WasmOperation {
     init(loadType: WasmMemoryLoadType, staticOffset: Int64) {
         self.loadType = loadType
         self.staticOffset = staticOffset
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -1058,25 +1082,25 @@ public enum WasmMemoryStoreType: UInt8, CaseIterable {
     case I64StoreMem8 = 0x3c
     case I64StoreMem16 = 0x3d
     case I64StoreMem32 = 0x3e
-    case S128StoreMem = 0x0B // Requires SIMD prefix!
+    case S128StoreMem = 0x0B  // Requires SIMD prefix!
 
     func numberType() -> ILType {
         switch self {
-            case .I32StoreMem,
-                 .I32StoreMem8,
-                 .I32StoreMem16:
-                return .wasmi32
-            case .I64StoreMem,
-                 .I64StoreMem8,
-                 .I64StoreMem16,
-                 .I64StoreMem32:
-                return .wasmi64
-            case .F32StoreMem:
-                return .wasmf32
-            case .F64StoreMem:
-                return .wasmf64
-            case .S128StoreMem:
-                return .wasmSimd128
+        case .I32StoreMem,
+            .I32StoreMem8,
+            .I32StoreMem16:
+            return .wasmi32
+        case .I64StoreMem,
+            .I64StoreMem8,
+            .I64StoreMem16,
+            .I64StoreMem32:
+            return .wasmi64
+        case .F32StoreMem:
+            return .wasmf32
+        case .F64StoreMem:
+            return .wasmf64
+        case .S128StoreMem:
+            return .wasmSimd128
         }
     }
 }
@@ -1217,7 +1241,9 @@ final class WasmJsCall: WasmOperation {
     override var opcode: Opcode { .wasmJsCall(self) }
 
     init(parameterCount: Int, outputCount: Int) {
-        super.init(numInputs: 2 + parameterCount, numOutputs: outputCount, requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2 + parameterCount, numOutputs: outputCount, requiredContext: [.wasmFunction]
+        )
     }
 
     var parameterCount: Int { numInputs - 2 }
@@ -1241,21 +1267,26 @@ final class WasmBeginBlock: WasmOperation {
     init(parameterCount: Int) {
         // Inputs: The signature plus the arguments.
         // Inner outputs: The label plus the arguments.
-        super.init(numInputs: 1 + parameterCount, numInnerOutputs: 1 + parameterCount, attributes: [.isBlockStart, .propagatesSurroundingContext], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + parameterCount, numInnerOutputs: 1 + parameterCount,
+            attributes: [.isBlockStart, .propagatesSurroundingContext],
+            requiredContext: [.wasmFunction])
     }
 
-    var parameterCount: Int {numInputs - 1}
+    var parameterCount: Int { numInputs - 1 }
 }
 
 final class WasmEndBlock: WasmOperation {
     override var opcode: Opcode { .wasmEndBlock(self) }
 
     init(outputCount: Int) {
-        super.init(numInputs: 1 + outputCount, numOutputs: outputCount, attributes: [.isBlockEnd, .resumesSurroundingContext], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + outputCount, numOutputs: outputCount,
+            attributes: [.isBlockEnd, .resumesSurroundingContext], requiredContext: [.wasmFunction])
     }
 }
 
-public enum WasmBranchHint: CaseIterable  {
+public enum WasmBranchHint: CaseIterable {
     case None
     case Likely
     case Unlikely
@@ -1274,10 +1305,13 @@ final class WasmBeginIf: WasmOperation {
         // it needs to be the last one pushed to it.
         // Inputs: The signature, the arguments and the condition.
         // Inner outputs: 1 label (used for branch instructions) plus all the parameters.
-        super.init(numInputs: 2 + parameterCount, numInnerOutputs: 1 + parameterCount, attributes: [.isBlockStart, .propagatesSurroundingContext, .isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2 + parameterCount, numInnerOutputs: 1 + parameterCount,
+            attributes: [.isBlockStart, .propagatesSurroundingContext, .isMutable],
+            requiredContext: [.wasmFunction])
     }
 
-    var parameterCount: Int {numInputs - 2}
+    var parameterCount: Int { numInputs - 2 }
 }
 
 final class WasmBeginElse: WasmOperation {
@@ -1288,21 +1322,26 @@ final class WasmBeginElse: WasmOperation {
         // The WasmBeginElse acts both as a block end for the true case and as a block start for the
         // false case. As such, its input types are the results from the true block and its inner
         // output types are the same as for the corresponding WasmBeginIf.
-        super.init(numInputs: 1 + outputCount, numInnerOutputs: 1 + parameterCount, attributes: [.isBlockStart, .isBlockEnd, .propagatesSurroundingContext], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + outputCount, numInnerOutputs: 1 + parameterCount,
+            attributes: [.isBlockStart, .isBlockEnd, .propagatesSurroundingContext],
+            requiredContext: [.wasmFunction])
     }
 
-    var parameterCount: Int {numInnerOutputs - 1}
-    var outputCount: Int {numInputs - 1}
+    var parameterCount: Int { numInnerOutputs - 1 }
+    var outputCount: Int { numInputs - 1 }
 }
 
 final class WasmEndIf: WasmOperation {
     override var opcode: Opcode { .wasmEndIf(self) }
 
     init(outputCount: Int = 0) {
-        super.init(numInputs: 1 + outputCount, numOutputs: outputCount, attributes: [.isBlockEnd], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + outputCount, numOutputs: outputCount, attributes: [.isBlockEnd],
+            requiredContext: [.wasmFunction])
     }
 
-    var outputCount: Int {numInputs - 1}
+    var outputCount: Int { numInputs - 1 }
 }
 
 final class WasmBeginLoop: WasmOperation {
@@ -1311,14 +1350,17 @@ final class WasmBeginLoop: WasmOperation {
     init(parameterCount: Int) {
         // Inputs: the signature + the inputs to the loop.
         // inner outputs: The loop label + the arguments of the loop.
-        super.init(numInputs: 1 + parameterCount, numInnerOutputs: 1 + parameterCount, attributes: [.isBlockStart, .propagatesSurroundingContext], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + parameterCount, numInnerOutputs: 1 + parameterCount,
+            attributes: [.isBlockStart, .propagatesSurroundingContext],
+            requiredContext: [.wasmFunction])
     }
 
     convenience init(with signature: WasmSignature) {
         self.init(parameterCount: signature.parameterTypes.count)
     }
 
-    var parameterCount: Int {numInputs - 1}
+    var parameterCount: Int { numInputs - 1 }
 }
 
 final class WasmEndLoop: WasmOperation {
@@ -1326,14 +1368,16 @@ final class WasmEndLoop: WasmOperation {
 
     init(outputCount: Int) {
         // Inputs: the signature + the outputs of the loop.
-        super.init(numInputs: 1 + outputCount, numOutputs: outputCount, attributes: [.isBlockEnd, .resumesSurroundingContext], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + outputCount, numOutputs: outputCount,
+            attributes: [.isBlockEnd, .resumesSurroundingContext], requiredContext: [.wasmFunction])
     }
 }
 
 // A try_table is a mix between a `br_table` (just with target blocks associated with different tags)
 // and the legacy `try` block.
 final class WasmBeginTryTable: WasmOperation {
-    enum CatchKind : UInt8 {
+    enum CatchKind: UInt8 {
         case NoRef = 0x0
         case Ref = 0x1
         case AllNoRef = 0x2
@@ -1345,22 +1389,24 @@ final class WasmBeginTryTable: WasmOperation {
 
     init(parameterCount: Int, catches: [CatchKind]) {
         self.catches = catches
-        let inputTagCount = catches.count {$0 == .Ref || $0 == .NoRef}
+        let inputTagCount = catches.count { $0 == .Ref || $0 == .NoRef }
         let inputLabelCount = catches.count
-        super.init(numInputs: 1 + parameterCount + inputLabelCount + inputTagCount,
+        super.init(
+            numInputs: 1 + parameterCount + inputLabelCount + inputTagCount,
             numInnerOutputs: parameterCount + 1,
             attributes: [.isBlockStart, .propagatesSurroundingContext],
             requiredContext: [.wasmFunction])
     }
 
-    var parameterCount: Int {numInnerOutputs - 1}
+    var parameterCount: Int { numInnerOutputs - 1 }
 }
 
 final class WasmEndTryTable: WasmOperation {
     override var opcode: Opcode { .wasmEndTryTable(self) }
 
     init(outputCount: Int) {
-        super.init(numInputs: 1 + outputCount, numOutputs: outputCount,
+        super.init(
+            numInputs: 1 + outputCount, numOutputs: outputCount,
             attributes: [.isBlockEnd, .resumesSurroundingContext], requiredContext: [.wasmFunction])
     }
 }
@@ -1371,33 +1417,34 @@ final class WasmBeginTry: WasmOperation {
     init(parameterCount: Int) {
         // Inputs: The block signature and the block arguments.
         // Inner outputs: The label and the block parameters.
-        super.init(numInputs: 1 + parameterCount,
+        super.init(
+            numInputs: 1 + parameterCount,
             numInnerOutputs: 1 + parameterCount,
             attributes: [.isBlockStart, .propagatesSurroundingContext],
             requiredContext: [.wasmFunction])
     }
 }
 
-final class WasmBeginCatchAll : WasmOperation {
+final class WasmBeginCatchAll: WasmOperation {
     override var opcode: Opcode { .wasmBeginCatchAll(self) }
 
     init(blockOutputCount: Int) {
         // Inputs: The block signature and the outputs of the preceding try or catch block.
         super.init(
             numInputs: 1 + blockOutputCount,
-            numInnerOutputs: 1, // the label
+            numInnerOutputs: 1,  // the label
             attributes: [
                 .isBlockEnd,
                 .isBlockStart,
                 .propagatesSurroundingContext,
                 // Wasm only allows a single catch_all per try block.
-                .isSingular
+                .isSingular,
             ],
             requiredContext: [.wasmFunction])
     }
 }
 
-final class WasmBeginCatch : WasmOperation {
+final class WasmBeginCatch: WasmOperation {
     override var opcode: Opcode { .wasmBeginCatch(self) }
 
     init(blockOutputCount: Int, labelParameterCount: Int) {
@@ -1421,15 +1468,16 @@ final class WasmBeginCatch : WasmOperation {
             requiredContext: [.wasmFunction])
     }
 
-    var blockOutputCount: Int {numInputs - 3}
-    var labelParameterCount: Int {numInnerOutputs - 2}
+    var blockOutputCount: Int { numInputs - 3 }
+    var labelParameterCount: Int { numInnerOutputs - 2 }
 }
 
 final class WasmEndTry: WasmOperation {
     override var opcode: Opcode { .wasmEndTry(self) }
 
     init(blockOutputCount: Int) {
-        super.init(numInputs: 1 + blockOutputCount, numOutputs: blockOutputCount,
+        super.init(
+            numInputs: 1 + blockOutputCount, numOutputs: blockOutputCount,
             attributes: [.isBlockEnd], requiredContext: [.wasmFunction])
     }
 }
@@ -1441,7 +1489,8 @@ final class WasmBeginTryDelegate: WasmOperation {
     init(parameterCount: Int) {
         // inputs: The signature and the arguments.
         // innerOutputs: The label and the arguments.
-        super.init(numInputs: 1 + parameterCount, numInnerOutputs: 1 + parameterCount,
+        super.init(
+            numInputs: 1 + parameterCount, numInnerOutputs: 1 + parameterCount,
             attributes: [.isBlockStart, .propagatesSurroundingContext],
             requiredContext: [.wasmFunction])
     }
@@ -1455,7 +1504,8 @@ final class WasmEndTryDelegate: WasmOperation {
     init(outputCount: Int) {
         // Inputs: The signature, the label to delegate an exception to plus all the outputs of the
         // try block.
-        super.init(numInputs: 2 + outputCount, numOutputs: outputCount,
+        super.init(
+            numInputs: 2 + outputCount, numOutputs: outputCount,
             attributes: [.isBlockEnd, .resumesSurroundingContext], requiredContext: [.wasmFunction])
     }
 }
@@ -1465,7 +1515,8 @@ final class WasmThrow: WasmOperation {
 
     init(parameterCount: Int) {
         // Inputs: the tag to be thrown plus the arguments for each parameter type of the tag.
-        super.init(numInputs: 1 + parameterCount, attributes: [.isJump], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + parameterCount, attributes: [.isJump], requiredContext: [.wasmFunction])
     }
 }
 
@@ -1494,7 +1545,7 @@ final class WasmBranch: WasmOperation {
         super.init(numInputs: 1 + parameterCount, requiredContext: [.wasmFunction])
     }
 
-    var parameterCount: Int {numInputs - 1}
+    var parameterCount: Int { numInputs - 1 }
 }
 
 final class WasmBranchIf: WasmOperation {
@@ -1504,10 +1555,12 @@ final class WasmBranchIf: WasmOperation {
     init(parameterCount: Int, hint: WasmBranchHint) {
         self.hint = hint
         // The inputs are the label, the arguments and the condition.
-        super.init(numInputs: 1 + parameterCount + 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + parameterCount + 1, attributes: [.isMutable],
+            requiredContext: [.wasmFunction])
     }
 
-    var parameterCount: Int {numInputs - 2}
+    var parameterCount: Int { numInputs - 2 }
 }
 
 final class WasmBranchTable: WasmOperation {
@@ -1522,7 +1575,7 @@ final class WasmBranchTable: WasmOperation {
         super.init(numInputs: valueCount + 1 + parameterCount + 1, requiredContext: [.wasmFunction])
     }
 
-    var parameterCount: Int {numInputs - valueCount - 2}
+    var parameterCount: Int { numInputs - valueCount - 2 }
 }
 
 // TODO: make this comprehensive, currently only works for locals, or assumes every thing it reassigns to is a local.
@@ -1545,7 +1598,9 @@ final class BeginWasmFunction: WasmOperation {
     override var opcode: Opcode { .beginWasmFunction(self) }
 
     init(parameterCount: Int) {
-        super.init(numInputs: 1, numInnerOutputs: 1 + parameterCount, attributes: [.isBlockStart], requiredContext: [.wasm], contextOpened: [.wasmFunction])
+        super.init(
+            numInputs: 1, numInnerOutputs: 1 + parameterCount, attributes: [.isBlockStart],
+            requiredContext: [.wasm], contextOpened: [.wasmFunction])
     }
 
     var parameterCount: Int { numInnerOutputs - 1 }
@@ -1555,7 +1610,9 @@ final class EndWasmFunction: WasmOperation {
     override var opcode: Opcode { .endWasmFunction(self) }
 
     init(outputCount: Int) {
-        super.init(numInputs: 1 + outputCount, numOutputs: 1, attributes: [.isBlockEnd], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + outputCount, numOutputs: 1, attributes: [.isBlockEnd],
+            requiredContext: [.wasmFunction])
     }
 
     var outputCount: Int { numInputs - 1 }
@@ -1570,7 +1627,9 @@ final class WasmNop: WasmOperation {
     init(outputType: ILType, innerOutputTypes: [ILType]) {
         self.outputType = outputType
         self.innerOutputTypes = innerOutputTypes
-        super.init(numOutputs: outputType != .nothing ? 1 : 0, numInnerOutputs: innerOutputTypes.count, attributes: [.isInternal, .isNop], requiredContext: [.wasmFunction])
+        super.init(
+            numOutputs: outputType != .nothing ? 1 : 0, numInnerOutputs: innerOutputTypes.count,
+            attributes: [.isInternal, .isNop], requiredContext: [.wasmFunction])
     }
 }
 
@@ -1586,7 +1645,7 @@ final class ConstSimd128: WasmOperation {
     let value: [UInt8]
 
     init(value: [UInt8]) {
-        self.value = value;
+        self.value = value
         super.init(numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
@@ -1618,23 +1677,23 @@ extension WasmSimd128CompareOpKind: CustomStringConvertible {
 }
 
 public enum WasmSimd128Shape: UInt8, CaseIterable {
-    case i8x16              = 0
-    case i16x8              = 1
-    case i32x4              = 2
-    case i64x2              = 3
-    case f32x4              = 4
-    case f64x2              = 5
+    case i8x16 = 0
+    case i16x8 = 1
+    case i32x4 = 2
+    case i64x2 = 3
+    case f32x4 = 4
+    case f64x2 = 5
 
     func isFloat() -> Bool {
         switch self {
-            case .i8x16,
-                 .i16x8,
-                 .i32x4,
-                 .i64x2:
-                return false
-            case .f32x4,
-                 .f64x2:
-                return true
+        case .i8x16,
+            .i16x8,
+            .i32x4,
+            .i64x2:
+            return false
+        case .f32x4,
+            .f64x2:
+            return true
         }
     }
 }
@@ -1647,7 +1706,8 @@ final class WasmSimd128Compare: WasmOperation {
     init(shape: WasmSimd128Shape, compareOpKind: WasmSimd128CompareOpKind) {
         self.shape = shape
         self.compareOpKind = compareOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -1661,40 +1721,40 @@ public enum WasmSimd128IntegerUnOpKind: Int, CaseIterable {
     case extadd_pairwise_i8x16_u = 1
     case extadd_pairwise_i16x8_s = -30
     case extadd_pairwise_i16x8_u = -29
-    case abs                     = 4
-    case neg                     = 5
-    case popcnt                  = 6
-    case all_true                = 7
-    case bitmask                 = 8
-    case extend_low_s            = 11
-    case extend_high_s           = 12
-    case extend_low_u            = 13
-    case extend_high_u           = 14
+    case abs = 4
+    case neg = 5
+    case popcnt = 6
+    case all_true = 7
+    case bitmask = 8
+    case extend_low_s = 11
+    case extend_high_s = 12
+    case extend_low_u = 13
+    case extend_high_u = 14
 
-    case relaxed_trunc_f32x4_s      = 101
-    case relaxed_trunc_f32x4_u      = 102
+    case relaxed_trunc_f32x4_s = 101
+    case relaxed_trunc_f32x4_u = 102
     case relaxed_trunc_f64x2_s_zero = 103
     case relaxed_trunc_f64x2_u_zero = 104
 
     func isValidForShape(shape: WasmSimd128Shape) -> Bool {
         if shape.isFloat() { return false }
         switch self {
-        case .extadd_pairwise_i8x16_s:  return shape == .i16x8
-        case .extadd_pairwise_i8x16_u:  return shape == .i16x8
-        case .extadd_pairwise_i16x8_s:  return shape == .i32x4
-        case .extadd_pairwise_i16x8_u:  return shape == .i32x4
-        case .abs:                      return true
-        case .neg:                      return true
-        case .popcnt:                   return shape == .i8x16
-        case .all_true:                 return true
-        case .bitmask:                  return true
-        case .extend_low_s:             return shape != .i8x16
-        case .extend_high_s:            return shape != .i8x16
-        case .extend_low_u:             return shape != .i8x16
-        case .extend_high_u:            return shape != .i8x16
+        case .extadd_pairwise_i8x16_s: return shape == .i16x8
+        case .extadd_pairwise_i8x16_u: return shape == .i16x8
+        case .extadd_pairwise_i16x8_s: return shape == .i32x4
+        case .extadd_pairwise_i16x8_u: return shape == .i32x4
+        case .abs: return true
+        case .neg: return true
+        case .popcnt: return shape == .i8x16
+        case .all_true: return true
+        case .bitmask: return true
+        case .extend_low_s: return shape != .i8x16
+        case .extend_high_s: return shape != .i8x16
+        case .extend_low_u: return shape != .i8x16
+        case .extend_high_u: return shape != .i8x16
 
-        case .relaxed_trunc_f32x4_s:      return shape == .i32x4
-        case .relaxed_trunc_f32x4_u:      return shape == .i32x4
+        case .relaxed_trunc_f32x4_s: return shape == .i32x4
+        case .relaxed_trunc_f32x4_u: return shape == .i32x4
         case .relaxed_trunc_f64x2_s_zero: return shape == .i32x4
         case .relaxed_trunc_f64x2_u_zero: return shape == .i32x4
         }
@@ -1710,7 +1770,8 @@ final class WasmSimd128IntegerUnOp: WasmOperation {
         assert(unOpKind.isValidForShape(shape: shape))
         self.shape = shape
         self.unOpKind = unOpKind
-        super.init(numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -1721,42 +1782,42 @@ public enum WasmSimd128IntegerBinOpKind: Int, CaseIterable {
     // i32x4: 0x9C + offset
     // i64x2: 0xBC + offset
     case q15mulr_sat_s = 6
-    case narrow_s      = 9
-    case narrow_u      = 10
+    case narrow_s = 9
+    case narrow_u = 10
 
-    case shl           = 15
-    case shr_s         = 16
-    case shr_u         = 17
-    case add           = 18
-    case add_sat_s     = 19
-    case add_sat_u     = 20
-    case sub           = 21
-    case sub_sat_s     = 22
-    case sub_sat_u     = 23
+    case shl = 15
+    case shr_s = 16
+    case shr_u = 17
+    case add = 18
+    case add_sat_s = 19
+    case add_sat_u = 20
+    case sub = 21
+    case sub_sat_s = 22
+    case sub_sat_u = 23
 
-    case mul           = 25
-    case min_s         = 26
-    case min_u         = 27
-    case max_s         = 28
-    case max_u         = 29
-    case dot_i16x8_s   = 30
-    case avgr_u        = 31
-    case extmul_low_s  = 32
+    case mul = 25
+    case min_s = 26
+    case min_u = 27
+    case max_s = 28
+    case max_u = 29
+    case dot_i16x8_s = 30
+    case avgr_u = 31
+    case extmul_low_s = 32
     case extmul_high_s = 33
-    case extmul_low_u  = 34
+    case extmul_low_u = 34
     case extmul_high_u = 35
 
-    case relaxed_q15_mulr_s         = 149
-    case relaxed_dot_i8x16_i7x16_s  = 150
+    case relaxed_q15_mulr_s = 149
+    case relaxed_dot_i8x16_i7x16_s = 150
 
-    case relaxed_swizzle            = 164
+    case relaxed_swizzle = 164
 
     func isShift() -> Bool {
         switch self {
-            case .shl, .shr_s, .shr_u:
-                return true
-            default:
-                return false
+        case .shl, .shr_s, .shr_u:
+            return true
+        default:
+            return false
         }
     }
 
@@ -1764,32 +1825,32 @@ public enum WasmSimd128IntegerBinOpKind: Int, CaseIterable {
         if shape.isFloat() { return false }
         switch self {
         case .q15mulr_sat_s: return shape == .i16x8
-        case .narrow_s:      return shape == .i8x16 || shape == .i16x8
-        case .narrow_u:      return shape == .i8x16 || shape == .i16x8
-        case .shl:           return true
-        case .shr_s:         return true
-        case .shr_u:         return true
-        case .add:           return true
-        case .add_sat_s:     return shape == .i8x16 || shape == .i16x8
-        case .add_sat_u:     return shape == .i8x16 || shape == .i16x8
-        case .sub:           return true
-        case .sub_sat_s:     return shape == .i8x16 || shape == .i16x8
-        case .sub_sat_u:     return shape == .i8x16 || shape == .i16x8
-        case .mul:           return shape != .i8x16
-        case .min_s:         return shape != .i64x2
-        case .min_u:         return shape != .i64x2
-        case .max_s:         return shape != .i64x2
-        case .max_u:         return shape != .i64x2
-        case .dot_i16x8_s:   return shape == .i32x4
-        case .avgr_u:        return shape == .i8x16 || shape == .i16x8
-        case .extmul_low_s:  return shape != .i8x16
+        case .narrow_s: return shape == .i8x16 || shape == .i16x8
+        case .narrow_u: return shape == .i8x16 || shape == .i16x8
+        case .shl: return true
+        case .shr_s: return true
+        case .shr_u: return true
+        case .add: return true
+        case .add_sat_s: return shape == .i8x16 || shape == .i16x8
+        case .add_sat_u: return shape == .i8x16 || shape == .i16x8
+        case .sub: return true
+        case .sub_sat_s: return shape == .i8x16 || shape == .i16x8
+        case .sub_sat_u: return shape == .i8x16 || shape == .i16x8
+        case .mul: return shape != .i8x16
+        case .min_s: return shape != .i64x2
+        case .min_u: return shape != .i64x2
+        case .max_s: return shape != .i64x2
+        case .max_u: return shape != .i64x2
+        case .dot_i16x8_s: return shape == .i32x4
+        case .avgr_u: return shape == .i8x16 || shape == .i16x8
+        case .extmul_low_s: return shape != .i8x16
         case .extmul_high_s: return shape != .i8x16
-        case .extmul_low_u:  return shape != .i8x16
+        case .extmul_low_u: return shape != .i8x16
         case .extmul_high_u: return shape != .i8x16
 
-        case .relaxed_q15_mulr_s:         return shape == .i16x8
-        case .relaxed_dot_i8x16_i7x16_s:  return shape == .i16x8
-        case .relaxed_swizzle:            return shape == .i8x16
+        case .relaxed_q15_mulr_s: return shape == .i16x8
+        case .relaxed_dot_i8x16_i7x16_s: return shape == .i16x8
+        case .relaxed_swizzle: return shape == .i8x16
         }
     }
 }
@@ -1803,7 +1864,8 @@ final class WasmSimd128IntegerBinOp: WasmOperation {
         assert(binOpKind.isValidForShape(shape: shape))
         self.shape = shape
         self.binOpKind = binOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -1819,8 +1881,8 @@ public enum WasmSimd128IntegerTernaryOpKind: Int, CaseIterable {
     func isValidForShape(shape: WasmSimd128Shape) -> Bool {
         if shape.isFloat() { return false }
         switch self {
-            case .relaxed_laneselect: return true
-            case .relaxed_dot_i8x16_i7x16_add_s: return shape == .i32x4
+        case .relaxed_laneselect: return true
+        case .relaxed_dot_i8x16_i7x16_add_s: return shape == .i32x4
         }
     }
 }
@@ -1834,7 +1896,8 @@ final class WasmSimd128IntegerTernaryOp: WasmOperation {
         assert(ternaryOpKind.isValidForShape(shape: shape))
         self.shape = shape
         self.ternaryOpKind = ternaryOpKind
-        super.init(numInputs: 3, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 3, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -1861,7 +1924,8 @@ final class WasmSimd128FloatUnOp: WasmOperation {
         assert(unOpKind.isValidForShape(shape: shape))
         self.shape = shape
         self.unOpKind = unOpKind
-        super.init(numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -1901,15 +1965,17 @@ final class WasmSimd128FloatBinOp: WasmOperation {
         assert(binOpKind.isValidForShape(shape: shape))
         self.shape = shape
         self.binOpKind = binOpKind
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 
     func getOpcode() -> Int {
-        let base = if(binOpKind.isRelaxed()) {
-            shape == .f32x4 ? 0x100 : 0x102;
-        } else {
-            shape == .f32x4 ? 0xE4 : 0xF0;
-        }
+        let base =
+            if binOpKind.isRelaxed() {
+                shape == .f32x4 ? 0x100 : 0x102
+            } else {
+                shape == .f32x4 ? 0xE4 : 0xF0
+            }
         return base + binOpKind.rawValue
     }
 }
@@ -1934,7 +2000,8 @@ final class WasmSimd128FloatTernaryOp: WasmOperation {
         assert(ternaryOpKind.isValidForShape(shape: shape))
         self.shape = shape
         self.ternaryOpKind = ternaryOpKind
-        super.init(numInputs: 3, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 3, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -1949,14 +2016,14 @@ final class WasmSimdSplat: WasmOperation {
 
         func laneType() -> ILType {
             switch self {
-                case .I8x16, .I16x8, .I32x4:
-                    return .wasmi32
-                case .I64x2:
-                    return .wasmi64
-                case .F32x4:
-                    return .wasmf32
-                case .F64x2:
-                    return .wasmf64
+            case .I8x16, .I16x8, .I32x4:
+                return .wasmi32
+            case .I64x2:
+                return .wasmi64
+            case .F32x4:
+                return .wasmf32
+            case .F64x2:
+                return .wasmf64
             }
         }
     }
@@ -1983,27 +2050,27 @@ final class WasmSimdExtractLane: WasmOperation {
 
         func laneType() -> ILType {
             switch self {
-                case .I8x16S, .I8x16U, .I16x8S, .I16x8U, .I32x4:
-                    return .wasmi32
-                case .I64x2:
-                    return .wasmi64
-                case .F32x4:
-                    return .wasmf32
-                case .F64x2:
-                    return .wasmf64
+            case .I8x16S, .I8x16U, .I16x8S, .I16x8U, .I32x4:
+                return .wasmi32
+            case .I64x2:
+                return .wasmi64
+            case .F32x4:
+                return .wasmf32
+            case .F64x2:
+                return .wasmf64
             }
         }
 
         func laneCount() -> Int {
             switch self {
-                case .I8x16S, .I8x16U:
-                    return 16
-                case .I16x8S, .I16x8U:
-                    return 8
-                case .I32x4, .F32x4:
-                    return 4
-                case .I64x2, .F64x2:
-                    return 2
+            case .I8x16S, .I8x16U:
+                return 16
+            case .I16x8S, .I16x8U:
+                return 8
+            case .I32x4, .F32x4:
+                return 4
+            case .I64x2, .F64x2:
+                return 2
             }
         }
     }
@@ -2014,8 +2081,9 @@ final class WasmSimdExtractLane: WasmOperation {
 
     init(kind: Kind, lane: Int) {
         self.kind = kind
-        self.lane = lane;
-        super.init(numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        self.lane = lane
+        super.init(
+            numInputs: 1, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -2030,27 +2098,27 @@ final class WasmSimdReplaceLane: WasmOperation {
 
         func laneCount() -> Int {
             switch self {
-                case .I8x16:
-                    return 16
-                case .I16x8:
-                    return 8
-                case .I32x4, .F32x4:
-                    return 4
-                case .I64x2, .F64x2:
-                    return 2
+            case .I8x16:
+                return 16
+            case .I16x8:
+                return 8
+            case .I32x4, .F32x4:
+                return 4
+            case .I64x2, .F64x2:
+                return 2
             }
         }
 
         func laneType() -> ILType {
             switch self {
-                case .I8x16, .I16x8, .I32x4:
-                    return .wasmi32
-                case .I64x2:
-                    return .wasmi64
-                case .F32x4:
-                    return .wasmf32
-                case .F64x2:
-                    return .wasmf64
+            case .I8x16, .I16x8, .I32x4:
+                return .wasmi32
+            case .I64x2:
+                return .wasmi64
+            case .F32x4:
+                return .wasmf32
+            case .F64x2:
+                return .wasmf64
             }
         }
     }
@@ -2061,11 +2129,11 @@ final class WasmSimdReplaceLane: WasmOperation {
 
     init(kind: Kind, lane: Int) {
         self.kind = kind
-        self.lane = lane;
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        self.lane = lane
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
-
 
 final class WasmSimdStoreLane: WasmOperation {
     enum Kind: UInt8, CaseIterable {
@@ -2076,14 +2144,14 @@ final class WasmSimdStoreLane: WasmOperation {
 
         func laneCount() -> Int {
             switch self {
-                case .Store8:
-                    return 16
-                case .Store16:
-                    return 8
-                case .Store32:
-                    return 4
-                case .Store64:
-                    return 2
+            case .Store8:
+                return 16
+            case .Store16:
+                return 8
+            case .Store32:
+                return 4
+            case .Store64:
+                return 2
             }
         }
     }
@@ -2096,7 +2164,7 @@ final class WasmSimdStoreLane: WasmOperation {
     init(kind: Kind, staticOffset: Int64, lane: Int) {
         self.kind = kind
         self.staticOffset = staticOffset
-        self.lane = lane;
+        self.lane = lane
         super.init(numInputs: 3, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
@@ -2110,14 +2178,14 @@ final class WasmSimdLoadLane: WasmOperation {
 
         func laneCount() -> Int {
             switch self {
-                case .Load8:
-                    return 16
-                case .Load16:
-                    return 8
-                case .Load32:
-                    return 4
-                case .Load64:
-                    return 2
+            case .Load8:
+                return 16
+            case .Load16:
+                return 8
+            case .Load32:
+                return 4
+            case .Load64:
+                return 2
             }
         }
     }
@@ -2130,26 +2198,27 @@ final class WasmSimdLoadLane: WasmOperation {
     init(kind: Kind, staticOffset: Int64, lane: Int) {
         self.kind = kind
         self.staticOffset = staticOffset
-        self.lane = lane;
-        super.init(numInputs: 3, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        self.lane = lane
+        super.init(
+            numInputs: 3, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
 final class WasmSimdLoad: WasmOperation {
     enum Kind: UInt8, CaseIterable {
-        case LoadS128    = 0x00
-        case Load8x8S    = 0x01
-        case Load8x8U    = 0x02
-        case Load16x4S   = 0x03
-        case Load16x4U   = 0x04
-        case Load32x2S   = 0x05
-        case Load32x2U   = 0x06
-        case Load8Splat  = 0x07
+        case LoadS128 = 0x00
+        case Load8x8S = 0x01
+        case Load8x8U = 0x02
+        case Load16x4S = 0x03
+        case Load16x4U = 0x04
+        case Load32x2S = 0x05
+        case Load32x2U = 0x06
+        case Load8Splat = 0x07
         case Load16Splat = 0x08
         case Load32Splat = 0x09
         case Load64Splat = 0x0A
-        case Load32Zero  = 0x5C
-        case Load64Zero  = 0x5D
+        case Load32Zero = 0x5C
+        case Load64Zero = 0x5D
     }
 
     override var opcode: Opcode { .wasmSimdLoad(self) }
@@ -2160,7 +2229,8 @@ final class WasmSimdLoad: WasmOperation {
     init(kind: Kind, staticOffset: Int64) {
         self.kind = kind
         self.staticOffset = staticOffset
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -2323,7 +2393,9 @@ class WasmRefTest: WasmOperation {
 
     init(refType: ILType) {
         self.type = refType
-        super.init(numInputs: 1 + type.requiredInputCount(), numOutputs: 1, requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + type.requiredInputCount(), numOutputs: 1,
+            requiredContext: [.wasmFunction])
     }
 }
 
@@ -2332,7 +2404,9 @@ class WasmRefCast: WasmOperation {
     let type: ILType
     init(refType: ILType) {
         self.type = refType
-        super.init(numInputs: 1 + type.requiredInputCount(), numOutputs: 1, requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 1 + type.requiredInputCount(), numOutputs: 1,
+            requiredContext: [.wasmFunction])
     }
 }
 
@@ -2349,7 +2423,8 @@ final class WasmAtomicLoad: WasmOperation {
     init(loadType: WasmAtomicLoadType, offset: Int64) {
         self.loadType = loadType
         self.offset = offset
-        super.init(numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 2, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -2366,7 +2441,8 @@ final class WasmAtomicStore: WasmOperation {
     init(storeType: WasmAtomicStoreType, offset: Int64) {
         self.storeType = storeType
         self.offset = offset
-        super.init(numInputs: 3, numOutputs: 0, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 3, numOutputs: 0, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -2379,7 +2455,8 @@ final class WasmAtomicRMW: WasmOperation {
     init(op: WasmAtomicRMWType, offset: Int64) {
         self.op = op
         self.offset = offset
-        super.init(numInputs: 3, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 3, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -2424,7 +2501,8 @@ final class WasmAtomicCmpxchg: WasmOperation {
     init(op: WasmAtomicCmpxchgType, offset: Int64) {
         self.op = op
         self.offset = offset
-        super.init(numInputs: 4, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
+        super.init(
+            numInputs: 4, numOutputs: 1, attributes: [.isMutable], requiredContext: [.wasmFunction])
     }
 }
 
@@ -2435,7 +2513,8 @@ final class WasmDefineAdHocSignatureType: WasmOperation {
     init(signature: WasmSignature) {
         self.signature = signature
         let numInputs = (signature.outputTypes + signature.parameterTypes).map {
-            $0.requiredInputCount() }.reduce(0) { $0 + $1 }
+            $0.requiredInputCount()
+        }.reduce(0) { $0 + $1 }
         super.init(numInputs: numInputs, numOutputs: 1, requiredContext: [.wasmFunction])
     }
 }
@@ -2452,7 +2531,8 @@ final class WasmDefineAdHocModuleSignatureType: WasmOperation {
     init(signature: WasmSignature) {
         self.signature = signature
         let numInputs = (signature.outputTypes + signature.parameterTypes).map {
-            $0.requiredInputCount() }.reduce(0) { $0 + $1 }
+            $0.requiredInputCount()
+        }.reduce(0) { $0 + $1 }
         super.init(numInputs: numInputs, numOutputs: 1, requiredContext: [.wasm])
     }
 }

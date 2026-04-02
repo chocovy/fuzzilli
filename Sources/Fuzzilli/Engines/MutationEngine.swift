@@ -67,7 +67,8 @@ public class MutationEngine: FuzzEngine {
             }
 
             guard let program = mutatedProgram else {
-                logger.warning("Could not mutate sample, giving up. Sample:\n\(FuzzILLifter().lift(parent))")
+                logger.warning(
+                    "Could not mutate sample, giving up. Sample:\n\(FuzzILLifter().lift(parent))")
                 continue
             }
 

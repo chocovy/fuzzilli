@@ -13,12 +13,14 @@
 // limitations under the License.
 
 import XCTest
+
 @testable import Fuzzilli
 
 class ContextGraphTests: XCTestCase {
     func testReachabilityCalculation() {
         let fuzzer = makeMockFuzzer()
-        let contextGraph = ContextGraph(for: fuzzer.codeGenerators, withLogger: Logger(withLabel: "Test"))
+        let contextGraph = ContextGraph(
+            for: fuzzer.codeGenerators, withLogger: Logger(withLabel: "Test"))
 
         let reachableContexts = Set(contextGraph.getReachableContexts(from: .javascript))
 
@@ -33,19 +35,24 @@ class ContextGraphTests: XCTestCase {
 
     func testSubsetReachabilityCalculation() {
         let fuzzer = makeMockFuzzer()
-        let contextGraph = ContextGraph(for: fuzzer.codeGenerators, withLogger: Logger(withLabel: "Test"))
+        let contextGraph = ContextGraph(
+            for: fuzzer.codeGenerators, withLogger: Logger(withLabel: "Test"))
         let reachableContextsWasm = Set(contextGraph.getReachableContexts(from: .wasm))
         let reachableContextsWasm2 = Set(contextGraph.getReachableContexts(from: .wasm))
 
         XCTAssertEqual(reachableContextsWasm, reachableContextsWasm2)
 
-        let reachableContextsWasmFunction = Set(contextGraph.getReachableContexts(from: .wasmFunction))
+        let reachableContextsWasmFunction = Set(
+            contextGraph.getReachableContexts(from: .wasmFunction))
         let reachableContextsJavaScript = Set(contextGraph.getReachableContexts(from: .javascript))
 
         XCTAssertTrue(reachableContextsWasmFunction.isSubset(of: reachableContextsWasm))
-        XCTAssertEqual(reachableContextsWasm,
-                       Set([.wasmFunction,
-                            .wasm]))
+        XCTAssertEqual(
+            reachableContextsWasm,
+            Set([
+                .wasmFunction,
+                .wasm,
+            ]))
         XCTAssertTrue(reachableContextsWasm.isSubset(of: reachableContextsJavaScript))
     }
 }

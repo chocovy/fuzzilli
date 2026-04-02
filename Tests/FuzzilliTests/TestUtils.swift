@@ -14,6 +14,7 @@
 
 import Foundation
 import XCTest
+
 @testable import Fuzzilli
 
 extension Program: @retroactive Equatable {
@@ -49,20 +50,27 @@ func v(_ n: Int) -> Variable {
 
 func GetJavaScriptExecutorOrSkipTest() throws -> JavaScriptExecutor {
     guard let runner = JavaScriptExecutor() else {
-        throw XCTSkip("Could not find js shell executable. Install Node.js (or if you want to use a different shell, modify the FUZZILLI_TEST_SHELL variable).")
+        throw XCTSkip(
+            "Could not find js shell executable. Install Node.js (or if you want to use a different shell, modify the FUZZILLI_TEST_SHELL variable)."
+        )
     }
     return runner
 }
 
-func GetJavaScriptExecutorOrSkipTest(type: JavaScriptExecutor.ExecutorType, withArguments args: [String]) throws -> JavaScriptExecutor {
+func GetJavaScriptExecutorOrSkipTest(
+    type: JavaScriptExecutor.ExecutorType, withArguments args: [String]
+) throws -> JavaScriptExecutor {
     guard let runner = JavaScriptExecutor(type: type, withArguments: args) else {
-        throw XCTSkip("Could not find js shell executable. Install Node.js (or if you want to use a different shell, modify the FUZZILLI_TEST_SHELL variable).")
+        throw XCTSkip(
+            "Could not find js shell executable. Install Node.js (or if you want to use a different shell, modify the FUZZILLI_TEST_SHELL variable)."
+        )
     }
     return runner
 }
 
-
-func buildAndLiftProgram(withLiftingOptions: LiftingOptions, buildFunc: (ProgramBuilder) -> ()) -> String {
+func buildAndLiftProgram(withLiftingOptions: LiftingOptions, buildFunc: (ProgramBuilder) -> Void)
+    -> String
+{
     let liveTestConfig = Configuration(logLevel: .error, enableInspection: true)
 
     // We have to use the proper JavaScriptEnvironment here.
@@ -75,13 +83,14 @@ func buildAndLiftProgram(withLiftingOptions: LiftingOptions, buildFunc: (Program
     // AssertThat prog == Deserialize(Serilize(prog))
     let prog = b.finalize()
     let serializedBytes = try! prog.asProtobuf().serializedData()
-    let deserialized = try! Program(from: Fuzzilli_Protobuf_Program(serializedBytes: serializedBytes))
+    let deserialized = try! Program(
+        from: Fuzzilli_Protobuf_Program(serializedBytes: serializedBytes))
     XCTAssertEqual(prog, deserialized)
 
     return fuzzer.lifter.lift(prog, withOptions: withLiftingOptions)
 }
 
-func buildAndLiftProgram(buildFunc: (ProgramBuilder) -> ()) -> String {
+func buildAndLiftProgram(buildFunc: (ProgramBuilder) -> Void) -> String {
     return buildAndLiftProgram(withLiftingOptions: [], buildFunc: buildFunc)
 }
 

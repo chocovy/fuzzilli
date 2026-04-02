@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 public struct Profile {
     public let processArgs: (_ randomize: Bool) -> [String]
     // if not nil, then this is profile for differential fuzzing
     public let processArgsReference: [String]?
-    public let processEnv: [String : String]
+    public let processEnv: [String: String]
     public let maxExecsBeforeRespawn: Int
     // Timeout either by value or interval in milliseconds.
     public let timeout: Timeout

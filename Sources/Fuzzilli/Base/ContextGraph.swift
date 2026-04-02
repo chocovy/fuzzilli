@@ -79,20 +79,25 @@ public class ContextGraph {
             for i in 1..<generator.parts.count {
                 let stub = generator.parts[i]
 
-                guard stub.requiredContext.matches(currentContext) ||
-                (stub.requiredContext.isJavascript && currentContext.isEmpty) ||
-                // If the requiredContext is more than two, we should never provide a context.
-                // See `CodeGenerator` for details.
-                (!stub.requiredContext.isSingle && currentContext.isEmpty) else {
+                guard
+                    stub.requiredContext.matches(currentContext)
+                        || (stub.requiredContext.isJavascript && currentContext.isEmpty)
+                        // If the requiredContext is more than two, we should never provide a context.
+                        // See `CodeGenerator` for details.
+                        || (!stub.requiredContext.isSingle && currentContext.isEmpty)
+                else {
                     fatalError("Inconsistent requires/provides Contexts for \(generator.name)")
                 }
 
-                currentContext = stub.providedContext.isEmpty ? currentContext : Context(stub.providedContext)
+                currentContext =
+                    stub.providedContext.isEmpty ? currentContext : Context(stub.providedContext)
             }
         }
     }
 
-    private func warnOfSuspiciousContexts(in generators: WeightedList<CodeGenerator>, withLogger logger: Logger) {
+    private func warnOfSuspiciousContexts(
+        in generators: WeightedList<CodeGenerator>, withLogger logger: Logger
+    ) {
         // Technically we don't need any generator to emit the .javascript context, as this is provided by the toplevel.
         var providedContexts = Set<Context>([.javascript])
         var requiredContexts = Set<Context>()
@@ -107,7 +112,9 @@ public class ContextGraph {
         for generator in generators {
             // Now check which generators don't have providers
             if !providedContexts.contains(generator.requiredContext) {
-                logger.warning("Generator \(generator.name) cannot be run as it doesn't have a Generator that can provide this context.")
+                logger.warning(
+                    "Generator \(generator.name) cannot be run as it doesn't have a Generator that can provide this context."
+                )
 
             }
 
@@ -115,7 +122,9 @@ public class ContextGraph {
             if !generator.providedContexts.allSatisfy({
                 requiredContexts.contains($0)
             }) {
-                logger.warning("Generator \(generator.name) provides a context that is never required by another generator \(generator.providedContexts)")
+                logger.warning(
+                    "Generator \(generator.name) provides a context that is never required by another generator \(generator.providedContexts)"
+                )
             }
         }
     }
@@ -139,7 +148,8 @@ public class ContextGraph {
             }
 
             // Get all possible edges from here on and push all of those to the queue.
-            for edge in self.edges where edge.key.from == currentNode && !seenNodes.contains(edge.key.to) {
+            for edge in self.edges
+            where edge.key.from == currentNode && !seenNodes.contains(edge.key.to) {
                 // Prevent cycles, we don't care about complicated paths, but rather simple direct paths.
                 seenNodes.insert(edge.key.to)
                 queue.append(currentPath + [edge.key.to])
@@ -155,7 +165,7 @@ public class ContextGraph {
         for path in paths {
             var edgePath: [EdgeKey] = []
             for i in 0..<(path.count - 1) {
-                let edge = EdgeKey(from: path[i], to: path[i+1])
+                let edge = EdgeKey(from: path[i], to: path[i + 1])
                 edgePath.append(edge)
             }
             edgePaths.append(edgePath)
@@ -185,7 +195,8 @@ public class ContextGraph {
             var stillExploring = false
 
             // Get all possible edges from here on and push all of those to the queue.
-            for edge in self.edges where edge.key.from == currentNode && !seenNodes.contains(edge.key.to) {
+            for edge in self.edges
+            where edge.key.from == currentNode && !seenNodes.contains(edge.key.to) {
                 // Prevent cycles, we don't care about complicated paths, but rather simple direct paths.
                 stillExploring = true
                 seenNodes.insert(edge.key.to)
@@ -220,9 +231,10 @@ public class ContextGraph {
         }
 
         return paths.map { edges in
-            Path(edges: edges.map { edge in
-                self.edges[edge]!
-            })
+            Path(
+                edges: edges.map { edge in
+                    self.edges[edge]!
+                })
         }
     }
 }

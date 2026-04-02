@@ -93,7 +93,8 @@ public class Contributor: Hashable {
     }
 
     public var totalSamples: Int {
-        return validSamples + interestingSamples + invalidSamples + timedOutSamples + crashingSamples + differentialSamples
+        return validSamples + interestingSamples + invalidSamples + timedOutSamples
+            + crashingSamples + differentialSamples
     }
 
     // If this is low, that means the CodeGenerator has dynamic requirements that are not met most of the time.

@@ -68,7 +68,9 @@ public class JavaScriptCompiler {
     }
 
     @discardableResult
-    private func compileClass(_ name : String, superClass: ExpressionNode?, fields : [ClassFieldNode], isExpression : Bool) throws -> Variable {
+    private func compileClass(
+        _ name: String, superClass: ExpressionNode?, fields: [ClassFieldNode], isExpression: Bool
+    ) throws -> Variable {
         // The expressions for property values and computed properties need to be emitted before the class declaration is opened.
         var propertyValues = [Variable]()
         var computedKeys = [Variable]()
@@ -106,7 +108,9 @@ public class JavaScriptCompiler {
         let classDecl: Instruction
         if let superClass = superClass {
             let superClass = try compileExpression(superClass)
-            classDecl = emit(BeginClassDefinition(hasSuperclass: true, isExpression: isExpression), withInputs: [superClass])
+            classDecl = emit(
+                BeginClassDefinition(hasSuperclass: true, isExpression: isExpression),
+                withInputs: [superClass])
         } else {
             classDecl = emit(BeginClassDefinition(hasSuperclass: false, isExpression: isExpression))
         }
@@ -125,12 +129,16 @@ public class JavaScriptCompiler {
                 var inputs = [Variable]()
                 switch key {
                 case .name(let name):
-                    op = ClassAddProperty(propertyName: name, hasValue: property.hasValue, isStatic: property.isStatic)
+                    op = ClassAddProperty(
+                        propertyName: name, hasValue: property.hasValue, isStatic: property.isStatic
+                    )
                 case .index(let index):
-                    op = ClassAddElement(index: index, hasValue: property.hasValue, isStatic: property.isStatic)
+                    op = ClassAddElement(
+                        index: index, hasValue: property.hasValue, isStatic: property.isStatic)
                 case .expression:
                     inputs.append(computedKeys.removeLast())
-                    op = ClassAddComputedProperty(hasValue: property.hasValue, isStatic: property.isStatic)
+                    op = ClassAddComputedProperty(
+                        hasValue: property.hasValue, isStatic: property.isStatic)
                 }
                 if property.hasValue {
                     inputs.append(propertyValues.removeLast())
@@ -161,11 +169,18 @@ public class JavaScriptCompiler {
                 }
                 switch key {
                 case .name(let name):
-                    head = emit(BeginClassMethod(methodName: name, parameters: parameters, isStatic: method.isStatic))
+                    head = emit(
+                        BeginClassMethod(
+                            methodName: name, parameters: parameters, isStatic: method.isStatic))
                 case .index(let index):
-                    head = emit(BeginClassMethod(methodName: String(index), parameters: parameters, isStatic: method.isStatic))
+                    head = emit(
+                        BeginClassMethod(
+                            methodName: String(index), parameters: parameters,
+                            isStatic: method.isStatic))
                 case .expression:
-                    head = emit(BeginClassComputedMethod(parameters: parameters, isStatic: method.isStatic), withInputs: [computedKeys.removeLast()])
+                    head = emit(
+                        BeginClassComputedMethod(parameters: parameters, isStatic: method.isStatic),
+                        withInputs: [computedKeys.removeLast()])
                 }
 
                 try enterNewScope {
@@ -195,9 +210,12 @@ public class JavaScriptCompiler {
                 case .name(let name):
                     head = emit(BeginClassGetter(propertyName: name, isStatic: getter.isStatic))
                 case .index(let index):
-                    head = emit(BeginClassGetter(propertyName: String(index), isStatic: getter.isStatic))
+                    head = emit(
+                        BeginClassGetter(propertyName: String(index), isStatic: getter.isStatic))
                 case .expression:
-                    head = emit(BeginClassComputedGetter(isStatic: getter.isStatic), withInputs: [computedKeys.removeLast()])
+                    head = emit(
+                        BeginClassComputedGetter(isStatic: getter.isStatic),
+                        withInputs: [computedKeys.removeLast()])
                 }
 
                 try enterNewScope {
@@ -223,9 +241,12 @@ public class JavaScriptCompiler {
                 case .name(let name):
                     head = emit(BeginClassSetter(propertyName: name, isStatic: setter.isStatic))
                 case .index(let index):
-                    head = emit(BeginClassSetter(propertyName: String(index), isStatic: setter.isStatic))
+                    head = emit(
+                        BeginClassSetter(propertyName: String(index), isStatic: setter.isStatic))
                 case .expression:
-                    head = emit(BeginClassComputedSetter(isStatic: setter.isStatic), withInputs: [computedKeys.removeLast()])
+                    head = emit(
+                        BeginClassComputedSetter(isStatic: setter.isStatic),
+                        withInputs: [computedKeys.removeLast()])
                 }
 
                 try enterNewScope {
@@ -264,7 +285,9 @@ public class JavaScriptCompiler {
         return classDecl.output
     }
 
-    private func compileInitialDeclarationValue(_ decl: Compiler_Protobuf_VariableDeclarator) throws -> Variable {
+    private func compileInitialDeclarationValue(_ decl: Compiler_Protobuf_VariableDeclarator) throws
+        -> Variable
+    {
         if decl.hasValue {
             return try compileExpression(decl.value)
         } else {
@@ -305,10 +328,14 @@ public class JavaScriptCompiler {
                 case .const:
                     declarationMode = .const
                 case .UNRECOGNIZED(let type):
-                    throw CompilerError.invalidNodeError("invalid variable declaration type \(type)")
+                    throw CompilerError.invalidNodeError(
+                        "invalid variable declaration type \(type)")
                 }
 
-                let v = emit(CreateNamedVariable(decl.name, declarationMode: declarationMode), withInputs: [initialValue]).output
+                let v = emit(
+                    CreateNamedVariable(decl.name, declarationMode: declarationMode),
+                    withInputs: [initialValue]
+                ).output
                 // Variables declared with .var are allowed to overwrite each other.
                 assert(!currentScope.keys.contains(decl.name) || declarationMode == .var)
                 mapOrRemap(decl.name, to: v)
@@ -318,14 +345,21 @@ public class JavaScriptCompiler {
             for decl in variableDeclaration.declarations {
                 let initialValue = try compileInitialDeclarationValue(decl)
 
-                let v: Variable;
+                let v: Variable
                 switch variableDeclaration.kind {
                 case .using:
-                    v = emit(CreateNamedDisposableVariable(decl.name), withInputs: [initialValue]).output
+                    v =
+                        emit(CreateNamedDisposableVariable(decl.name), withInputs: [initialValue])
+                        .output
                 case .awaitUsing:
-                    v = emit(CreateNamedAsyncDisposableVariable(decl.name), withInputs: [initialValue]).output
+                    v =
+                        emit(
+                            CreateNamedAsyncDisposableVariable(decl.name),
+                            withInputs: [initialValue]
+                        ).output
                 case .UNRECOGNIZED(let type):
-                    throw CompilerError.invalidNodeError("invalid disposable variable declaration type \(type)")
+                    throw CompilerError.invalidNodeError(
+                        "invalid disposable variable declaration type \(type)")
                 }
                 assert(!currentScope.keys.contains(decl.name))
                 mapOrRemap(decl.name, to: v)
@@ -333,19 +367,24 @@ public class JavaScriptCompiler {
 
         case .functionDeclaration(let functionDeclaration):
             let parameters = convertParameters(functionDeclaration.parameters)
-            let functionBegin, functionEnd: Operation
+            let functionBegin: Operation
+            let functionEnd: Operation
             switch functionDeclaration.type {
             case .plain:
-                functionBegin = BeginPlainFunction(parameters: parameters, functionName: functionDeclaration.name)
+                functionBegin = BeginPlainFunction(
+                    parameters: parameters, functionName: functionDeclaration.name)
                 functionEnd = EndPlainFunction()
             case .generator:
-                functionBegin = BeginGeneratorFunction(parameters: parameters, functionName: functionDeclaration.name)
+                functionBegin = BeginGeneratorFunction(
+                    parameters: parameters, functionName: functionDeclaration.name)
                 functionEnd = EndGeneratorFunction()
             case .async:
-                functionBegin = BeginAsyncFunction(parameters: parameters, functionName: functionDeclaration.name)
+                functionBegin = BeginAsyncFunction(
+                    parameters: parameters, functionName: functionDeclaration.name)
                 functionEnd = EndAsyncFunction()
             case .asyncGenerator:
-                functionBegin = BeginAsyncGeneratorFunction(parameters: parameters, functionName: functionDeclaration.name)
+                functionBegin = BeginAsyncGeneratorFunction(
+                    parameters: parameters, functionName: functionDeclaration.name)
                 functionEnd = EndAsyncGeneratorFunction()
             case .UNRECOGNIZED(let type):
                 throw CompilerError.invalidNodeError("invalid function declaration type \(type)")
@@ -365,7 +404,9 @@ public class JavaScriptCompiler {
 
         case .classDeclaration(let classDeclaration):
             let superClass = classDeclaration.hasSuperClass ? classDeclaration.superClass : nil
-            try compileClass(classDeclaration.name, superClass: superClass, fields: classDeclaration.fields, isExpression: false)
+            try compileClass(
+                classDeclaration.name, superClass: superClass, fields: classDeclaration.fields,
+                isExpression: false)
 
         case .returnStatement(let returnStatement):
             if returnStatement.hasArgument {
@@ -435,7 +476,8 @@ public class JavaScriptCompiler {
                     case .declaration(let declaration):
                         for declarator in declaration.declarations {
                             loopVariables.append(declarator.name)
-                            initialLoopVariableValues.append(try compileExpression(declarator.value))
+                            initialLoopVariableValues.append(
+                                try compileExpression(declarator.value))
                         }
                     case .expression(let expression):
                         try compileExpression(expression)
@@ -444,10 +486,13 @@ public class JavaScriptCompiler {
             }
 
             // Process condition.
-            var outputs = emit(BeginForLoopCondition(numLoopVariables: loopVariables.count), withInputs: initialLoopVariableValues).innerOutputs
+            var outputs = emit(
+                BeginForLoopCondition(numLoopVariables: loopVariables.count),
+                withInputs: initialLoopVariableValues
+            ).innerOutputs
             var cond: Variable? = nil
             try enterNewScope {
-                zip(loopVariables, outputs).forEach({ map($0, to: $1 )})
+                zip(loopVariables, outputs).forEach({ map($0, to: $1) })
                 if forLoop.hasCondition {
                     cond = try compileExpression(forLoop.condition)
                 } else {
@@ -456,9 +501,13 @@ public class JavaScriptCompiler {
             }
 
             // Process afterthought.
-            outputs = emit(BeginForLoopAfterthought(numLoopVariables: loopVariables.count), withInputs: [cond!]).innerOutputs
+            outputs =
+                emit(
+                    BeginForLoopAfterthought(numLoopVariables: loopVariables.count),
+                    withInputs: [cond!]
+                ).innerOutputs
             try enterNewScope {
-                zip(loopVariables, outputs).forEach({ map($0, to: $1 )})
+                zip(loopVariables, outputs).forEach({ map($0, to: $1) })
                 if forLoop.hasAfterthought {
                     try compileExpression(forLoop.afterthought)
                 }
@@ -467,16 +516,17 @@ public class JavaScriptCompiler {
             // Process body
             outputs = emit(BeginForLoopBody(numLoopVariables: loopVariables.count)).innerOutputs
             try enterNewScope {
-                zip(loopVariables, outputs).forEach({ map($0, to: $1 )})
+                zip(loopVariables, outputs).forEach({ map($0, to: $1) })
                 try compileBody(forLoop.body)
             }
 
             emit(EndForLoop())
 
         case .forInLoop(let forInLoop):
-            let initializer = forInLoop.left;
+            let initializer = forInLoop.left
             guard !initializer.hasValue else {
-                throw CompilerError.invalidNodeError("Expected no initial value for the variable declared in a for-in loop")
+                throw CompilerError.invalidNodeError(
+                    "Expected no initial value for the variable declared in a for-in loop")
             }
 
             let obj = try compileExpression(forInLoop.right)
@@ -490,9 +540,10 @@ public class JavaScriptCompiler {
             emit(EndForInLoop())
 
         case .forOfLoop(let forOfLoop):
-            let initializer = forOfLoop.left;
+            let initializer = forOfLoop.left
             guard !initializer.hasValue else {
-                throw CompilerError.invalidNodeError("Expected no initial value for the variable declared in a for-of loop")
+                throw CompilerError.invalidNodeError(
+                    "Expected no initial value for the variable declared in a for-of loop")
             }
 
             let obj = try compileExpression(forOfLoop.right)
@@ -508,7 +559,7 @@ public class JavaScriptCompiler {
         case .breakStatement:
             // If we're in both .loop and .switch context, then the loop must be the most recent context
             // (switch blocks don't propagate an outer .loop context) so we just need to check for .loop here
-            if contextAnalyzer.context.contains(.loop){
+            if contextAnalyzer.context.contains(.loop) {
                 emit(LoopBreak())
             } else if contextAnalyzer.context.contains(.switchCase) {
                 emit(SwitchBreak())
@@ -615,7 +666,9 @@ public class JavaScriptCompiler {
 
         case .classExpression(let classExpression):
             let superClass = classExpression.hasSuperClass ? classExpression.superClass : nil
-            return try compileClass(classExpression.name, superClass: superClass, fields: classExpression.fields, isExpression: true)
+            return try compileClass(
+                classExpression.name, superClass: superClass, fields: classExpression.fields,
+                isExpression: true)
 
         case .ternaryExpression(let ternaryExpression):
             let condition = try compileExpression(ternaryExpression.condition)
@@ -647,7 +700,7 @@ public class JavaScriptCompiler {
             }
 
             // Case 2
-            assert(identifier.name != "this")   // This is handled via ThisExpression
+            assert(identifier.name != "this")  // This is handled via ThisExpression
             if identifier.name == "undefined" {
                 return emit(LoadUndefined()).output
             } else if identifier.name == "arguments" {
@@ -675,7 +728,10 @@ public class JavaScriptCompiler {
                 // TODO should LoadBigInt support larger integer values (represented as string)?
                 let stringValue = emit(LoadString(value: literal.value)).output
                 let BigInt = emit(CreateNamedVariable("BigInt", declarationMode: .none)).output
-                return emit(CallFunction(numArguments: 1, isGuarded: false), withInputs: [BigInt, stringValue]).output
+                return emit(
+                    CallFunction(numArguments: 1, isGuarded: false),
+                    withInputs: [BigInt, stringValue]
+                ).output
             }
 
         case .stringLiteral(let literal):
@@ -684,7 +740,8 @@ public class JavaScriptCompiler {
 
         case .templateLiteral(let templateLiteral):
             let interpolatedValues = try templateLiteral.expressions.map(compileExpression)
-            let parts = templateLiteral.parts.map({ $0.replacingOccurrences(of: "\n", with: "\\n") })
+            let parts = templateLiteral.parts.map({ $0.replacingOccurrences(of: "\n", with: "\\n") }
+            )
             return emit(CreateTemplateString(parts: parts), withInputs: interpolatedValues).output
 
         case .regExpLiteral(let literal):
@@ -721,7 +778,8 @@ public class JavaScriptCompiler {
                 // It's something like "+=", "-=", etc.
                 let binaryOperator = String(assignmentExpression.operator.dropLast())
                 guard let op = BinaryOperator(rawValue: binaryOperator) else {
-                    throw CompilerError.invalidNodeError("Unknown assignment operator \(assignmentExpression.operator)")
+                    throw CompilerError.invalidNodeError(
+                        "Unknown assignment operator \(assignmentExpression.operator)")
                 }
                 assignmentOperator = op
             }
@@ -730,25 +788,37 @@ public class JavaScriptCompiler {
             case .memberExpression(let memberExpression):
                 // Compile to a Set- or Update{Property/Element/ComputedProperty} operation
                 let object = try compileExpression(memberExpression.object)
-                guard let property = memberExpression.property else { throw CompilerError.invalidNodeError("missing property in member expression") }
+                guard let property = memberExpression.property else {
+                    throw CompilerError.invalidNodeError("missing property in member expression")
+                }
                 switch property {
                 case .name(let name):
                     if let op = assignmentOperator {
-                        emit(UpdateProperty(propertyName: name, operator: op), withInputs: [object, rhs])
+                        emit(
+                            UpdateProperty(propertyName: name, operator: op),
+                            withInputs: [object, rhs])
                     } else {
-                        emit(SetProperty(propertyName: name, isGuarded: memberExpression.isOptional), withInputs: [object, rhs])
+                        emit(
+                            SetProperty(propertyName: name, isGuarded: memberExpression.isOptional),
+                            withInputs: [object, rhs])
                     }
                 case .expression(let expr):
-                    if case .numberLiteral(let literal) = expr.expression, let index = Int64(exactly: literal.value) {
+                    if case .numberLiteral(let literal) = expr.expression,
+                        let index = Int64(exactly: literal.value)
+                    {
                         if let op = assignmentOperator {
-                            emit(UpdateElement(index: index, operator: op), withInputs: [object, rhs])
+                            emit(
+                                UpdateElement(index: index, operator: op),
+                                withInputs: [object, rhs])
                         } else {
                             emit(SetElement(index: index), withInputs: [object, rhs])
                         }
                     } else {
                         let property = try compileExpression(expr)
                         if let op = assignmentOperator {
-                            emit(UpdateComputedProperty(operator: op), withInputs: [object, property, rhs])
+                            emit(
+                                UpdateComputedProperty(operator: op),
+                                withInputs: [object, property, rhs])
                         } else {
                             emit(SetComputedProperty(), withInputs: [object, property, rhs])
                         }
@@ -757,18 +827,22 @@ public class JavaScriptCompiler {
 
             case .superMemberExpression(let superMemberExpression):
                 guard superMemberExpression.isOptional == false else {
-                    throw CompilerError.unsupportedFeatureError("Optional chaining is not supported in super member expressions")
+                    throw CompilerError.unsupportedFeatureError(
+                        "Optional chaining is not supported in super member expressions")
                 }
 
                 guard let property = superMemberExpression.property else {
-                    throw CompilerError.invalidNodeError("Missing property in super member expression")
+                    throw CompilerError.invalidNodeError(
+                        "Missing property in super member expression")
                 }
 
                 switch property {
                 case .name(let name):
                     if let op = assignmentOperator {
                         // Example: super.foo += 1
-                        emit(UpdateSuperProperty(propertyName: name, operator: op), withInputs: [rhs])
+                        emit(
+                            UpdateSuperProperty(propertyName: name, operator: op), withInputs: [rhs]
+                        )
                     } else {
                         // Example: super.foo = 1
                         emit(SetSuperProperty(propertyName: name), withInputs: [rhs])
@@ -783,7 +857,9 @@ public class JavaScriptCompiler {
             case .identifier(let identifier):
                 // Try to lookup the variable belonging to the identifier. If there is none, we're (probably) dealing with
                 // an access to a global variable/builtin or a hoisted variable access. In the case, create a named variable.
-                let lhs = lookupIdentifier(identifier.name) ?? emit(CreateNamedVariable(identifier.name, declarationMode: .none)).output
+                let lhs =
+                    lookupIdentifier(identifier.name)
+                    ?? emit(CreateNamedVariable(identifier.name, declarationMode: .none)).output
 
                 // Compile to a Reassign or Update operation
                 switch assignmentExpression.operator {
@@ -795,13 +871,15 @@ public class JavaScriptCompiler {
                     // It's something like "+=", "-=", etc.
                     let binaryOperator = String(assignmentExpression.operator.dropLast())
                     guard let op = BinaryOperator(rawValue: binaryOperator) else {
-                        throw CompilerError.invalidNodeError("Unknown assignment operator \(assignmentExpression.operator)")
+                        throw CompilerError.invalidNodeError(
+                            "Unknown assignment operator \(assignmentExpression.operator)")
                     }
                     emit(Update(op), withInputs: [lhs, rhs])
                 }
 
             default:
-                throw CompilerError.unsupportedFeatureError("Compiler only supports assignments to object members or identifiers")
+                throw CompilerError.unsupportedFeatureError(
+                    "Compiler only supports assignments to object members or identifiers")
             }
 
             return rhs
@@ -812,20 +890,21 @@ public class JavaScriptCompiler {
             var computedKeys = [Variable]()
             for field in objectExpression.fields {
                 guard let field = field.field else {
-                    throw CompilerError.invalidNodeError("missing concrete field in object expression")
+                    throw CompilerError.invalidNodeError(
+                        "missing concrete field in object expression")
                 }
 
-                let key : Compiler_Protobuf_PropertyKey
+                let key: Compiler_Protobuf_PropertyKey
                 switch field {
-                    case .property(let property):
-                        propertyValues.append(try compileExpression(property.value))
-                        key = property.key
-                    case .method(let method):
-                        key = method.key
-                    case .getter(let getter):
-                        key = getter.key
-                    case .setter(let setter):
-                        key = setter.key
+                case .property(let property):
+                    propertyValues.append(try compileExpression(property.value))
+                    key = property.key
+                case .method(let method):
+                    key = method.key
+                case .getter(let getter):
+                    key = getter.key
+                case .setter(let setter):
+                    key = setter.key
                 }
                 if case .expression(let expression) = key.body {
                     computedKeys.append(try compileExpression(expression))
@@ -842,7 +921,8 @@ public class JavaScriptCompiler {
                 switch field.field! {
                 case .property(let property):
                     guard let key = property.key.body else {
-                        throw CompilerError.invalidNodeError("missing key in object expression field")
+                        throw CompilerError.invalidNodeError(
+                            "missing key in object expression field")
                     }
                     let inputs = [propertyValues.removeLast()]
                     switch key {
@@ -851,22 +931,30 @@ public class JavaScriptCompiler {
                     case .index(let index):
                         emit(ObjectLiteralAddElement(index: index), withInputs: inputs)
                     case .expression:
-                        emit(ObjectLiteralAddComputedProperty(), withInputs: [computedKeys.removeLast()] + inputs)
+                        emit(
+                            ObjectLiteralAddComputedProperty(),
+                            withInputs: [computedKeys.removeLast()] + inputs)
                     }
                 case .method(let method):
                     let parameters = convertParameters(method.parameters)
                     let head: Instruction
 
                     guard let key = method.key.body else {
-                        throw CompilerError.invalidNodeError("Missing key in object expression method")
+                        throw CompilerError.invalidNodeError(
+                            "Missing key in object expression method")
                     }
                     switch key {
                     case .name(let name):
-                        head = emit(BeginObjectLiteralMethod(methodName: name, parameters: parameters))
+                        head = emit(
+                            BeginObjectLiteralMethod(methodName: name, parameters: parameters))
                     case .index(let index):
-                        head = emit(BeginObjectLiteralMethod(methodName: String(index), parameters: parameters))
+                        head = emit(
+                            BeginObjectLiteralMethod(
+                                methodName: String(index), parameters: parameters))
                     case .expression:
-                        head = emit(BeginObjectLiteralComputedMethod(parameters: parameters), withInputs: [computedKeys.removeLast()])
+                        head = emit(
+                            BeginObjectLiteralComputedMethod(parameters: parameters),
+                            withInputs: [computedKeys.removeLast()])
                     }
 
                     try enterNewScope {
@@ -886,7 +974,8 @@ public class JavaScriptCompiler {
                     }
                 case .getter(let getter):
                     guard let key = getter.key.body else {
-                        throw CompilerError.invalidNodeError("Missing key in object expression getter")
+                        throw CompilerError.invalidNodeError(
+                            "Missing key in object expression getter")
                     }
                     let head: Instruction
                     switch key {
@@ -895,7 +984,9 @@ public class JavaScriptCompiler {
                     case .index(let index):
                         head = emit(BeginObjectLiteralGetter(propertyName: String(index)))
                     case .expression:
-                        head = emit(BeginObjectLiteralComputedGetter(), withInputs: [computedKeys.removeLast()])
+                        head = emit(
+                            BeginObjectLiteralComputedGetter(),
+                            withInputs: [computedKeys.removeLast()])
                     }
                     try enterNewScope {
                         map("this", to: head.innerOutput)
@@ -911,7 +1002,8 @@ public class JavaScriptCompiler {
                     }
                 case .setter(let setter):
                     guard let key = setter.key.body else {
-                        throw CompilerError.invalidNodeError("Missing key in object expression setter")
+                        throw CompilerError.invalidNodeError(
+                            "Missing key in object expression setter")
                     }
                     let head: Instruction
                     switch key {
@@ -920,7 +1012,9 @@ public class JavaScriptCompiler {
                     case .index(let index):
                         head = emit(BeginObjectLiteralSetter(propertyName: String(index)))
                     case .expression:
-                        head = emit(BeginObjectLiteralComputedSetter(), withInputs: [computedKeys.removeLast()])
+                        head = emit(
+                            BeginObjectLiteralComputedSetter(),
+                            withInputs: [computedKeys.removeLast()])
                     }
                     try enterNewScope {
                         var parameters = head.innerOutputs
@@ -965,12 +1059,14 @@ public class JavaScriptCompiler {
             if spreads.contains(true) {
                 return emit(CreateArrayWithSpread(spreads: spreads), withInputs: elements).output
             } else {
-                return emit(CreateArray(numInitialValues: elements.count), withInputs: elements).output
+                return emit(CreateArray(numInitialValues: elements.count), withInputs: elements)
+                    .output
             }
 
         case .functionExpression(let functionExpression):
             let parameters = convertParameters(functionExpression.parameters)
-            let functionBegin, functionEnd: Operation
+            let functionBegin: Operation
+            let functionEnd: Operation
             let name = functionExpression.name.isEmpty ? nil : functionExpression.name
             switch functionExpression.type {
             case .plain:
@@ -983,7 +1079,8 @@ public class JavaScriptCompiler {
                 functionBegin = BeginAsyncFunction(parameters: parameters, functionName: name)
                 functionEnd = EndAsyncFunction()
             case .asyncGenerator:
-                functionBegin = BeginAsyncGeneratorFunction(parameters: parameters, functionName: name)
+                functionBegin = BeginAsyncGeneratorFunction(
+                    parameters: parameters, functionName: name)
                 functionEnd = EndAsyncGeneratorFunction()
             case .UNRECOGNIZED(let type):
                 throw CompilerError.invalidNodeError("invalid function declaration type \(type)")
@@ -1002,7 +1099,8 @@ public class JavaScriptCompiler {
 
         case .arrowFunctionExpression(let arrowFunction):
             let parameters = convertParameters(arrowFunction.parameters)
-            let functionBegin, functionEnd: Operation
+            let functionBegin: Operation
+            let functionEnd: Operation
             switch arrowFunction.type {
             case .plain:
                 functionBegin = BeginArrowFunction(parameters: parameters)
@@ -1011,13 +1109,16 @@ public class JavaScriptCompiler {
                 functionBegin = BeginAsyncArrowFunction(parameters: parameters)
                 functionEnd = EndAsyncArrowFunction()
             default:
-                throw CompilerError.invalidNodeError("invalid arrow function type \(arrowFunction.type)")
+                throw CompilerError.invalidNodeError(
+                    "invalid arrow function type \(arrowFunction.type)")
             }
 
             let instr = emit(functionBegin)
             try enterNewScope {
                 mapParameters(arrowFunction.parameters, to: instr.innerOutputs)
-                guard let body = arrowFunction.body else { throw CompilerError.invalidNodeError("missing body in arrow function") }
+                guard let body = arrowFunction.body else {
+                    throw CompilerError.invalidNodeError("missing body in arrow function")
+                }
                 switch body {
                 case .block(let block):
                     try compileBody(block)
@@ -1038,47 +1139,97 @@ public class JavaScriptCompiler {
             if case .memberExpression(let memberExpression) = callExpression.callee.expression {
                 // obj.foo(...) or obj[expr](...)
                 let object = try compileExpression(memberExpression.object)
-                guard let property = memberExpression.property else { throw CompilerError.invalidNodeError("missing property in member expression in call expression") }
+                guard let property = memberExpression.property else {
+                    throw CompilerError.invalidNodeError(
+                        "missing property in member expression in call expression")
+                }
                 switch property {
                 case .name(let name):
                     if isSpreading {
-                        return emit(CallMethodWithSpread(methodName: name, numArguments: arguments.count, spreads: spreads, isGuarded: callExpression.isOptional), withInputs: [object] + arguments).output
+                        return emit(
+                            CallMethodWithSpread(
+                                methodName: name, numArguments: arguments.count, spreads: spreads,
+                                isGuarded: callExpression.isOptional),
+                            withInputs: [object] + arguments
+                        ).output
                     } else {
-                        return emit(CallMethod(methodName: name, numArguments: arguments.count, isGuarded: callExpression.isOptional), withInputs: [object] + arguments).output
+                        return emit(
+                            CallMethod(
+                                methodName: name, numArguments: arguments.count,
+                                isGuarded: callExpression.isOptional),
+                            withInputs: [object] + arguments
+                        ).output
                     }
                 case .expression(let expr):
                     let method = try compileExpression(expr)
                     if isSpreading {
-                        return emit(CallComputedMethodWithSpread(numArguments: arguments.count, spreads: spreads, isGuarded: callExpression.isOptional), withInputs: [object, method] + arguments).output
+                        return emit(
+                            CallComputedMethodWithSpread(
+                                numArguments: arguments.count, spreads: spreads,
+                                isGuarded: callExpression.isOptional),
+                            withInputs: [object, method] + arguments
+                        ).output
                     } else {
-                        return emit(CallComputedMethod(numArguments: arguments.count, isGuarded: callExpression.isOptional), withInputs: [object, method] + arguments).output
+                        return emit(
+                            CallComputedMethod(
+                                numArguments: arguments.count, isGuarded: callExpression.isOptional),
+                            withInputs: [object, method] + arguments
+                        ).output
                     }
                 }
-            } else if case .superMemberExpression(let superMemberExpression) = callExpression.callee.expression {
+            } else if case .superMemberExpression(let superMemberExpression) = callExpression.callee
+                .expression
+            {
                 // super.foo(...)
                 guard !isSpreading else {
-                    throw CompilerError.unsupportedFeatureError("Spread calls with super are not supported")
+                    throw CompilerError.unsupportedFeatureError(
+                        "Spread calls with super are not supported")
                 }
                 guard case .name(let methodName) = superMemberExpression.property else {
-                    throw CompilerError.invalidNodeError("Super method calls must use a property name")
+                    throw CompilerError.invalidNodeError(
+                        "Super method calls must use a property name")
                 }
                 guard !callExpression.isOptional else {
-                    throw CompilerError.unsupportedFeatureError("Optional chaining with super method calls is not supported")
+                    throw CompilerError.unsupportedFeatureError(
+                        "Optional chaining with super method calls is not supported")
                 }
-                return emit(CallSuperMethod(methodName: methodName, numArguments: arguments.count), withInputs: arguments).output
-            // Now check if it is a V8 intrinsic function
-            } else if case .v8IntrinsicIdentifier(let v8Intrinsic) = callExpression.callee.expression {
-                guard !isSpreading else { throw CompilerError.unsupportedFeatureError("Not currently supporting spread calls to V8 intrinsics") }
-                let argsString = Array(repeating: "%@", count: arguments.count).joined(separator: ", ")
-                return emit(Eval("%\(v8Intrinsic.name)(\(argsString))", numArguments: arguments.count, hasOutput: true), withInputs: arguments).output
-            // Otherwise it's a regular function call
+                return emit(
+                    CallSuperMethod(methodName: methodName, numArguments: arguments.count),
+                    withInputs: arguments
+                ).output
+                // Now check if it is a V8 intrinsic function
+            } else if case .v8IntrinsicIdentifier(let v8Intrinsic) = callExpression.callee
+                .expression
+            {
+                guard !isSpreading else {
+                    throw CompilerError.unsupportedFeatureError(
+                        "Not currently supporting spread calls to V8 intrinsics")
+                }
+                let argsString = Array(repeating: "%@", count: arguments.count).joined(
+                    separator: ", ")
+                return emit(
+                    Eval(
+                        "%\(v8Intrinsic.name)(\(argsString))", numArguments: arguments.count,
+                        hasOutput: true), withInputs: arguments
+                ).output
+                // Otherwise it's a regular function call
             } else {
-                guard !callExpression.isOptional else { throw CompilerError.unsupportedFeatureError("Not currently supporting optional chaining with function calls") }
+                guard !callExpression.isOptional else {
+                    throw CompilerError.unsupportedFeatureError(
+                        "Not currently supporting optional chaining with function calls")
+                }
                 let callee = try compileExpression(callExpression.callee)
                 if isSpreading {
-                    return emit(CallFunctionWithSpread(numArguments: arguments.count, spreads: spreads, isGuarded: false), withInputs: [callee] + arguments).output
+                    return emit(
+                        CallFunctionWithSpread(
+                            numArguments: arguments.count, spreads: spreads, isGuarded: false),
+                        withInputs: [callee] + arguments
+                    ).output
                 } else {
-                    return emit(CallFunction(numArguments: arguments.count, isGuarded: false), withInputs: [callee] + arguments).output
+                    return emit(
+                        CallFunction(numArguments: arguments.count, isGuarded: false),
+                        withInputs: [callee] + arguments
+                    ).output
                 }
             }
 
@@ -1087,43 +1238,66 @@ public class JavaScriptCompiler {
             let isSpreading = spreads.contains(true)
 
             if isSpreading {
-                throw CompilerError.unsupportedFeatureError("Spread arguments are not supported in super constructor calls")
+                throw CompilerError.unsupportedFeatureError(
+                    "Spread arguments are not supported in super constructor calls")
             }
             guard !callSuperConstructor.isOptional else {
-                throw CompilerError.unsupportedFeatureError("Optional chaining is not supported in super constructor calls")
+                throw CompilerError.unsupportedFeatureError(
+                    "Optional chaining is not supported in super constructor calls")
             }
             emit(CallSuperConstructor(numArguments: arguments.count), withInputs: arguments)
             // In JS, the result of calling the super constructor is just |this|, but in FuzzIL the operation doesn't have an output (because |this| is always available anyway)
-            return lookupIdentifier("this")! // we can force unwrap because |this| always exists in the context where |super| exists
+            return lookupIdentifier("this")!  // we can force unwrap because |this| always exists in the context where |super| exists
 
         case .newExpression(let newExpression):
             let callee = try compileExpression(newExpression.callee)
             let (arguments, spreads) = try compileCallArguments(newExpression.arguments)
             let isSpreading = spreads.contains(true)
             if isSpreading {
-                return emit(ConstructWithSpread(numArguments: arguments.count, spreads: spreads, isGuarded: false), withInputs: [callee] + arguments).output
+                return emit(
+                    ConstructWithSpread(
+                        numArguments: arguments.count, spreads: spreads, isGuarded: false),
+                    withInputs: [callee] + arguments
+                ).output
             } else {
-                return emit(Construct(numArguments: arguments.count, isGuarded: false), withInputs: [callee] + arguments).output
+                return emit(
+                    Construct(numArguments: arguments.count, isGuarded: false),
+                    withInputs: [callee] + arguments
+                ).output
             }
 
         case .memberExpression(let memberExpression):
             let object = try compileExpression(memberExpression.object)
-            guard let property = memberExpression.property else { throw CompilerError.invalidNodeError("missing property in member expression") }
+            guard let property = memberExpression.property else {
+                throw CompilerError.invalidNodeError("missing property in member expression")
+            }
             switch property {
             case .name(let name):
-                return emit(GetProperty(propertyName: name, isGuarded: memberExpression.isOptional), withInputs: [object]).output
+                return emit(
+                    GetProperty(propertyName: name, isGuarded: memberExpression.isOptional),
+                    withInputs: [object]
+                ).output
             case .expression(let expr):
-                if case .numberLiteral(let literal) = expr.expression, let index = Int64(exactly: literal.value) {
-                    return emit(GetElement(index: index, isGuarded: memberExpression.isOptional), withInputs: [object]).output
+                if case .numberLiteral(let literal) = expr.expression,
+                    let index = Int64(exactly: literal.value)
+                {
+                    return emit(
+                        GetElement(index: index, isGuarded: memberExpression.isOptional),
+                        withInputs: [object]
+                    ).output
                 } else {
                     let property = try compileExpression(expr)
-                    return emit(GetComputedProperty(isGuarded: memberExpression.isOptional), withInputs: [object, property]).output
+                    return emit(
+                        GetComputedProperty(isGuarded: memberExpression.isOptional),
+                        withInputs: [object, property]
+                    ).output
                 }
             }
 
         case .superMemberExpression(let superMemberExpression):
             guard superMemberExpression.isOptional == false else {
-                throw CompilerError.unsupportedFeatureError("Optional chaining is not supported in super member expressions")
+                throw CompilerError.unsupportedFeatureError(
+                    "Optional chaining is not supported in super member expressions")
             }
             guard let property = superMemberExpression.property else {
                 throw CompilerError.invalidNodeError("Missing property in super member expression")
@@ -1134,8 +1308,11 @@ public class JavaScriptCompiler {
                 return emit(GetSuperProperty(propertyName: name), withInputs: []).output
 
             case .expression(let expr):
-                if case .numberLiteral(let literal) = expr.expression, let _ = Int64(exactly: literal.value) {
-                    throw CompilerError.unsupportedFeatureError("GetElement is not supported in super member expressions")
+                if case .numberLiteral(let literal) = expr.expression,
+                    Int64(exactly: literal.value) != nil
+                {
+                    throw CompilerError.unsupportedFeatureError(
+                        "GetElement is not supported in super member expressions")
                 } else {
                     let compiledProperty = try compileExpression(expr)
                     return emit(GetComputedSuperProperty(), withInputs: [compiledProperty]).output
@@ -1150,8 +1327,12 @@ public class JavaScriptCompiler {
                 let argument = try compileExpression(unaryExpression.argument)
                 return emit(Void_(), withInputs: [argument]).output
             } else if unaryExpression.operator == "delete" {
-                guard case .memberExpression(let memberExpression) = unaryExpression.argument.expression else {
-                    throw CompilerError.invalidNodeError("delete operator must be applied to a member expression")
+                guard
+                    case .memberExpression(let memberExpression) = unaryExpression.argument
+                        .expression
+                else {
+                    throw CompilerError.invalidNodeError(
+                        "delete operator must be applied to a member expression")
                 }
 
                 let obj = try compileExpression(memberExpression.object)
@@ -1191,7 +1372,8 @@ public class JavaScriptCompiler {
                 }
             } else {
                 guard let op = UnaryOperator(rawValue: unaryExpression.operator) else {
-                    throw CompilerError.invalidNodeError("invalid unary operator: \(unaryExpression.operator)")
+                    throw CompilerError.invalidNodeError(
+                        "invalid unary operator: \(unaryExpression.operator)")
                 }
                 let argument = try compileExpression(unaryExpression.argument)
                 return emit(UnaryOperation(op), withInputs: [argument]).output
@@ -1209,7 +1391,8 @@ public class JavaScriptCompiler {
             } else if binaryExpression.operator == "instanceof" {
                 return emit(TestInstanceOf(), withInputs: [lhs, rhs]).output
             } else {
-                throw CompilerError.invalidNodeError("invalid binary operator: \(binaryExpression.operator)")
+                throw CompilerError.invalidNodeError(
+                    "invalid binary operator: \(binaryExpression.operator)")
             }
 
         case .updateExpression(let updateExpression):
@@ -1221,7 +1404,8 @@ public class JavaScriptCompiler {
                 stringOp += " "
             }
             guard let op = UnaryOperator(rawValue: stringOp) else {
-                throw CompilerError.invalidNodeError("invalid unary operator: \(updateExpression.operator)")
+                throw CompilerError.invalidNodeError(
+                    "invalid unary operator: \(updateExpression.operator)")
             }
             return emit(UnaryOperation(op), withInputs: [argument]).output
 
@@ -1242,15 +1426,18 @@ public class JavaScriptCompiler {
             return try sequenceExpression.expressions.map({ try compileExpression($0) }).last!
 
         case .v8IntrinsicIdentifier:
-            fatalError("V8IntrinsicIdentifiers must be handled as part of their surrounding CallExpression")
+            fatalError(
+                "V8IntrinsicIdentifiers must be handled as part of their surrounding CallExpression"
+            )
 
         case .awaitExpression(let awaitExpression):
-                // TODO await is also allowed at the top level of a module
-                if !contextAnalyzer.context.contains(.asyncFunction) {
-                    throw CompilerError.invalidNodeError("`await` is currently only supported in async functions")
-                }
-                let argument = try compileExpression(awaitExpression.argument)
-                return emit(Await(), withInputs: [argument]).output
+            // TODO await is also allowed at the top level of a module
+            if !contextAnalyzer.context.contains(.asyncFunction) {
+                throw CompilerError.invalidNodeError(
+                    "`await` is currently only supported in async functions")
+            }
+            let argument = try compileExpression(awaitExpression.argument)
+            return emit(Await(), withInputs: [argument]).output
 
         }
     }
@@ -1266,7 +1453,7 @@ public class JavaScriptCompiler {
         return code.append(instr)
     }
 
-    private func enterNewScope(_ block: () throws -> ()) rethrows {
+    private func enterNewScope(_ block: () throws -> Void) rethrows {
         scopes.push([:])
         try block()
         scopes.pop()
@@ -1286,7 +1473,9 @@ public class JavaScriptCompiler {
         scopes.top[identifier] = v
     }
 
-    private func mapParameters(_ parameters: Compiler_Protobuf_Parameters, to variables: ArraySlice<Variable>) {
+    private func mapParameters(
+        _ parameters: Compiler_Protobuf_Parameters, to variables: ArraySlice<Variable>
+    ) {
         assert(parameters.parameters.count == variables.count)
         for (param, v) in zip(parameters.parameters, variables) {
             map(param.name, to: v)
@@ -1294,7 +1483,8 @@ public class JavaScriptCompiler {
     }
 
     private func convertParameters(_ parameters: Compiler_Protobuf_Parameters) -> Parameters {
-        return Parameters(count: parameters.parameters.count, hasRestParameter: parameters.hasRestElement_p)
+        return Parameters(
+            count: parameters.parameters.count, hasRestParameter: parameters.hasRestElement_p)
     }
 
     /// Convenience accessor for the currently active scope.

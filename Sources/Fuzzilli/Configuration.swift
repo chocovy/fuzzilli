@@ -106,23 +106,25 @@ public struct Configuration {
     // be imported due to disabled wasm capabilities in the fuzzer.
     public static let excludedWasmDirectory = "excluded_wasm_programs"
 
-    public init(arguments: [String] = [],
-                timeout: UInt32 = 250,
-                skipStartupTests: Bool = false,
-                logLevel: LogLevel = .info,
-                startupTests: [(String, ExpectedStartupTestResult)] = [],
-                minimizationLimit: Double = 0.0,
-                dropoutRate: Double = 0,
-                collectRuntimeTypes: Bool = false,
-                enableDiagnostics: Bool = false,
-                enableInspection: Bool = false,
-                staticCorpus: Bool = false,
-                tag: String? = nil,
-                isWasmEnabled: Bool = false,
-                storagePath: String? = nil,
-                forDifferentialFuzzing: Bool = false,
-                instanceId: Int = -1,
-                dumplingEnabled: Bool = false) {
+    public init(
+        arguments: [String] = [],
+        timeout: UInt32 = 250,
+        skipStartupTests: Bool = false,
+        logLevel: LogLevel = .info,
+        startupTests: [(String, ExpectedStartupTestResult)] = [],
+        minimizationLimit: Double = 0.0,
+        dropoutRate: Double = 0,
+        collectRuntimeTypes: Bool = false,
+        enableDiagnostics: Bool = false,
+        enableInspection: Bool = false,
+        staticCorpus: Bool = false,
+        tag: String? = nil,
+        isWasmEnabled: Bool = false,
+        storagePath: String? = nil,
+        forDifferentialFuzzing: Bool = false,
+        instanceId: Int = -1,
+        dumplingEnabled: Bool = false
+    ) {
         self.arguments = arguments
         self.timeout = timeout
         self.logLevel = logLevel
@@ -137,11 +139,14 @@ public struct Configuration {
         self.isWasmEnabled = isWasmEnabled
         self.storagePath = storagePath
         self.forDifferentialFuzzing = forDifferentialFuzzing
-        self.diffConfig = dumplingEnabled ? DifferentialConfig.create(for: instanceId, storagePath: storagePath!) : nil
+        self.diffConfig =
+            dumplingEnabled
+            ? DifferentialConfig.create(for: instanceId, storagePath: storagePath!) : nil
     }
 
     public func getInstanceSpecificArguments(forReferenceRunner: Bool) -> [String] {
-        return diffConfig.map { [$0.getDumpFilenameParameter(isOptimized: !forReferenceRunner)] } ?? []
+        return diffConfig.map { [$0.getDumpFilenameParameter(isOptimized: !forReferenceRunner)] }
+            ?? []
     }
 }
 

@@ -62,7 +62,7 @@ struct DefUseAnalyzer: Analyzer {
         if isRunning {
             code.append(instr)
         }
-        assert(code[instr.index].op === instr.op)    // Must be operating on the program passed in during construction
+        assert(code[instr.index].op === instr.op)  // Must be operating on the program passed in during construction
         assert(!analysisDone)
         for v in instr.allOutputs {
             assignments[v] = [instr.index]
@@ -184,16 +184,20 @@ struct ContextAnalyzer: Analyzer {
                 assert(contextStack.count >= 2)
 
                 // Currently we only support context "skipping" for switch blocks. This logic may need to be refined if it is ever used for other constructs as well.
-                assert((contextStack.top.contains(.switchBlock) && contextStack.top.subtracting(.switchBlock) == .empty))
+                assert(
+                    (contextStack.top.contains(.switchBlock)
+                        && contextStack.top.subtracting(.switchBlock) == .empty))
 
                 newContext.formUnion(contextStack.secondToTop)
             }
 
             // If we are in a loop, we don't want to propagate the switch context and vice versa. Otherwise we couldn't determine which break operation to emit.
             // TODO Make this generic for similar logic cases as well. E.g. by using a instr.op.contextClosed list.
-            if (instr.op.contextOpened.contains(.switchBlock) || instr.op.contextOpened.contains(.switchCase)) {
+            if instr.op.contextOpened.contains(.switchBlock)
+                || instr.op.contextOpened.contains(.switchCase)
+            {
                 newContext.remove(.loop)
-            } else if (instr.op.contextOpened.contains(.loop)) {
+            } else if instr.op.contextOpened.contains(.loop) {
                 newContext.remove(.switchBlock)
                 newContext.remove(.switchCase)
             }

@@ -17,8 +17,8 @@ protocol GeneratorAdapter {
     func run(in b: ProgramBuilder, with inputs: [Variable])
 }
 
-public typealias GeneratorFuncNoArgs = (ProgramBuilder) -> ()
-fileprivate struct GeneratorAdapterNoArgs: GeneratorAdapter {
+public typealias GeneratorFuncNoArgs = (ProgramBuilder) -> Void
+private struct GeneratorAdapterNoArgs: GeneratorAdapter {
     let expectedNumberOfInputs = 0
     let f: GeneratorFuncNoArgs
     func run(in b: ProgramBuilder, with inputs: [Variable]) {
@@ -27,8 +27,8 @@ fileprivate struct GeneratorAdapterNoArgs: GeneratorAdapter {
     }
 }
 
-public typealias GeneratorFunc1Arg = (ProgramBuilder, Variable) -> ()
-fileprivate struct GeneratorAdapter1Arg: GeneratorAdapter {
+public typealias GeneratorFunc1Arg = (ProgramBuilder, Variable) -> Void
+private struct GeneratorAdapter1Arg: GeneratorAdapter {
     let expectedNumberOfInputs = 1
     let f: GeneratorFunc1Arg
     func run(in b: ProgramBuilder, with inputs: [Variable]) {
@@ -37,8 +37,8 @@ fileprivate struct GeneratorAdapter1Arg: GeneratorAdapter {
     }
 }
 
-public typealias GeneratorFunc2Args = (ProgramBuilder, Variable, Variable) -> ()
-fileprivate struct GeneratorAdapter2Args: GeneratorAdapter {
+public typealias GeneratorFunc2Args = (ProgramBuilder, Variable, Variable) -> Void
+private struct GeneratorAdapter2Args: GeneratorAdapter {
     let expectedNumberOfInputs = 2
     let f: GeneratorFunc2Args
     func run(in b: ProgramBuilder, with inputs: [Variable]) {
@@ -47,8 +47,8 @@ fileprivate struct GeneratorAdapter2Args: GeneratorAdapter {
     }
 }
 
-public typealias GeneratorFunc3Args = (ProgramBuilder, Variable, Variable, Variable) -> ()
-fileprivate struct GeneratorAdapter3Args: GeneratorAdapter {
+public typealias GeneratorFunc3Args = (ProgramBuilder, Variable, Variable, Variable) -> Void
+private struct GeneratorAdapter3Args: GeneratorAdapter {
     let expectedNumberOfInputs = 3
     let f: GeneratorFunc3Args
     func run(in b: ProgramBuilder, with inputs: [Variable]) {
@@ -57,8 +57,9 @@ fileprivate struct GeneratorAdapter3Args: GeneratorAdapter {
     }
 }
 
-public typealias GeneratorFunc4Args = (ProgramBuilder, Variable, Variable, Variable, Variable) -> ()
-fileprivate struct GeneratorAdapter4Args: GeneratorAdapter {
+public typealias GeneratorFunc4Args = (ProgramBuilder, Variable, Variable, Variable, Variable) ->
+    Void
+private struct GeneratorAdapter4Args: GeneratorAdapter {
     let expectedNumberOfInputs = 4
     let f: GeneratorFunc4Args
     func run(in b: ProgramBuilder, with inputs: [Variable]) {
@@ -82,10 +83,10 @@ public class GeneratorStub: Contributor {
         case None
         case IsWasmArray
         case IsWasmStruct
-        case IsWasmFunction // On a type definition this means "signature".
+        case IsWasmFunction  // On a type definition this means "signature".
     }
 
-    public struct Constraint : Hashable {
+    public struct Constraint: Hashable {
         let type: ILType
         let additional: AdditionalConstraints
 
@@ -99,32 +100,32 @@ public class GeneratorStub: Contributor {
                 return false
             }
             return switch additional {
-                case .None:
-                    true
-                case .IsWasmArray:
-                    if type.Is(.wasmTypeDef()) {
-                        type.wasmTypeDefinition?.description is WasmArrayTypeDescription
-                    } else if type.Is(.anyNonNullableIndexRef) {
-                        type.Is(.wasmArrayRef())
-                    } else {
-                        false
-                    }
-                case .IsWasmStruct:
-                    if type.Is(.wasmTypeDef()) {
-                        type.wasmTypeDefinition?.description is WasmStructTypeDescription
-                    } else if type.Is(.anyNonNullableIndexRef) {
-                        type.Is(.wasmStructRef())
-                    } else {
-                        false
-                    }
-                case .IsWasmFunction:
-                    if type.Is(.wasmTypeDef()) {
-                        type.wasmTypeDefinition?.description is WasmSignatureTypeDescription
-                    } else if type.Is(.anyNonNullableIndexRef) {
-                        type.Is(.wasmFuncRef())
-                    } else {
-                        false
-                    }
+            case .None:
+                true
+            case .IsWasmArray:
+                if type.Is(.wasmTypeDef()) {
+                    type.wasmTypeDefinition?.description is WasmArrayTypeDescription
+                } else if type.Is(.anyNonNullableIndexRef) {
+                    type.Is(.wasmArrayRef())
+                } else {
+                    false
+                }
+            case .IsWasmStruct:
+                if type.Is(.wasmTypeDef()) {
+                    type.wasmTypeDefinition?.description is WasmStructTypeDescription
+                } else if type.Is(.anyNonNullableIndexRef) {
+                    type.Is(.wasmStructRef())
+                } else {
+                    false
+                }
+            case .IsWasmFunction:
+                if type.Is(.wasmTypeDef()) {
+                    type.wasmTypeDefinition?.description is WasmSignatureTypeDescription
+                } else if type.Is(.anyNonNullableIndexRef) {
+                    type.Is(.wasmFuncRef())
+                } else {
+                    false
+                }
             }
         }
 
@@ -195,20 +196,19 @@ public class GeneratorStub: Contributor {
             return Inputs(constraints: [jsAny, jsAny, jsAny, jsAny], mode: .loose)
         }
 
-
         // A number of inputs that should have the specified type, but may also be of a wider, or even different, type.
         // This should usually be used instead of .required since it will ensure that also variables of unknown type can
         // be used as inputs during code generation.
         public static func preferred(_ types: ILType...) -> Inputs {
             assert(!types.isEmpty)
-            return Inputs(constraints: types.map {Constraint($0)}, mode: .loose)
+            return Inputs(constraints: types.map { Constraint($0) }, mode: .loose)
         }
 
         // A number of inputs that must have the specified type.
         // Only use this if the code generator cannot do anything meaningful if it receives a value of the wrong type.
         public static func required(_ types: ILType...) -> Inputs {
             assert(!types.isEmpty)
-            return Inputs(constraints: types.map {Constraint($0)}, mode: .strict)
+            return Inputs(constraints: types.map { Constraint($0) }, mode: .strict)
         }
 
         public static func requiredComplex(_ constraints: Constraint...) -> Inputs {
@@ -231,7 +231,7 @@ public class GeneratorStub: Contributor {
         // E.g. .either([.javascript, .classDefinition]) which is basically either one of .javascript or .classDefinition
         case either([Context])
 
-        var isSingle : Bool {
+        var isSingle: Bool {
             self.getSingle() != nil
         }
 
@@ -241,25 +241,27 @@ public class GeneratorStub: Contributor {
 
         func getSingle() -> Context? {
             switch self {
-                case .single(let ctx):
-                    return ctx
-                default:
-                    return nil
+            case .single(let ctx):
+                return ctx
+            default:
+                return nil
             }
         }
 
         // Whether the ContextRequirement is satisified for the given (current) context.
         func satisfied(by context: Context) -> Bool {
             switch self {
-                case .single(let ctx):
-                    return ctx.isSubset(of: context)
-                case .either(let ctxs):
-                    // We do this check here since we cannot check on construction whether we have used .either correctly.
-                    assert(ctxs.count > 1, "Something seems wrong, one should have more than a single context here")
-                    // Any of the Contexts needs to be satisfied.
-                    return ctxs.contains(where: { ctx in
-                        ctx.isSubset(of: context)
-                    })
+            case .single(let ctx):
+                return ctx.isSubset(of: context)
+            case .either(let ctxs):
+                // We do this check here since we cannot check on construction whether we have used .either correctly.
+                assert(
+                    ctxs.count > 1,
+                    "Something seems wrong, one should have more than a single context here")
+                // Any of the Contexts needs to be satisfied.
+                return ctxs.contains(where: { ctx in
+                    ctx.isSubset(of: context)
+                })
             }
         }
 
@@ -268,15 +270,17 @@ public class GeneratorStub: Contributor {
         // This is used in consistency checking in `ContextGraph` initialization where a previous generator might open multiple contexts.
         func matches(_ context: Context) -> Bool {
             switch self {
-                case .single(let ctx):
-                    return ctx == context
-                case .either(let ctxs):
-                    // We do this check here since we cannot check on construction whether we have used .either correctly.
-                    assert(ctxs.count > 1, "Something seems wrong, one should have more than a single context here")
-                    // All contexts need to be in the current context.
-                    return ctxs.allSatisfy { ctx in
-                        ctx.isSubset(of: context)
-                    }
+            case .single(let ctx):
+                return ctx == context
+            case .either(let ctxs):
+                // We do this check here since we cannot check on construction whether we have used .either correctly.
+                assert(
+                    ctxs.count > 1,
+                    "Something seems wrong, one should have more than a single context here")
+                // All contexts need to be in the current context.
+                return ctxs.allSatisfy { ctx in
+                    ctx.isSubset(of: context)
+                }
             }
         }
     }
@@ -295,7 +299,10 @@ public class GeneratorStub: Contributor {
     /// Wrapper around the actual generator function called.
     private let adapter: GeneratorAdapter
 
-    fileprivate init(name: String, inputs: Inputs, produces: [Constraint] = [], context: ContextRequirement, providedContext: [Context] = [], adapter: GeneratorAdapter) {
+    fileprivate init(
+        name: String, inputs: Inputs, produces: [Constraint] = [], context: ContextRequirement,
+        providedContext: [Context] = [], adapter: GeneratorAdapter
+    ) {
 
         self.inputs = inputs
         self.produces = produces
@@ -307,8 +314,13 @@ public class GeneratorStub: Contributor {
         assert(inputs.count == adapter.expectedNumberOfInputs)
     }
 
-    fileprivate convenience init(name: String, inputs: Inputs, produces: [ILType] = [], context: ContextRequirement, providedContext: [Context] = [], adapter: GeneratorAdapter) {
-        self.init(name: name, inputs: inputs, produces: produces.map {Constraint($0)}, context: context, providedContext: providedContext, adapter: adapter)
+    fileprivate convenience init(
+        name: String, inputs: Inputs, produces: [ILType] = [], context: ContextRequirement,
+        providedContext: [Context] = [], adapter: GeneratorAdapter
+    ) {
+        self.init(
+            name: name, inputs: inputs, produces: produces.map { Constraint($0) }, context: context,
+            providedContext: providedContext, adapter: adapter)
     }
 
     /// Execute this code generator, generating new code at the current position in the ProgramBuilder.
@@ -323,32 +335,66 @@ public class GeneratorStub: Contributor {
         return addedInstructions
     }
 
-    public convenience init(_ name: String, inContext context: ContextRequirement = .single(.javascript), produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFuncNoArgs) {
-        self.init(name: name, inputs: .none, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapterNoArgs(f: f))
+    public convenience init(
+        _ name: String, inContext context: ContextRequirement = .single(.javascript),
+        produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFuncNoArgs
+    ) {
+        self.init(
+            name: name, inputs: .none, produces: produces, context: context,
+            providedContext: provides, adapter: GeneratorAdapterNoArgs(f: f))
     }
 
-    public convenience init(_ name: String, inContext context: ContextRequirement = .single(.javascript), producesComplex: [Constraint], provides: [Context] = [], _ f: @escaping GeneratorFuncNoArgs) {
-        self.init(name: name, inputs: .none, produces: producesComplex, context: context, providedContext: provides, adapter: GeneratorAdapterNoArgs(f: f))
+    public convenience init(
+        _ name: String, inContext context: ContextRequirement = .single(.javascript),
+        producesComplex: [Constraint], provides: [Context] = [], _ f: @escaping GeneratorFuncNoArgs
+    ) {
+        self.init(
+            name: name, inputs: .none, produces: producesComplex, context: context,
+            providedContext: provides, adapter: GeneratorAdapterNoArgs(f: f))
     }
 
-    public convenience init(_ name: String, inContext context: ContextRequirement = .single(.javascript), inputs: Inputs, produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFunc1Arg) {
+    public convenience init(
+        _ name: String, inContext context: ContextRequirement = .single(.javascript),
+        inputs: Inputs, produces: [ILType] = [], provides: [Context] = [],
+        _ f: @escaping GeneratorFunc1Arg
+    ) {
         assert(inputs.count == 1)
-        self.init(name: name, inputs: inputs, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapter1Arg(f: f))
+        self.init(
+            name: name, inputs: inputs, produces: produces, context: context,
+            providedContext: provides, adapter: GeneratorAdapter1Arg(f: f))
     }
 
-    public convenience init(_ name: String, inContext context: ContextRequirement = .single(.javascript), inputs: Inputs, produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFunc2Args) {
+    public convenience init(
+        _ name: String, inContext context: ContextRequirement = .single(.javascript),
+        inputs: Inputs, produces: [ILType] = [], provides: [Context] = [],
+        _ f: @escaping GeneratorFunc2Args
+    ) {
         assert(inputs.count == 2)
-        self.init(name: name, inputs: inputs, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapter2Args(f: f))
+        self.init(
+            name: name, inputs: inputs, produces: produces, context: context,
+            providedContext: provides, adapter: GeneratorAdapter2Args(f: f))
     }
 
-    public convenience init(_ name: String, inContext context: ContextRequirement = .single(.javascript), inputs: Inputs, produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFunc3Args) {
+    public convenience init(
+        _ name: String, inContext context: ContextRequirement = .single(.javascript),
+        inputs: Inputs, produces: [ILType] = [], provides: [Context] = [],
+        _ f: @escaping GeneratorFunc3Args
+    ) {
         assert(inputs.count == 3)
-        self.init(name: name, inputs: inputs, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapter3Args(f: f))
+        self.init(
+            name: name, inputs: inputs, produces: produces, context: context,
+            providedContext: provides, adapter: GeneratorAdapter3Args(f: f))
     }
 
-    public convenience init(_ name: String, inContext context: ContextRequirement = .single(.javascript), inputs: Inputs, produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFunc4Args) {
+    public convenience init(
+        _ name: String, inContext context: ContextRequirement = .single(.javascript),
+        inputs: Inputs, produces: [ILType] = [], provides: [Context] = [],
+        _ f: @escaping GeneratorFunc4Args
+    ) {
         assert(inputs.count == 4)
-        self.init(name: name, inputs: inputs, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapter4Args(f: f))
+        self.init(
+            name: name, inputs: inputs, produces: produces, context: context,
+            providedContext: provides, adapter: GeneratorAdapter4Args(f: f))
     }
 }
 
@@ -358,7 +404,6 @@ public class CodeGenerator {
     // This is a pre-calculated array of contexts that is provided by this CodeGenerator
     // Here, I think we might have different Contexts that each yield point could provide, e.g. [.javascript | .subroutine, .wasmFunction]. Unsure if there is a situation where this matters? instead of having .javascript | .subroutine | .wasmFunction?
     public let providedContexts: [Context]
-
 
     public init(_ name: String, _ generators: [GeneratorStub]) {
         self.parts = generators
@@ -378,7 +423,7 @@ public class CodeGenerator {
     // This essentially means that all stubs have no requirements.
     // Usually there is only a single element in the CodeGenerator if it is a ValueGenerator.
     public var isValueGenerator: Bool {
-        return self.parts.allSatisfy {$0.isValueStub}
+        return self.parts.allSatisfy { $0.isValueStub }
     }
 
     // This is the context required by the first part of the CodeGenerator.
@@ -405,7 +450,7 @@ public class CodeGenerator {
         return self.parts[1...]
     }
 
-    public var expandedName : String {
+    public var expandedName: String {
         if self.name == "Synthetic" {
             return "Synthetic(\(self.parts.map{$0.name}.joined(separator: ",")))"
         } else {
@@ -413,37 +458,106 @@ public class CodeGenerator {
         }
     }
 
-    public convenience init(_ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript), produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFuncNoArgs) {
-        self.init(name, [GeneratorStub(name: name, inputs: .none, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapterNoArgs(f: f))])
+    public convenience init(
+        _ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript),
+        produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFuncNoArgs
+    ) {
+        self.init(
+            name,
+            [
+                GeneratorStub(
+                    name: name, inputs: .none, produces: produces, context: context,
+                    providedContext: provides, adapter: GeneratorAdapterNoArgs(f: f))
+            ])
     }
 
-    public convenience init(_ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript), producesComplex: [GeneratorStub.Constraint], provides: [Context] = [], _ f: @escaping GeneratorFuncNoArgs) {
-        self.init(name, [GeneratorStub(name: name, inputs: .none, produces: producesComplex, context: context, providedContext: provides, adapter: GeneratorAdapterNoArgs(f: f))])
+    public convenience init(
+        _ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript),
+        producesComplex: [GeneratorStub.Constraint], provides: [Context] = [],
+        _ f: @escaping GeneratorFuncNoArgs
+    ) {
+        self.init(
+            name,
+            [
+                GeneratorStub(
+                    name: name, inputs: .none, produces: producesComplex, context: context,
+                    providedContext: provides, adapter: GeneratorAdapterNoArgs(f: f))
+            ])
     }
 
-    public convenience init(_ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript), inputs: GeneratorStub.Inputs, produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFunc1Arg) {
+    public convenience init(
+        _ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript),
+        inputs: GeneratorStub.Inputs, produces: [ILType] = [], provides: [Context] = [],
+        _ f: @escaping GeneratorFunc1Arg
+    ) {
         assert(inputs.count == 1)
-        self.init(name, [GeneratorStub(name: name, inputs: inputs, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapter1Arg(f: f))])
+        self.init(
+            name,
+            [
+                GeneratorStub(
+                    name: name, inputs: inputs, produces: produces, context: context,
+                    providedContext: provides, adapter: GeneratorAdapter1Arg(f: f))
+            ])
     }
 
-    public convenience init(_ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript), inputs: GeneratorStub.Inputs, producesComplex: [GeneratorStub.Constraint], provides: [Context] = [], _ f: @escaping GeneratorFunc1Arg) {
+    public convenience init(
+        _ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript),
+        inputs: GeneratorStub.Inputs, producesComplex: [GeneratorStub.Constraint],
+        provides: [Context] = [], _ f: @escaping GeneratorFunc1Arg
+    ) {
         assert(inputs.count == 1)
-        self.init(name, [GeneratorStub(name: name, inputs: inputs, produces: producesComplex, context: context, providedContext: provides, adapter: GeneratorAdapter1Arg(f: f))])
+        self.init(
+            name,
+            [
+                GeneratorStub(
+                    name: name, inputs: inputs, produces: producesComplex, context: context,
+                    providedContext: provides, adapter: GeneratorAdapter1Arg(f: f))
+            ])
     }
 
-    public convenience init(_ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript), inputs: GeneratorStub.Inputs, produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFunc2Args) {
+    public convenience init(
+        _ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript),
+        inputs: GeneratorStub.Inputs, produces: [ILType] = [], provides: [Context] = [],
+        _ f: @escaping GeneratorFunc2Args
+    ) {
         assert(inputs.count == 2)
-        self.init(name, [GeneratorStub(name: name, inputs: inputs, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapter2Args(f: f))])
+        self.init(
+            name,
+            [
+                GeneratorStub(
+                    name: name, inputs: inputs, produces: produces, context: context,
+                    providedContext: provides, adapter: GeneratorAdapter2Args(f: f))
+            ])
     }
 
-    public convenience init(_ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript), inputs: GeneratorStub.Inputs, produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFunc3Args) {
+    public convenience init(
+        _ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript),
+        inputs: GeneratorStub.Inputs, produces: [ILType] = [], provides: [Context] = [],
+        _ f: @escaping GeneratorFunc3Args
+    ) {
         assert(inputs.count == 3)
-        self.init(name, [GeneratorStub(name: name, inputs: inputs, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapter3Args(f: f))])
+        self.init(
+            name,
+            [
+                GeneratorStub(
+                    name: name, inputs: inputs, produces: produces, context: context,
+                    providedContext: provides, adapter: GeneratorAdapter3Args(f: f))
+            ])
     }
 
-    public convenience init(_ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript), inputs: GeneratorStub.Inputs, produces: [ILType] = [], provides: [Context] = [], _ f: @escaping GeneratorFunc4Args) {
+    public convenience init(
+        _ name: String, inContext context: GeneratorStub.ContextRequirement = .single(.javascript),
+        inputs: GeneratorStub.Inputs, produces: [ILType] = [], provides: [Context] = [],
+        _ f: @escaping GeneratorFunc4Args
+    ) {
         assert(inputs.count == 4)
-        self.init(name, [GeneratorStub(name: name, inputs: inputs, produces: produces, context: context, providedContext: provides, adapter: GeneratorAdapter4Args(f: f))])
+        self.init(
+            name,
+            [
+                GeneratorStub(
+                    name: name, inputs: inputs, produces: produces, context: context,
+                    providedContext: provides, adapter: GeneratorAdapter4Args(f: f))
+            ])
     }
 }
 

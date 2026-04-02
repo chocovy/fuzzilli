@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import XCTest
 import Foundation
+import XCTest
+
 @testable import Fuzzilli
 
 /// Compiler testsuite.
@@ -27,14 +28,21 @@ import Foundation
 ///  - The test passes if there are no errors along the way and if the output of both executions is identical
 class CompilerTests: XCTestCase {
     func testFuzzILCompiler() throws {
-        guard let nodejs = JavaScriptExecutor(type: .nodejs, withArguments: ["--allow-natives-syntax"]) else {
-            throw XCTSkip("Could not find NodeJS executable. See Sources/Fuzzilli/Compiler/Parser/README.md for details on how to set up the parser.")
+        guard
+            let nodejs = JavaScriptExecutor(
+                type: .nodejs, withArguments: ["--allow-natives-syntax"])
+        else {
+            throw XCTSkip(
+                "Could not find NodeJS executable. See Sources/Fuzzilli/Compiler/Parser/README.md for details on how to set up the parser."
+            )
         }
 
         // Initialize the parser. This can fail if no node.js executable is found or if the
         // parser's node.js dependencies are not installed. In that case, skip these tests.
         guard let parser = JavaScriptParser(executor: nodejs) else {
-            throw XCTSkip("The JavaScript parser does not appear to be working. See Sources/Fuzzilli/Compiler/Parser/README.md for details on how to set up the parser.")
+            throw XCTSkip(
+                "The JavaScript parser does not appear to be working. See Sources/Fuzzilli/Compiler/Parser/README.md for details on how to set up the parser."
+            )
         }
 
         let compiler = JavaScriptCompiler()
@@ -65,13 +73,17 @@ class CompilerTests: XCTestCase {
             let script = lifter.lift(program)
             let result2 = try nodejs.executeScript(script)
             guard result2.isSuccess else {
-                XCTFail("TestCase \(testName) failed to execute after compiling and lifting. Output:\n\(result2.output)\nScript:\n\(script)")
+                XCTFail(
+                    "TestCase \(testName) failed to execute after compiling and lifting. Output:\n\(result2.output)\nScript:\n\(script)"
+                )
                 continue
             }
 
             // The output of both executions must be identical.
             if result1.output != result2.output {
-                XCTFail("Testcase \(testName) failed.\nExpected output:\n\(result1.output)\nActual output:\n\(result2.output)")
+                XCTFail(
+                    "Testcase \(testName) failed.\nExpected output:\n\(result1.output)\nActual output:\n\(result2.output)"
+                )
             }
         }
     }

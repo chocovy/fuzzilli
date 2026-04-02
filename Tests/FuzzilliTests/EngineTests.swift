@@ -13,11 +13,12 @@
 // limitations under the License.
 
 import XCTest
+
 @testable import Fuzzilli
 
 class EngineTests: XCTestCase {
     func testPostProcessorOnGenerativeEngine() throws {
-        class MockPostProcessor : FuzzingPostProcessor {
+        class MockPostProcessor: FuzzingPostProcessor {
             var callCount = 0
             func process(_ program: Program, for fuzzer: Fuzzer) -> Program {
                 callCount += 1
@@ -55,7 +56,7 @@ class EngineTests: XCTestCase {
         let fuzzer = makeMockFuzzer()
         let processor = DumplingFuzzingPostProcessor()
 
-        let rejectedCases: [(ProgramBuilder) -> ()] = [
+        let rejectedCases: [(ProgramBuilder) -> Void] = [
             { b in
                 let f = b.buildPlainFunction(with: .parameters(n: 0)) { _ in }
                 b.getProperty("arguments", of: f)
@@ -88,7 +89,7 @@ class EngineTests: XCTestCase {
             XCTAssertThrowsError(try processor.process(program, for: fuzzer), "test case \(i)")
         }
 
-        for acceptedCase: (ProgramBuilder) -> () in [
+        for acceptedCase: (ProgramBuilder) -> Void in [
             { b in
                 let f = b.buildPlainFunction(with: .parameters(n: 0)) { _ in }
                 b.getProperty("not_arguments", of: f)

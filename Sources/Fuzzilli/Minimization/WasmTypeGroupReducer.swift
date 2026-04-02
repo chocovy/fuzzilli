@@ -22,7 +22,6 @@ struct WasmTypeGroupReducer: Reducer {
                 uses[input]? += 1
             }
 
-
             guard instr.op is WasmTypeOperation else { continue }
             // Define the usages for all WasmTypeOperation so that we also count usages of a type
             // inside a type group (i.e. by other type operations).
@@ -31,7 +30,7 @@ struct WasmTypeGroupReducer: Reducer {
             }
 
             // For now, we only consider EndTypeGroup instructions.
-            guard case .wasmEndTypeGroup = instr.op.opcode else  { continue }
+            guard case .wasmEndTypeGroup = instr.op.opcode else { continue }
 
             candidates.append(instr.index)
             for (input, output) in zip(instr.inputs, instr.outputs) {
@@ -44,7 +43,9 @@ struct WasmTypeGroupReducer: Reducer {
         }
 
         // Remove those candidates whose outputs are all used.
-        candidates = candidates.filter {helper.code[$0].allOutputs.map({ uses[$0]! }).contains {$0 == 0}}
+        candidates = candidates.filter {
+            helper.code[$0].allOutputs.map({ uses[$0]! }).contains { $0 == 0 }
+        }
 
         if candidates.isEmpty {
             return
@@ -56,9 +57,10 @@ struct WasmTypeGroupReducer: Reducer {
             let instr = helper.code[candidate]
             assert(instr.op is WasmEndTypeGroup)
             assert(instr.inputs.count == instr.outputs.count)
-            let newInoutsMap = zip(instr.inputs, instr.outputs).filter {uses[$0.1]! > 0}
-            let newInouts = newInoutsMap.map {$0.0} + newInoutsMap.map {$0.1}
-            let newInstr = Instruction(WasmEndTypeGroup(typesCount: newInoutsMap.count), inouts: newInouts, flags: .empty)
+            let newInoutsMap = zip(instr.inputs, instr.outputs).filter { uses[$0.1]! > 0 }
+            let newInouts = newInoutsMap.map { $0.0 } + newInoutsMap.map { $0.1 }
+            let newInstr = Instruction(
+                WasmEndTypeGroup(typesCount: newInoutsMap.count), inouts: newInouts, flags: .empty)
             replacements.append((candidate, newInstr))
         }
         helper.tryReplacements(replacements, renumberVariables: true)

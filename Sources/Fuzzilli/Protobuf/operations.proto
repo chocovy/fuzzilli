@@ -19,6 +19,7 @@ package fuzzilli.protobuf;
 message Parameters {
     uint32 count = 1;
     bool hasRest = 2;
+    repeated uint32 defaultParameterIndices = 3;
 }
 
 message LoadInteger {

@@ -1320,15 +1320,32 @@ public struct Parameters {
     private let numParameters: UInt32
     /// Whether the last parameter is a rest parameter.
     let hasRestParameter: Bool
+    /// Indices of parameters that have a default value.
+    /// The n-th default parameter will be the n-th input to the BeginAnySubroutine instruction.
+    let defaultParameterIndices: [Int]
 
     /// The total number of parameters. This is equivalent to the number of inner outputs produced from the parameters.
     var count: Int {
         return Int(numParameters)
     }
 
-    init(count: Int, hasRestParameter: Bool = false) {
+    var numDefaultParameters: Int {
+        return defaultParameterIndices.count
+    }
+
+    init(count: Int, hasRestParameter: Bool = false, defaultParameterIndices: [Int] = []) {
+        assert(
+            !hasRestParameter || !defaultParameterIndices.contains(count - 1),
+            "Rest parameter cannot have a default value")
+        assert(
+            defaultParameterIndices.allSatisfy({ $0 >= 0 && $0 < count }),
+            "Invalid default parameter index")
+        assert(
+            defaultParameterIndices == defaultParameterIndices.sorted(),
+            "Default parameter indices must be sorted")
         self.numParameters = UInt32(count)
         self.hasRestParameter = hasRestParameter
+        self.defaultParameterIndices = defaultParameterIndices
     }
 }
 
@@ -1339,16 +1356,17 @@ class BeginAnySubroutine: JsOperation {
     let parameters: Parameters
 
     init(
-        parameters: Parameters, numInputs: Int = 0, numOutputs: Int = 0, numInnerOutputs: Int = 0,
-        attributes: Operation.Attributes = .isBlockStart, requiredContext: Context = .javascript,
-        contextOpened: Context
+        parameters: Parameters, numInputs: Int? = nil, numOutputs: Int = 0,
+        numInnerOutputs: Int = 0, attributes: Operation.Attributes = .isBlockStart,
+        requiredContext: Context = .javascript, contextOpened: Context
     ) {
         assert(contextOpened.contains(.subroutine))
         assert(attributes.contains(.isBlockStart))
         self.parameters = parameters
         super.init(
-            numInputs: numInputs, numOutputs: numOutputs, numInnerOutputs: numInnerOutputs,
-            attributes: attributes, requiredContext: requiredContext, contextOpened: contextOpened)
+            numInputs: numInputs ?? parameters.numDefaultParameters, numOutputs: numOutputs,
+            numInnerOutputs: numInnerOutputs, attributes: attributes,
+            requiredContext: requiredContext, contextOpened: contextOpened)
     }
 }
 
@@ -1365,7 +1383,7 @@ class BeginAnyFunction: BeginAnySubroutine {
     init(parameters: Parameters, contextOpened: Context = [.javascript, .subroutine]) {
         super.init(
             parameters: parameters,
-            numInputs: 0,
+            numInputs: parameters.numDefaultParameters,
             numOutputs: 1,
             numInnerOutputs: parameters.count,
             contextOpened: contextOpened)

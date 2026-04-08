@@ -329,6 +329,7 @@ extension Instruction: ProtobufConvertible {
             return Fuzzilli_Protobuf_Parameters.with {
                 $0.count = UInt32(parameters.count)
                 $0.hasRest_p = parameters.hasRestParameter
+                $0.defaultParameterIndices = parameters.defaultParameterIndices.map(UInt32.init)
             }
         }
 
@@ -1754,7 +1755,9 @@ extension Instruction: ProtobufConvertible {
         }
 
         func convertParameters(_ parameters: Fuzzilli_Protobuf_Parameters) -> Parameters {
-            return Parameters(count: Int(parameters.count), hasRestParameter: parameters.hasRest_p)
+            return Parameters(
+                count: Int(parameters.count), hasRestParameter: parameters.hasRest_p,
+                defaultParameterIndices: parameters.defaultParameterIndices.map(Int.init))
         }
 
         // Converts to the Wasm world global type

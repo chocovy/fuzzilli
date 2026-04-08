@@ -1606,6 +1606,8 @@ public struct Fuzzilli_Protobuf_Parameters: Sendable {
 
   public var hasRest_p: Bool = false
 
+  public var defaultParameterIndices: [UInt32] = []
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -6101,7 +6103,7 @@ extension Fuzzilli_Protobuf_WasmAtomicCmpxchgType: SwiftProtobuf._ProtoNameProvi
 
 extension Fuzzilli_Protobuf_Parameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Parameters"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}count\0\u{1}hasRest\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}count\0\u{1}hasRest\0\u{1}defaultParameterIndices\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -6111,6 +6113,7 @@ extension Fuzzilli_Protobuf_Parameters: SwiftProtobuf.Message, SwiftProtobuf._Me
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt32Field(value: &self.count) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.hasRest_p) }()
+      case 3: try { try decoder.decodeRepeatedUInt32Field(value: &self.defaultParameterIndices) }()
       default: break
       }
     }
@@ -6123,12 +6126,16 @@ extension Fuzzilli_Protobuf_Parameters: SwiftProtobuf.Message, SwiftProtobuf._Me
     if self.hasRest_p != false {
       try visitor.visitSingularBoolField(value: self.hasRest_p, fieldNumber: 2)
     }
+    if !self.defaultParameterIndices.isEmpty {
+      try visitor.visitPackedUInt32Field(value: self.defaultParameterIndices, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Fuzzilli_Protobuf_Parameters, rhs: Fuzzilli_Protobuf_Parameters) -> Bool {
     if lhs.count != rhs.count {return false}
     if lhs.hasRest_p != rhs.hasRest_p {return false}
+    if lhs.defaultParameterIndices != rhs.defaultParameterIndices {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

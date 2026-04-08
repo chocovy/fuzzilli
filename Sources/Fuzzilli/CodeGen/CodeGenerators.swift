@@ -1504,11 +1504,15 @@ public let CodeGenerators: [CodeGenerator] = [
         [
             GeneratorStub("PlainFunctionBeginGenerator", provides: [.javascript, .subroutine]) {
                 b in
-                let randomParameters = b.randomParameters()
+                let (randomParameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(
                     randomParameters.parameterTypes)
                 let instr = b.emit(
-                    BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil))
+                    BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil),
+                    withInputs: defaultValues)
                 if randomParameters.parameters.hasRestParameter && probability(0.2) {
                     b.getProperty("length", of: instr.innerOutputs.last!)
                 }
@@ -1532,11 +1536,15 @@ public let CodeGenerators: [CodeGenerator] = [
             { b in
                 // We could consider having a standalone DirectiveGenerator, but probably most of the time it won't do anything meaningful.
                 // We could also consider keeping a list of known directives in the JavaScriptEnvironment, but currently we only use 'use strict'.
-                let randomParameters = b.randomParameters()
+                let (randomParameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(
                     randomParameters.parameterTypes)
                 let instr = b.emit(
-                    BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil))
+                    BeginPlainFunction(parameters: randomParameters.parameters, functionName: nil),
+                    withInputs: defaultValues)
                 if randomParameters.parameters.hasRestParameter && probability(0.2) {
                     b.getProperty("length", of: instr.innerOutputs.last!)
                 }
@@ -1561,11 +1569,15 @@ public let CodeGenerators: [CodeGenerator] = [
                 "ArrowFunctionBeginGenerator",
                 provides: [.subroutine, .javascript]
             ) { b in
-                let randomParameters = b.randomParameters()
+                let (randomParameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(
                     randomParameters.parameterTypes)
                 let instr = b.emit(
-                    BeginArrowFunction(parameters: randomParameters.parameters))
+                    BeginArrowFunction(parameters: randomParameters.parameters),
+                    withInputs: defaultValues)
                 if randomParameters.parameters.hasRestParameter && probability(0.2) {
                     b.getProperty("length", of: instr.innerOutputs.last!)
                 }
@@ -1586,12 +1598,16 @@ public let CodeGenerators: [CodeGenerator] = [
                 "GeneratorFunctionBeginGenerator",
                 provides: [.generatorFunction, .subroutine, .javascript]
             ) { b in
-                let randomParameters = b.randomParameters()
+                let (randomParameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(
                     randomParameters.parameterTypes)
                 let instr = b.emit(
                     BeginGeneratorFunction(
-                        parameters: randomParameters.parameters, functionName: nil))
+                        parameters: randomParameters.parameters, functionName: nil),
+                    withInputs: defaultValues)
                 if randomParameters.parameters.hasRestParameter && probability(0.2) {
                     b.getProperty("length", of: instr.innerOutputs.last!)
                 }
@@ -1623,11 +1639,15 @@ public let CodeGenerators: [CodeGenerator] = [
             GeneratorStub(
                 "AsyncFunctionBeginGenerator", provides: [.javascript, .subroutine, .asyncFunction]
             ) { b in
-                let randomParameters = b.randomParameters()
+                let (randomParameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(
                     randomParameters.parameterTypes)
                 let instr = b.emit(
-                    BeginAsyncFunction(parameters: randomParameters.parameters, functionName: nil))
+                    BeginAsyncFunction(parameters: randomParameters.parameters, functionName: nil),
+                    withInputs: defaultValues)
                 if randomParameters.parameters.hasRestParameter && probability(0.2) {
                     b.getProperty("length", of: instr.innerOutputs.last!)
                 }
@@ -1653,12 +1673,15 @@ public let CodeGenerators: [CodeGenerator] = [
                 "AsyncArrowFunctionBeginGenerator",
                 provides: [.javascript, .asyncFunction]
             ) { b in
-                let randomParameters = b.randomParameters()
+                let (randomParameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(
                     randomParameters.parameterTypes)
                 let instr = b.emit(
                     BeginAsyncArrowFunction(
-                        parameters: randomParameters.parameters))
+                        parameters: randomParameters.parameters), withInputs: defaultValues)
                 if randomParameters.parameters.hasRestParameter && probability(0.2) {
                     b.getProperty("length", of: instr.innerOutputs.last!)
                 }
@@ -1689,12 +1712,16 @@ public let CodeGenerators: [CodeGenerator] = [
                 "AsyncGeneratorFunctionBeginGenerator",
                 provides: [.javascript, .subroutine, .asyncFunction, .generatorFunction]
             ) { b in
-                let randomParameters = b.randomParameters()
+                let (randomParameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(
                     randomParameters.parameterTypes)
                 let instr = b.emit(
                     BeginAsyncGeneratorFunction(
-                        parameters: randomParameters.parameters, functionName: nil))
+                        parameters: randomParameters.parameters, functionName: nil),
+                    withInputs: defaultValues)
                 if randomParameters.parameters.hasRestParameter && probability(0.2) {
                     b.getProperty("length", of: instr.innerOutputs.last!)
                 }

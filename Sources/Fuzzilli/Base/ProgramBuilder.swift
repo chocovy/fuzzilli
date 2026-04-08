@@ -3324,11 +3324,46 @@ public class ProgramBuilder {
             return parameters.count
         }
 
-        public static func parameters(n: Int, hasRestParameter: Bool = false)
-            -> SubroutineDescriptor
-        {
+        public static func parameters(
+            n: Int, hasRestParameter: Bool = false, defaultParameterIndices: [Int] = []
+        ) -> SubroutineDescriptor {
             return SubroutineDescriptor(
-                withParameters: Parameters(count: n, hasRestParameter: hasRestParameter))
+                withParameters: Parameters(
+                    count: n, hasRestParameter: hasRestParameter,
+                    defaultParameterIndices: defaultParameterIndices))
+        }
+
+        /// Returns a copy of this SubroutineDescriptor but with some parameters turned into default parameters.
+        public func withRandomDefaultParameters(
+            probability chance: Double, randomVariable: () -> Variable
+        )
+            -> (SubroutineDescriptor, [Variable])
+        {
+            var defaultParameterIndices = [Int]()
+            var defaultValues = [Variable]()
+            if self.parameters.count > 0 {
+                for i in 0..<self.parameters.count {
+                    if self.parameters.hasRestParameter && i == self.parameters.count - 1 {
+                        continue
+                    }
+                    if probability(chance) {
+                        defaultParameterIndices.append(i)
+                        defaultValues.append(randomVariable())
+                    }
+                }
+            }
+
+            if defaultParameterIndices.isEmpty {
+                return (self, [])
+            }
+            let newParameters = Parameters(
+                count: self.parameters.count,
+                hasRestParameter: self.parameters.hasRestParameter,
+                defaultParameterIndices: defaultParameterIndices)
+            return (
+                SubroutineDescriptor(
+                    withParameters: newParameters, ofTypes: self.parameterTypes), defaultValues
+            )
         }
 
         public static func parameters(_ params: Parameter...) -> SubroutineDescriptor {
@@ -3364,11 +3399,13 @@ public class ProgramBuilder {
     @discardableResult
     public func buildPlainFunction(
         with descriptor: SubroutineDescriptor, named functionName: String? = nil,
-        _ body: ([Variable]) -> Void
+        defaultValues: [Variable] = [], _ body: ([Variable]) -> Void
     ) -> Variable {
+        assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
         setParameterTypesForNextSubroutine(descriptor.parameterTypes)
         let instr = emit(
-            BeginPlainFunction(parameters: descriptor.parameters, functionName: functionName))
+            BeginPlainFunction(parameters: descriptor.parameters, functionName: functionName),
+            withInputs: defaultValues)
         bodyWithRecursionGuard(instr.output) { body(Array(instr.innerOutputs)) }
         emit(EndPlainFunction())
         return instr.output
@@ -3376,10 +3413,13 @@ public class ProgramBuilder {
 
     @discardableResult
     public func buildArrowFunction(
-        with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+        with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+        _ body: ([Variable]) -> Void
     ) -> Variable {
+        assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
         setParameterTypesForNextSubroutine(descriptor.parameterTypes)
-        let instr = emit(BeginArrowFunction(parameters: descriptor.parameters))
+        let instr = emit(
+            BeginArrowFunction(parameters: descriptor.parameters), withInputs: defaultValues)
         bodyWithRecursionGuard(instr.output) { body(Array(instr.innerOutputs)) }
         emit(EndArrowFunction())
         return instr.output
@@ -3388,11 +3428,13 @@ public class ProgramBuilder {
     @discardableResult
     public func buildGeneratorFunction(
         with descriptor: SubroutineDescriptor, named functionName: String? = nil,
-        _ body: ([Variable]) -> Void
+        defaultValues: [Variable] = [], _ body: ([Variable]) -> Void
     ) -> Variable {
+        assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
         setParameterTypesForNextSubroutine(descriptor.parameterTypes)
         let instr = emit(
-            BeginGeneratorFunction(parameters: descriptor.parameters, functionName: functionName))
+            BeginGeneratorFunction(parameters: descriptor.parameters, functionName: functionName),
+            withInputs: defaultValues)
         bodyWithRecursionGuard(instr.output) { body(Array(instr.innerOutputs)) }
         emit(EndGeneratorFunction())
         return instr.output
@@ -3401,11 +3443,13 @@ public class ProgramBuilder {
     @discardableResult
     public func buildAsyncFunction(
         with descriptor: SubroutineDescriptor, named functionName: String? = nil,
-        _ body: ([Variable]) -> Void
+        defaultValues: [Variable] = [], _ body: ([Variable]) -> Void
     ) -> Variable {
+        assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
         setParameterTypesForNextSubroutine(descriptor.parameterTypes)
         let instr = emit(
-            BeginAsyncFunction(parameters: descriptor.parameters, functionName: functionName))
+            BeginAsyncFunction(parameters: descriptor.parameters, functionName: functionName),
+            withInputs: defaultValues)
         bodyWithRecursionGuard(instr.output) { body(Array(instr.innerOutputs)) }
         emit(EndAsyncFunction())
         return instr.output
@@ -3413,10 +3457,13 @@ public class ProgramBuilder {
 
     @discardableResult
     public func buildAsyncArrowFunction(
-        with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+        with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+        _ body: ([Variable]) -> Void
     ) -> Variable {
+        assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
         setParameterTypesForNextSubroutine(descriptor.parameterTypes)
-        let instr = emit(BeginAsyncArrowFunction(parameters: descriptor.parameters))
+        let instr = emit(
+            BeginAsyncArrowFunction(parameters: descriptor.parameters), withInputs: defaultValues)
         bodyWithRecursionGuard(instr.output) { body(Array(instr.innerOutputs)) }
         emit(EndAsyncArrowFunction())
         return instr.output
@@ -3425,12 +3472,14 @@ public class ProgramBuilder {
     @discardableResult
     public func buildAsyncGeneratorFunction(
         with descriptor: SubroutineDescriptor, named functionName: String? = nil,
-        _ body: ([Variable]) -> Void
+        defaultValues: [Variable] = [], _ body: ([Variable]) -> Void
     ) -> Variable {
+        assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
         setParameterTypesForNextSubroutine(descriptor.parameterTypes)
         let instr = emit(
             BeginAsyncGeneratorFunction(
-                parameters: descriptor.parameters, functionName: functionName))
+                parameters: descriptor.parameters, functionName: functionName),
+            withInputs: defaultValues)
         bodyWithRecursionGuard(instr.output) { body(Array(instr.innerOutputs)) }
         emit(EndAsyncGeneratorFunction())
         return instr.output

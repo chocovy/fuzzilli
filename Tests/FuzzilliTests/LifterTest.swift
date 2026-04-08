@@ -4356,4 +4356,78 @@ class LifterTests: XCTestCase {
 
         XCTAssertEqual(actual, expected)
     }
+
+    func testPlainFunctionDefaultParameterLifting() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let v0 = b.loadInt(42)
+        let v1 = b.loadString("default")
+
+        // function f(a, b = 42, c = "default") { return a; }
+        b.buildPlainFunction(
+            with: .parameters(n: 3, defaultParameterIndices: [1, 2]), defaultValues: [v0, v1]
+        ) { args in
+            b.doReturn(args[0])
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+            function f2(a3, a4 = 42, a5 = "default") {
+                return a3;
+            }
+
+            """
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testArrowFunctionDefaultParameterLifting() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let v0 = b.loadInt(42)
+
+        // (a, b = 42) => { return a; }
+        b.buildArrowFunction(
+            with: .parameters(n: 2, defaultParameterIndices: [1]), defaultValues: [v0]
+        ) { args in
+            b.doReturn(args[0])
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = "(a2, a3 = 42) => a2;\n"
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testPlainFunctionMixedDefaultParametersLifting() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let v0 = b.loadInt(42)
+
+        // function f(a = 42, b) { return b; }
+        b.buildPlainFunction(
+            with: .parameters(n: 2, defaultParameterIndices: [0]), defaultValues: [v0]
+        ) { args in
+            b.doReturn(args[1])
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+            function f1(a2 = 42, a3) {
+                return a3;
+            }
+
+            """
+
+        XCTAssertEqual(actual, expected)
+    }
 }

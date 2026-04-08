@@ -833,32 +833,36 @@ public class JavaScriptLifter: Lifter {
                 w.assign(expr, to: instr.output)
 
             case .beginPlainFunction:
-                liftFunctionDefinitionBegin(instr, keyword: "function", using: &w)
+                liftFunctionDefinitionBegin(
+                    instr, keyword: "function", withInputs: inputs, using: &w)
 
             case .beginArrowFunction(let op):
                 guard let endIndex = blockEndIndices[instr.index] else {
                     fatalError("Block analysis failed")
                 }
                 liftArrowFunctionDefinitionBegin(
-                    instr, parameters: op.parameters, isAsync: false, using: &w,
+                    instr, withInputs: inputs, parameters: op.parameters, isAsync: false, using: &w,
                     functionEndIndex: endIndex, analyzer: analyzer)
 
             case .beginGeneratorFunction:
-                liftFunctionDefinitionBegin(instr, keyword: "function*", using: &w)
+                liftFunctionDefinitionBegin(
+                    instr, keyword: "function*", withInputs: inputs, using: &w)
 
             case .beginAsyncFunction:
-                liftFunctionDefinitionBegin(instr, keyword: "async function", using: &w)
+                liftFunctionDefinitionBegin(
+                    instr, keyword: "async function", withInputs: inputs, using: &w)
 
             case .beginAsyncArrowFunction(let op):
                 guard let endIndex = blockEndIndices[instr.index] else {
                     fatalError("Block analysis failed")
                 }
                 liftArrowFunctionDefinitionBegin(
-                    instr, parameters: op.parameters, isAsync: true, using: &w,
+                    instr, withInputs: inputs, parameters: op.parameters, isAsync: true, using: &w,
                     functionEndIndex: endIndex, analyzer: analyzer)
 
             case .beginAsyncGeneratorFunction:
-                liftFunctionDefinitionBegin(instr, keyword: "async function*", using: &w)
+                liftFunctionDefinitionBegin(
+                    instr, keyword: "async function*", withInputs: inputs, using: &w)
 
             case .endArrowFunction(_),
                 .endAsyncArrowFunction:
@@ -1934,12 +1938,21 @@ public class JavaScriptLifter: Lifter {
         return (isGuarded ? "?." : "") + "[" + safeName + "]"
     }
 
-    private func liftParameters(_ parameters: Parameters, as variables: [String]) -> String {
+    private func liftParameters(
+        _ parameters: Parameters, as variables: [String], defaultValues: [String?] = []
+    ) -> String {
         assert(parameters.count == variables.count)
+        let actualDefaultValues =
+            defaultValues.isEmpty
+            ? [String?](repeating: nil, count: parameters.count) : defaultValues
+        assert(actualDefaultValues.count == parameters.count)
         var paramList = [String]()
-        for v in variables {
+        for (v, defaultValue) in zip(variables, actualDefaultValues) {
             if parameters.hasRestParameter && v == variables.last {
+                assert(defaultValue == nil)
                 paramList.append("..." + v)
+            } else if let defaultValue {
+                paramList.append(v + " = " + defaultValue)
             } else {
                 paramList.append(v)
             }
@@ -1948,7 +1961,8 @@ public class JavaScriptLifter: Lifter {
     }
 
     private func liftFunctionDefinitionBegin(
-        _ instr: Instruction, keyword FUNCTION: String, using w: inout JavaScriptWriter
+        _ instr: Instruction, keyword FUNCTION: String, withInputs inputs: [Expression],
+        using w: inout JavaScriptWriter
     ) {
         // Function are lifted as `function f3(a4, a5, a6) { ...`.
         // This will produce functions with a recognizable .name property, which the JavaScriptExploreLifting code makes use of (see shouldTreatAsConstructor).
@@ -1963,13 +1977,20 @@ public class JavaScriptLifter: Lifter {
         }
         let NAME = w.declare(instr.output, as: functionName)
         let vars = w.declareAll(instr.innerOutputs, usePrefix: "a")
-        let PARAMS = liftParameters(op.parameters, as: vars)
+
+        var defaultValues = [String?](repeating: nil, count: op.parameters.count)
+        for (inputIdx, paramIdx) in op.parameters.defaultParameterIndices.enumerated() {
+            defaultValues[paramIdx] = inputs[inputIdx].text
+        }
+
+        let PARAMS = liftParameters(op.parameters, as: vars, defaultValues: defaultValues)
         w.emit("\(FUNCTION) \(NAME)(\(PARAMS)) {")
         w.enterNewBlock()
     }
 
     private func liftArrowFunctionDefinitionBegin(
         _ instr: Instruction,
+        withInputs inputs: [Expression],
         parameters: Parameters,
         isAsync: Bool,
         using w: inout JavaScriptWriter,
@@ -1984,7 +2005,13 @@ public class JavaScriptLifter: Lifter {
         )
 
         let vars = w.declareAll(instr.innerOutputs, usePrefix: "a")
-        let params = liftParameters(parameters, as: vars)
+
+        var defaultValues = [String?](repeating: nil, count: parameters.count)
+        for (inputIdx, paramIdx) in parameters.defaultParameterIndices.enumerated() {
+            defaultValues[paramIdx] = inputs[inputIdx].text
+        }
+
+        let params = liftParameters(parameters, as: vars, defaultValues: defaultValues)
 
         functionLiftingStack.push(
             FunctionLiftingState(

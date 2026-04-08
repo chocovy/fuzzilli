@@ -408,7 +408,14 @@ public class FuzzILLifter: Lifter {
             .beginAsyncArrowFunction(let op as BeginAnyFunction),
             .beginAsyncGeneratorFunction(let op as BeginAnyFunction):
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
-            w.emit("\(output()) <- \(op.name) -> \(params)")
+            let inputs =
+                instr.inputs.isEmpty
+                ? ""
+                : " ["
+                    + zip(op.parameters.defaultParameterIndices, instr.inputs).map {
+                        "\($0): \(lift($1))"
+                    }.joined(separator: ", ") + "]"
+            w.emit("\(output()) <- \(op.name)\(inputs) -> \(params)")
             w.increaseIndentionLevel()
 
         case .endPlainFunction(let op as EndAnyFunction),

@@ -366,6 +366,7 @@ public class JavaScriptCompiler {
             }
 
         case .functionDeclaration(let functionDeclaration):
+            let defaultValues = try compileDefaultValues(for: functionDeclaration.parameters)
             let parameters = convertParameters(functionDeclaration.parameters)
             let functionBegin: Operation
             let functionEnd: Operation
@@ -390,7 +391,7 @@ public class JavaScriptCompiler {
                 throw CompilerError.invalidNodeError("invalid function declaration type \(type)")
             }
 
-            let instr = emit(functionBegin)
+            let instr = emit(functionBegin, withInputs: defaultValues)
             // The function may have been accessed before it was defined due to function hoisting, so
             // here we may overwrite an existing variable mapping.
             mapOrRemap(functionDeclaration.name, to: instr.output)
@@ -1064,6 +1065,7 @@ public class JavaScriptCompiler {
             }
 
         case .functionExpression(let functionExpression):
+            let defaultValues = try compileDefaultValues(for: functionExpression.parameters)
             let parameters = convertParameters(functionExpression.parameters)
             let functionBegin: Operation
             let functionEnd: Operation
@@ -1086,7 +1088,7 @@ public class JavaScriptCompiler {
                 throw CompilerError.invalidNodeError("invalid function declaration type \(type)")
             }
 
-            let instr = emit(functionBegin)
+            let instr = emit(functionBegin, withInputs: defaultValues)
             try enterNewScope {
                 mapParameters(functionExpression.parameters, to: instr.innerOutputs)
                 for statement in functionExpression.body {
@@ -1098,6 +1100,7 @@ public class JavaScriptCompiler {
             return instr.output
 
         case .arrowFunctionExpression(let arrowFunction):
+            let defaultValues = try compileDefaultValues(for: arrowFunction.parameters)
             let parameters = convertParameters(arrowFunction.parameters)
             let functionBegin: Operation
             let functionEnd: Operation
@@ -1113,7 +1116,7 @@ public class JavaScriptCompiler {
                     "invalid arrow function type \(arrowFunction.type)")
             }
 
-            let instr = emit(functionBegin)
+            let instr = emit(functionBegin, withInputs: defaultValues)
             try enterNewScope {
                 mapParameters(arrowFunction.parameters, to: instr.innerOutputs)
                 guard let body = arrowFunction.body else {
@@ -1482,9 +1485,26 @@ public class JavaScriptCompiler {
         }
     }
 
+    private func compileDefaultValues(for parameters: Compiler_Protobuf_Parameters) throws
+        -> [Variable]
+    {
+        var defaultValues = [Variable]()
+        for param in parameters.parameters {
+            if param.hasDefaultValue {
+                defaultValues.append(try compileExpression(param.defaultValue))
+            }
+        }
+        return defaultValues
+    }
+
     private func convertParameters(_ parameters: Compiler_Protobuf_Parameters) -> Parameters {
+        let defaultParameterIndices = parameters.parameters.enumerated()
+            .filter { $0.element.hasDefaultValue }
+            .map { $0.offset }
+
         return Parameters(
-            count: parameters.parameters.count, hasRestParameter: parameters.hasRestElement_p)
+            count: parameters.parameters.count, hasRestParameter: parameters.hasRestElement_p,
+            defaultParameterIndices: defaultParameterIndices)
     }
 
     /// Convenience accessor for the currently active scope.

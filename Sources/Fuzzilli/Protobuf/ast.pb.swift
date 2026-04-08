@@ -163,16 +163,30 @@ public struct Compiler_Protobuf_AST: Sendable {
 }
 
 /// A parameter in a function declaration. Not an expression on its own.
-public struct Compiler_Protobuf_Parameter: Sendable {
+public struct Compiler_Protobuf_Parameter: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var name: String = String()
+  public var name: String {
+    get {_storage._name}
+    set {_uniqueStorage()._name = newValue}
+  }
+
+  public var defaultValue: Compiler_Protobuf_Expression {
+    get {_storage._defaultValue ?? Compiler_Protobuf_Expression()}
+    set {_uniqueStorage()._defaultValue = newValue}
+  }
+  /// Returns true if `defaultValue` has been explicitly set.
+  public var hasDefaultValue: Bool {_storage._defaultValue != nil}
+  /// Clears the value of `defaultValue`. Subsequent reads from it will return its default value.
+  public mutating func clearDefaultValue() {_uniqueStorage()._defaultValue = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public struct Compiler_Protobuf_EmptyStatement: Sendable {
@@ -964,28 +978,31 @@ public struct Compiler_Protobuf_ContinueStatement: Sendable {
   public init() {}
 }
 
-public struct Compiler_Protobuf_CatchClause: Sendable {
+public struct Compiler_Protobuf_CatchClause: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// The parameter is optional
   public var parameter: Compiler_Protobuf_Parameter {
-    get {_parameter ?? Compiler_Protobuf_Parameter()}
-    set {_parameter = newValue}
+    get {_storage._parameter ?? Compiler_Protobuf_Parameter()}
+    set {_uniqueStorage()._parameter = newValue}
   }
   /// Returns true if `parameter` has been explicitly set.
-  public var hasParameter: Bool {self._parameter != nil}
+  public var hasParameter: Bool {_storage._parameter != nil}
   /// Clears the value of `parameter`. Subsequent reads from it will return its default value.
-  public mutating func clearParameter() {self._parameter = nil}
+  public mutating func clearParameter() {_uniqueStorage()._parameter = nil}
 
-  public var body: [Compiler_Protobuf_Statement] = []
+  public var body: [Compiler_Protobuf_Statement] {
+    get {_storage._body}
+    set {_uniqueStorage()._body = newValue}
+  }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _parameter: Compiler_Protobuf_Parameter? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public struct Compiler_Protobuf_FinallyClause: Sendable {
@@ -1000,39 +1017,41 @@ public struct Compiler_Protobuf_FinallyClause: Sendable {
   public init() {}
 }
 
-public struct Compiler_Protobuf_TryStatement: Sendable {
+public struct Compiler_Protobuf_TryStatement: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var body: [Compiler_Protobuf_Statement] = []
+  public var body: [Compiler_Protobuf_Statement] {
+    get {_storage._body}
+    set {_uniqueStorage()._body = newValue}
+  }
 
   /// The catch clause is optional
   public var `catch`: Compiler_Protobuf_CatchClause {
-    get {_catch ?? Compiler_Protobuf_CatchClause()}
-    set {_catch = newValue}
+    get {_storage._catch ?? Compiler_Protobuf_CatchClause()}
+    set {_uniqueStorage()._catch = newValue}
   }
   /// Returns true if ``catch`` has been explicitly set.
-  public var hasCatch: Bool {self._catch != nil}
+  public var hasCatch: Bool {_storage._catch != nil}
   /// Clears the value of ``catch``. Subsequent reads from it will return its default value.
-  public mutating func clearCatch() {self._catch = nil}
+  public mutating func clearCatch() {_uniqueStorage()._catch = nil}
 
   /// The finally clause is optional
   public var finally: Compiler_Protobuf_FinallyClause {
-    get {_finally ?? Compiler_Protobuf_FinallyClause()}
-    set {_finally = newValue}
+    get {_storage._finally ?? Compiler_Protobuf_FinallyClause()}
+    set {_uniqueStorage()._finally = newValue}
   }
   /// Returns true if `finally` has been explicitly set.
-  public var hasFinally: Bool {self._finally != nil}
+  public var hasFinally: Bool {_storage._finally != nil}
   /// Clears the value of `finally`. Subsequent reads from it will return its default value.
-  public mutating func clearFinally() {self._finally = nil}
+  public mutating func clearFinally() {_uniqueStorage()._finally = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _catch: Compiler_Protobuf_CatchClause? = nil
-  fileprivate var _finally: Compiler_Protobuf_FinallyClause? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public struct Compiler_Protobuf_ThrowStatement: @unchecked Sendable {
@@ -2501,29 +2520,76 @@ extension Compiler_Protobuf_AST: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 
 extension Compiler_Protobuf_Parameter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Parameter"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}defaultValue\0")
+
+  fileprivate class _StorageClass {
+    var _name: String = String()
+    var _defaultValue: Compiler_Protobuf_Expression? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _name = source._name
+      _defaultValue = source._defaultValue
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._name) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._defaultValue) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.name.isEmpty {
-      try visitor.visitSingularStringField(value: self.name, fieldNumber: 1)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._name.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._name, fieldNumber: 1)
+      }
+      try { if let v = _storage._defaultValue {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Compiler_Protobuf_Parameter, rhs: Compiler_Protobuf_Parameter) -> Bool {
-    if lhs.name != rhs.name {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._name != rhs_storage._name {return false}
+        if _storage._defaultValue != rhs_storage._defaultValue {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4183,36 +4249,74 @@ extension Compiler_Protobuf_CatchClause: SwiftProtobuf.Message, SwiftProtobuf._M
   public static let protoMessageName: String = _protobuf_package + ".CatchClause"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parameter\0\u{1}body\0")
 
+  fileprivate class _StorageClass {
+    var _parameter: Compiler_Protobuf_Parameter? = nil
+    var _body: [Compiler_Protobuf_Statement] = []
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _parameter = source._parameter
+      _body = source._body
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._parameter) }()
-      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.body) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._parameter) }()
+        case 2: try { try decoder.decodeRepeatedMessageField(value: &_storage._body) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._parameter {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    if !self.body.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.body, fieldNumber: 2)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._parameter {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      if !_storage._body.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._body, fieldNumber: 2)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Compiler_Protobuf_CatchClause, rhs: Compiler_Protobuf_CatchClause) -> Bool {
-    if lhs._parameter != rhs._parameter {return false}
-    if lhs.body != rhs.body {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._parameter != rhs_storage._parameter {return false}
+        if _storage._body != rhs_storage._body {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4252,41 +4356,81 @@ extension Compiler_Protobuf_TryStatement: SwiftProtobuf.Message, SwiftProtobuf._
   public static let protoMessageName: String = _protobuf_package + ".TryStatement"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}body\0\u{1}catch\0\u{1}finally\0")
 
+  fileprivate class _StorageClass {
+    var _body: [Compiler_Protobuf_Statement] = []
+    var _catch: Compiler_Protobuf_CatchClause? = nil
+    var _finally: Compiler_Protobuf_FinallyClause? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _body = source._body
+      _catch = source._catch
+      _finally = source._finally
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.body) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._catch) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._finally) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeRepeatedMessageField(value: &_storage._body) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._catch) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._finally) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.body.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.body, fieldNumber: 1)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._body.isEmpty {
+        try visitor.visitRepeatedMessageField(value: _storage._body, fieldNumber: 1)
+      }
+      try { if let v = _storage._catch {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._finally {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
     }
-    try { if let v = self._catch {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._finally {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Compiler_Protobuf_TryStatement, rhs: Compiler_Protobuf_TryStatement) -> Bool {
-    if lhs.body != rhs.body {return false}
-    if lhs._catch != rhs._catch {return false}
-    if lhs._finally != rhs._finally {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._body != rhs_storage._body {return false}
+        if _storage._catch != rhs_storage._catch {return false}
+        if _storage._finally != rhs_storage._finally {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

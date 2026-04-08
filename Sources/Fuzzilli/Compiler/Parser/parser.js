@@ -83,11 +83,16 @@ function parse(script, proto) {
         return Statement.create(statement);
     }
 
-    // TODO(bettscheider): Add support for default parameters.
     function visitParameter(param) {
         switch (param.type) {
             case 'Identifier':
                 return make('Parameter', { name: param.name });
+            case 'AssignmentPattern':
+                assert(param.left.type === 'Identifier', "Expected identifier in assignment pattern");
+                return make('Parameter', {
+                    name: param.left.name,
+                    defaultValue: visitExpression(param.right)
+                });
             case 'RestElement':
                 return make('Parameter', { name: param.argument.name });
             default:

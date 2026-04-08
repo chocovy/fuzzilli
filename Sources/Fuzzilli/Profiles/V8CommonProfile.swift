@@ -1012,6 +1012,11 @@ public func v8ProcessArgs(randomize: Bool, forSandbox: Bool) -> [String] {
         args.append("--wasm-inlining-ignore-call-counts")
     }
 
+    // Force compiled Wasm wrappers.
+    if probability(0.3) {
+        args.append("--no-wasm-generic-wrapper")
+    }
+
     //
     // Future features that should sometimes be enabled.
     //

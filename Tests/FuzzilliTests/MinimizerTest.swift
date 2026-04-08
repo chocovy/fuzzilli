@@ -2521,7 +2521,7 @@ class MinimizerTests: XCTestCase {
             var numReturnsAfter = 0
             var numFunctionsBefore = 0
             var numFunctionsAfter = 0
-            var numImportantInstructionsBefore = importantInstructions.count
+            let numImportantInstructionsBefore = importantInstructions.count
             var numImportantInstructionsAfter = 0
 
             for instr in referenceProgram.code {
@@ -2615,5 +2615,75 @@ class MinimizerTests: XCTestCase {
         return fuzzer.minimizer.minimize(
             program, withAspects: dummyAspects, limit: limit,
             performPostprocessing: performPostprocessing)
+    }
+
+    func testWasmTypeGroupMinimization() {
+        let evaluator = EvaluatorForMinimizationTests()
+        let fuzzer = makeMockFuzzer(evaluator: evaluator)
+        let b = fuzzer.makeBuilder()
+
+        // Build input program to be minimized.
+        evaluator.nextInstructionIsImportant(in: b)
+        b.wasmDefineTypeGroup {
+            let v0 = b.wasmDefineArrayType(elementType: .wasmi32, mutability: true)
+            return [v0]
+        }
+        let originalProgram = b.finalize()
+
+        // Build expected output program: an empty type group.
+        b.reset()
+        b.wasmDefineTypeGroup { [] }
+        let expectedProgram = b.finalize()
+
+        // Perform minimization with only the WasmTypeGroupReducer.
+        let reducer = WasmTypeGroupReducer()
+        evaluator.setOriginalProgram(originalProgram)
+        let helper = MinimizationHelper(
+            for: ProgramAspects(outcome: .succeeded), forCode: originalProgram.code, of: fuzzer,
+            runningOnFuzzerQueue: true)
+        reducer.reduce(with: helper)
+
+        let actualProgram = Program(code: helper.code)
+
+        XCTAssertEqual(
+            expectedProgram, actualProgram,
+            "Expected:\n\(FuzzILLifter().lift(expectedProgram.code))\n\n"
+                + "Actual:\n\(FuzzILLifter().lift(actualProgram.code))")
+    }
+
+    // Removing WasmResolveForwardReference is done by another reducer. The WasmTypeGroupReducer
+    // should not change the semantics when reducing the types exposed by the WasmEndTypeGroup.
+    func testWasmTypeGroupReducerDoesntRemoveForwardReferenceResolving() {
+        let evaluator = EvaluatorForMinimizationTests()
+        let fuzzer = makeMockFuzzer(evaluator: evaluator)
+        let b = fuzzer.makeBuilder()
+
+        // Build input program to be minimized.
+        b.wasmDefineTypeGroup {
+            let fwd = b.wasmDefineForwardOrSelfReference()
+            evaluator.nextInstructionIsImportant(in: b)
+            let arrayType = b.wasmDefineArrayType(
+                elementType: .wasmRef(.Index(), nullability: true), mutability: true, indexType: fwd
+            )
+            let structType = b.wasmDefineStructType(
+                fields: [.init(type: .wasmi32, mutability: true)], indexTypes: [])
+            b.wasmResolveForwardReference(fwd, to: structType)
+            return [structType, arrayType]
+        }
+        let originalProgram = b.finalize()
+
+        // Perform minimization and check that the two programs are equal.
+        let reducer = WasmTypeGroupReducer()
+        evaluator.setOriginalProgram(originalProgram)
+        let helper = MinimizationHelper(
+            for: ProgramAspects(outcome: .succeeded), forCode: originalProgram.code, of: fuzzer,
+            runningOnFuzzerQueue: true)
+        reducer.reduce(with: helper)
+        let actualProgram = Program(code: helper.code)
+
+        XCTAssertEqual(
+            originalProgram, actualProgram,
+            "Expected:\n\(FuzzILLifter().lift(originalProgram.code))\n\n"
+                + "Actual:\n\(FuzzILLifter().lift(actualProgram.code))")
     }
 }

@@ -2422,7 +2422,7 @@ public class ProgramBuilder {
                 // Check if we can produce it with findOrGenerateWasmVar
                 let _ = currentWasmFunction.generateRandomWasmVar(ofType: type)
             }
-            if findVariable { requirement.fulfilled(by: self.type(of: $0)) } == nil {
+            if findVariable(satisfying: { requirement.fulfilled(by: self.type(of: $0)) }) == nil {
 
                 // Check for other CodeGenerators that can produce the given type in this context.
                 let usableGenerators = fuzzer.codeGenerators.filter {

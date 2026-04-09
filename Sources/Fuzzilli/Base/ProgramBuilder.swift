@@ -2754,22 +2754,27 @@ public class ProgramBuilder {
         }
 
         public func addMethod(
-            _ name: String, with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+            _ name: String, with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+            _ body: ([Variable]) -> Void
         ) {
+            assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
             b.setParameterTypesForNextSubroutine(descriptor.parameterTypes)
             let instr = b.emit(
-                BeginObjectLiteralMethod(methodName: name, parameters: descriptor.parameters))
+                BeginObjectLiteralMethod(methodName: name, parameters: descriptor.parameters),
+                withInputs: defaultValues)
             body(Array(instr.innerOutputs))
             b.emit(EndObjectLiteralMethod())
         }
 
         public func addComputedMethod(
-            _ name: Variable, with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+            _ name: Variable, with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+            _ body: ([Variable]) -> Void
         ) {
+            assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
             b.setParameterTypesForNextSubroutine(descriptor.parameterTypes)
             let instr = b.emit(
                 BeginObjectLiteralComputedMethod(parameters: descriptor.parameters),
-                withInputs: [name])
+                withInputs: [name] + defaultValues)
             body(Array(instr.innerOutputs))
             b.emit(EndObjectLiteralComputedMethod())
         }
@@ -2868,10 +2873,13 @@ public class ProgramBuilder {
         }
 
         public func addConstructor(
-            with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+            with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+            _ body: ([Variable]) -> Void
         ) {
+            assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
             b.setParameterTypesForNextSubroutine(descriptor.parameterTypes)
-            let instr = b.emit(BeginClassConstructor(parameters: descriptor.parameters))
+            let instr = b.emit(
+                BeginClassConstructor(parameters: descriptor.parameters), withInputs: defaultValues)
             body(Array(instr.innerOutputs))
             b.emit(EndClassConstructor())
         }
@@ -2898,23 +2906,28 @@ public class ProgramBuilder {
         }
 
         public func addInstanceMethod(
-            _ name: String, with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+            _ name: String, with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+            _ body: ([Variable]) -> Void
         ) {
+            assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
             b.setParameterTypesForNextSubroutine(descriptor.parameterTypes)
             let instr = b.emit(
                 BeginClassMethod(
-                    methodName: name, parameters: descriptor.parameters, isStatic: false))
+                    methodName: name, parameters: descriptor.parameters, isStatic: false),
+                withInputs: defaultValues)
             body(Array(instr.innerOutputs))
             b.emit(EndClassMethod())
         }
 
         public func addInstanceComputedMethod(
-            _ name: Variable, with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+            _ name: Variable, with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+            _ body: ([Variable]) -> Void
         ) {
+            assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
             b.setParameterTypesForNextSubroutine(descriptor.parameterTypes)
             let instr = b.emit(
                 BeginClassComputedMethod(parameters: descriptor.parameters, isStatic: false),
-                withInputs: [name])
+                withInputs: [name] + defaultValues)
             body(Array(instr.innerOutputs))
             b.emit(EndClassComputedMethod())
         }
@@ -2977,23 +2990,28 @@ public class ProgramBuilder {
         }
 
         public func addStaticMethod(
-            _ name: String, with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+            _ name: String, with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+            _ body: ([Variable]) -> Void
         ) {
+            assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
             b.setParameterTypesForNextSubroutine(descriptor.parameterTypes)
             let instr = b.emit(
                 BeginClassMethod(
-                    methodName: name, parameters: descriptor.parameters, isStatic: true))
+                    methodName: name, parameters: descriptor.parameters, isStatic: true),
+                withInputs: defaultValues)
             body(Array(instr.innerOutputs))
             b.emit(EndClassMethod())
         }
 
         public func addStaticComputedMethod(
-            _ name: Variable, with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+            _ name: Variable, with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+            _ body: ([Variable]) -> Void
         ) {
+            assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
             b.setParameterTypesForNextSubroutine(descriptor.parameterTypes)
             let instr = b.emit(
                 BeginClassComputedMethod(parameters: descriptor.parameters, isStatic: true),
-                withInputs: [name])
+                withInputs: [name] + defaultValues)
             body(Array(instr.innerOutputs))
             b.emit(EndClassComputedMethod())
         }
@@ -3036,12 +3054,15 @@ public class ProgramBuilder {
         }
 
         public func addPrivateInstanceMethod(
-            _ name: String, with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+            _ name: String, with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+            _ body: ([Variable]) -> Void
         ) {
+            assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
             b.setParameterTypesForNextSubroutine(descriptor.parameterTypes)
             let instr = b.emit(
                 BeginClassPrivateMethod(
-                    methodName: name, parameters: descriptor.parameters, isStatic: false))
+                    methodName: name, parameters: descriptor.parameters, isStatic: false),
+                withInputs: defaultValues)
             body(Array(instr.innerOutputs))
             b.emit(EndClassPrivateMethod())
         }
@@ -3054,12 +3075,15 @@ public class ProgramBuilder {
         }
 
         public func addPrivateStaticMethod(
-            _ name: String, with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+            _ name: String, with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+            _ body: ([Variable]) -> Void
         ) {
+            assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
             b.setParameterTypesForNextSubroutine(descriptor.parameterTypes)
             let instr = b.emit(
                 BeginClassPrivateMethod(
-                    methodName: name, parameters: descriptor.parameters, isStatic: true))
+                    methodName: name, parameters: descriptor.parameters, isStatic: true),
+                withInputs: defaultValues)
             body(Array(instr.innerOutputs))
             b.emit(EndClassPrivateMethod())
         }
@@ -3487,10 +3511,13 @@ public class ProgramBuilder {
 
     @discardableResult
     public func buildConstructor(
-        with descriptor: SubroutineDescriptor, _ body: ([Variable]) -> Void
+        with descriptor: SubroutineDescriptor, defaultValues: [Variable] = [],
+        _ body: ([Variable]) -> Void
     ) -> Variable {
+        assert(descriptor.parameters.numDefaultParameters == defaultValues.count)
         setParameterTypesForNextSubroutine(descriptor.parameterTypes)
-        let instr = emit(BeginConstructor(parameters: descriptor.parameters))
+        let instr = emit(
+            BeginConstructor(parameters: descriptor.parameters), withInputs: defaultValues)
         bodyWithRecursionGuard(instr.output) { body(Array(instr.innerOutputs)) }
         emit(EndConstructor())
         return instr.output

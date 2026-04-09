@@ -36,6 +36,16 @@ public class FuzzILLifter: Lifter {
             return lift(instr.innerOutput)
         }
 
+        func liftDefaultParameters(_ parameters: Parameters, _ defaultValues: ArraySlice<Variable>)
+            -> String
+        {
+            guard !defaultValues.isEmpty else { return "" }
+            let defaults = zip(parameters.defaultParameterIndices, defaultValues).map {
+                "\($0): \(lift($1))"
+            }.joined(separator: ", ")
+            return " [\(defaults)]"
+        }
+
         switch instr.op.opcode {
         case .loadInteger(let op):
             w.emit("\(output()) <- LoadInteger '\(op.value)'")
@@ -114,16 +124,18 @@ public class FuzzILLifter: Lifter {
 
         case .beginObjectLiteralMethod(let op):
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
-            w.emit("BeginObjectLiteralMethod `\(op.methodName)` -> \(params)")
+            let inputs = liftDefaultParameters(op.parameters, instr.inputs)
+            w.emit("BeginObjectLiteralMethod `\(op.methodName)`\(inputs) -> \(params)")
             w.increaseIndentionLevel()
 
         case .endObjectLiteralMethod:
             w.decreaseIndentionLevel()
             w.emit("EndObjectLiteralMethod")
 
-        case .beginObjectLiteralComputedMethod:
+        case .beginObjectLiteralComputedMethod(let op):
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
-            w.emit("BeginObjectLiteralComputedMethod \(input(0)) -> \(params)")
+            let inputs = liftDefaultParameters(op.parameters, instr.inputs.dropFirst())
+            w.emit("BeginObjectLiteralComputedMethod \(input(0))\(inputs) -> \(params)")
             w.increaseIndentionLevel()
 
         case .endObjectLiteralComputedMethod:
@@ -182,9 +194,10 @@ public class FuzzILLifter: Lifter {
             w.emit(line)
             w.increaseIndentionLevel()
 
-        case .beginClassConstructor:
+        case .beginClassConstructor(let op):
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
-            w.emit("BeginClassConstructor -> \(params)")
+            let inputs = liftDefaultParameters(op.parameters, instr.inputs)
+            w.emit("BeginClassConstructor\(inputs) -> \(params)")
             w.increaseIndentionLevel()
 
         case .endClassConstructor:
@@ -218,7 +231,8 @@ public class FuzzILLifter: Lifter {
         case .beginClassMethod(let op):
             let maybeStatic = op.isStatic ? "static " : ""
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
-            w.emit("BeginClassMethod '\(maybeStatic)\(op.methodName)' -> \(params)")
+            let inputs = liftDefaultParameters(op.parameters, instr.inputs)
+            w.emit("BeginClassMethod '\(maybeStatic)\(op.methodName)'\(inputs) -> \(params)")
             w.increaseIndentionLevel()
 
         case .endClassMethod:
@@ -228,7 +242,8 @@ public class FuzzILLifter: Lifter {
         case .beginClassComputedMethod(let op):
             let maybeStatic = op.isStatic ? "static " : ""
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
-            w.emit("BeginClassComputedMethod \(maybeStatic)\(input(0)) -> \(params)")
+            let inputs = liftDefaultParameters(op.parameters, instr.inputs.dropFirst())
+            w.emit("BeginClassComputedMethod \(maybeStatic)\(input(0))\(inputs) -> \(params)")
             w.increaseIndentionLevel()
 
         case .endClassComputedMethod:
@@ -294,7 +309,8 @@ public class FuzzILLifter: Lifter {
         case .beginClassPrivateMethod(let op):
             let maybeStatic = op.isStatic ? "static " : ""
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
-            w.emit("BeginClassPrivateMethod '\(maybeStatic)\(op.methodName)' -> \(params)")
+            let inputs = liftDefaultParameters(op.parameters, instr.inputs)
+            w.emit("BeginClassPrivateMethod '\(maybeStatic)\(op.methodName)'\(inputs) -> \(params)")
             w.increaseIndentionLevel()
 
         case .endClassPrivateMethod:
@@ -408,13 +424,7 @@ public class FuzzILLifter: Lifter {
             .beginAsyncArrowFunction(let op as BeginAnyFunction),
             .beginAsyncGeneratorFunction(let op as BeginAnyFunction):
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
-            let inputs =
-                instr.inputs.isEmpty
-                ? ""
-                : " ["
-                    + zip(op.parameters.defaultParameterIndices, instr.inputs).map {
-                        "\($0): \(lift($1))"
-                    }.joined(separator: ", ") + "]"
+            let inputs = liftDefaultParameters(op.parameters, instr.inputs)
             w.emit("\(output()) <- \(op.name)\(inputs) -> \(params)")
             w.increaseIndentionLevel()
 
@@ -429,7 +439,8 @@ public class FuzzILLifter: Lifter {
 
         case .beginConstructor(let op):
             let params = instr.innerOutputs.map(lift).joined(separator: ", ")
-            w.emit("\(output()) <- \(op.name) -> \(params)")
+            let inputs = liftDefaultParameters(op.parameters, instr.inputs)
+            w.emit("\(output()) <- \(op.name)\(inputs) -> \(params)")
             w.increaseIndentionLevel()
 
         case .endConstructor(let op):

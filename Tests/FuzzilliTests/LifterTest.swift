@@ -4430,4 +4430,146 @@ class LifterTests: XCTestCase {
 
         XCTAssertEqual(actual, expected)
     }
+
+    func testObjectLiteralMethodDefaultParameterLifting() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let v0 = b.loadInt(42)
+
+        b.buildObjectLiteral { obj in
+            obj.addMethod(
+                "foo", with: .parameters(n: 2, defaultParameterIndices: [1]), defaultValues: [v0]
+            ) { args in
+                b.doReturn(args[2])
+            }
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+            const v4 = {
+                foo(a2, a3 = 42) {
+                    return a3;
+                },
+            };
+
+            """
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testClassMethodDefaultParameterLifting() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let v0 = b.loadInt(42)
+
+        b.buildClassDefinition { cls in
+            cls.addInstanceMethod(
+                "bar", with: .parameters(n: 2, defaultParameterIndices: [1]), defaultValues: [v0]
+            ) { args in
+                b.doReturn(args[2])
+            }
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+            class C1 {
+                bar(a3, a4 = 42) {
+                    return a4;
+                }
+            }
+
+            """
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testClassConstructorDefaultParameterLifting() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let v0 = b.loadInt(42)
+
+        b.buildClassDefinition { cls in
+            cls.addConstructor(
+                with: .parameters(n: 1, defaultParameterIndices: [0]), defaultValues: [v0]
+            ) { args in
+                b.setProperty("foo", of: args[0], to: args[1])
+            }
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+            class C1 {
+                constructor(a3 = 42) {
+                    this.foo = a3;
+                }
+            }
+
+            """
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testObjectLiteralComputedMethodDefaultParameterLifting() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let v0 = b.loadInt(42)
+        let v1 = b.loadString("computed")
+
+        b.buildObjectLiteral { obj in
+            obj.addComputedMethod(
+                v1, with: .parameters(n: 2, defaultParameterIndices: [1]), defaultValues: [v0]
+            ) { args in
+                b.doReturn(args[2])
+            }
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+            const v5 = {
+                ["computed"](a3, a4 = 42) {
+                    return a4;
+                },
+            };
+
+            """
+
+        XCTAssertEqual(actual, expected)
+    }
+
+    func testConstructorDefaultParameterLifting() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let v0 = b.loadInt(42)
+
+        // function F(a, b = 42) { if (!new.target) ... }
+        b.buildConstructor(
+            with: .parameters(n: 2, defaultParameterIndices: [1]), defaultValues: [v0]
+        ) { args in
+        }
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+            function F1(a3, a4 = 42) {
+                if (!new.target) { throw 'must be called with new'; }
+            }
+
+            """
+
+        XCTAssertEqual(actual, expected)
+    }
 }

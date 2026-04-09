@@ -605,7 +605,8 @@ final class BeginObjectLiteralComputedMethod: BeginAnySubroutine {
     init(parameters: Parameters) {
         // First inner output is the explicit |this| parameter
         super.init(
-            parameters: parameters, numInputs: 1, numInnerOutputs: parameters.count + 1,
+            parameters: parameters, numInputs: 1 + parameters.numDefaultParameters,
+            numInnerOutputs: parameters.count + 1,
             attributes: .isBlockStart, requiredContext: .objectLiteral,
             contextOpened: [.javascript, .subroutine, .method])
     }
@@ -854,7 +855,8 @@ final class BeginClassComputedMethod: BeginAnySubroutine {
         self.isStatic = isStatic
         // First inner output is the explicit |this| parameter
         super.init(
-            parameters: parameters, numInputs: 1, numInnerOutputs: parameters.count + 1,
+            parameters: parameters, numInputs: 1 + parameters.numDefaultParameters,
+            numInnerOutputs: parameters.count + 1,
             attributes: [.isBlockStart], requiredContext: .classDefinition,
             contextOpened: [.javascript, .subroutine, .method, .classMethod])
     }

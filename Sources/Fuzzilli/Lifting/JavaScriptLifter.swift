@@ -424,7 +424,11 @@ public class JavaScriptLifter: Lifter {
 
             case .beginObjectLiteralMethod(let op):
                 let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
-                let PARAMS = liftParameters(op.parameters, as: vars)
+                var defaultValues = [String?](repeating: nil, count: op.parameters.count)
+                for (inputIdx, paramIdx) in op.parameters.defaultParameterIndices.enumerated() {
+                    defaultValues[paramIdx] = inputs[inputIdx].text
+                }
+                let PARAMS = liftParameters(op.parameters, as: vars, defaultValues: defaultValues)
                 let METHOD = quoteIdentifierIfNeeded(op.methodName)
                 currentObjectLiteral.beginMethod("\(METHOD)(\(PARAMS)) {", &w)
                 bindVariableToThis(instr.innerOutput(0))
@@ -434,7 +438,11 @@ public class JavaScriptLifter: Lifter {
 
             case .beginObjectLiteralComputedMethod(let op):
                 let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
-                let PARAMS = liftParameters(op.parameters, as: vars)
+                var defaultValues = [String?](repeating: nil, count: op.parameters.count)
+                for (inputIdx, paramIdx) in op.parameters.defaultParameterIndices.enumerated() {
+                    defaultValues[paramIdx] = inputs[1 + inputIdx].text
+                }
+                let PARAMS = liftParameters(op.parameters, as: vars, defaultValues: defaultValues)
                 let METHOD = input(0)
                 currentObjectLiteral.beginMethod("[\(METHOD)](\(PARAMS)) {", &w)
                 bindVariableToThis(instr.innerOutput(0))
@@ -519,7 +527,11 @@ public class JavaScriptLifter: Lifter {
 
             case .beginClassConstructor(let op):
                 let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
-                let PARAMS = liftParameters(op.parameters, as: vars)
+                var defaultValues = [String?](repeating: nil, count: op.parameters.count)
+                for (inputIdx, paramIdx) in op.parameters.defaultParameterIndices.enumerated() {
+                    defaultValues[paramIdx] = inputs[inputIdx].text
+                }
+                let PARAMS = liftParameters(op.parameters, as: vars, defaultValues: defaultValues)
                 w.emit("constructor(\(PARAMS)) {")
                 w.enterNewBlock()
                 bindVariableToThis(instr.innerOutput(0))
@@ -569,7 +581,11 @@ public class JavaScriptLifter: Lifter {
 
             case .beginClassMethod(let op):
                 let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
-                let PARAMS = liftParameters(op.parameters, as: vars)
+                var defaultValues = [String?](repeating: nil, count: op.parameters.count)
+                for (inputIdx, paramIdx) in op.parameters.defaultParameterIndices.enumerated() {
+                    defaultValues[paramIdx] = inputs[inputIdx].text
+                }
+                let PARAMS = liftParameters(op.parameters, as: vars, defaultValues: defaultValues)
                 let METHOD = quoteIdentifierIfNeeded(op.methodName)
                 let staticStr = op.isStatic ? "static " : ""
                 w.emit("\(staticStr)\(METHOD)(\(PARAMS)) {")
@@ -578,7 +594,11 @@ public class JavaScriptLifter: Lifter {
 
             case .beginClassComputedMethod(let op):
                 let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
-                let PARAMS = liftParameters(op.parameters, as: vars)
+                var defaultValues = [String?](repeating: nil, count: op.parameters.count)
+                for (inputIdx, paramIdx) in op.parameters.defaultParameterIndices.enumerated() {
+                    defaultValues[paramIdx] = inputs[1 + inputIdx].text
+                }
+                let PARAMS = liftParameters(op.parameters, as: vars, defaultValues: defaultValues)
                 let METHOD = input(0)
                 let staticStr = op.isStatic ? "static " : ""
                 w.emit("\(staticStr)[\(METHOD)](\(PARAMS)) {")
@@ -639,7 +659,11 @@ public class JavaScriptLifter: Lifter {
 
             case .beginClassPrivateMethod(let op):
                 let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
-                let PARAMS = liftParameters(op.parameters, as: vars)
+                var defaultValues = [String?](repeating: nil, count: op.parameters.count)
+                for (inputIdx, paramIdx) in op.parameters.defaultParameterIndices.enumerated() {
+                    defaultValues[paramIdx] = inputs[inputIdx].text
+                }
+                let PARAMS = liftParameters(op.parameters, as: vars, defaultValues: defaultValues)
                 let METHOD = op.methodName
                 let staticStr = op.isStatic ? "static " : ""
                 w.emit("\(staticStr)#\(METHOD)(\(PARAMS)) {")
@@ -910,7 +934,11 @@ public class JavaScriptLifter: Lifter {
                 let NAME = "F\(instr.output.number)"
                 w.declare(instr.output, as: NAME)
                 let vars = w.declareAll(instr.innerOutputs.dropFirst(), usePrefix: "a")
-                let PARAMS = liftParameters(op.parameters, as: vars)
+                var defaultValues = [String?](repeating: nil, count: op.parameters.count)
+                for (inputIdx, paramIdx) in op.parameters.defaultParameterIndices.enumerated() {
+                    defaultValues[paramIdx] = inputs[inputIdx].text
+                }
+                let PARAMS = liftParameters(op.parameters, as: vars, defaultValues: defaultValues)
                 w.emit("function \(NAME)(\(PARAMS)) {")
                 w.enterNewBlock()
                 // Disallow invoking constructors without `new` (i.e. Construct in FuzzIL).

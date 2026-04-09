@@ -551,7 +551,11 @@ public let CodeGenerators: [CodeGenerator] = [
                 Int.random(in: 1...maxProperties)))
 
         // Define a constructor function...
-        let c = b.buildConstructor(with: b.randomParameters()) { args in
+        let (randomParameters, defaultValues) = b.randomParameters()
+            .withRandomDefaultParameters(
+                probability: 0.1,
+                randomVariable: { b.randomJsVariable() })
+        let c = b.buildConstructor(with: randomParameters, defaultValues: defaultValues) { args in
             let this = args[0]
 
             // We don't want |this| to be used as property value, so hide it.
@@ -809,13 +813,17 @@ public let CodeGenerators: [CodeGenerator] = [
                     b.randomCustomMethodName,
                     notIn: b.currentObjectLiteral.methods)
 
-                let randomParameters = b.randomParameters()
+                let (randomParameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(
                     randomParameters.parameterTypes)
                 b.emit(
                     BeginObjectLiteralMethod(
                         methodName: methodName,
-                        parameters: randomParameters.parameters))
+                        parameters: randomParameters.parameters),
+                    withInputs: defaultValues)
             },
             GeneratorStub(
                 "ObjectLiteralMethodEndGenerator",
@@ -836,12 +844,15 @@ public let CodeGenerators: [CodeGenerator] = [
                 // Try to find a computed method name that hasn't already been added to this literal.
                 let methodName = b.randomJsVariable(
                     notIn: b.currentObjectLiteral.computedMethods)
-                let parameters = b.randomParameters()
+                let (parameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(parameters.parameterTypes)
                 b.emit(
                     BeginObjectLiteralComputedMethod(
                         parameters: parameters.parameters),
-                    withInputs: [methodName])
+                    withInputs: [methodName] + defaultValues)
             },
             GeneratorStub(
                 "ObjectLiteralComputedMethodEndGenerator",
@@ -954,21 +965,25 @@ public let CodeGenerators: [CodeGenerator] = [
                     return
                 }
 
-                let randomParameters = b.randomParameters()
+                let (randomParameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
 
                 b.setParameterTypesForNextSubroutine(
                     randomParameters.parameterTypes)
 
                 let args = b.emit(
                     BeginClassConstructor(
-                        parameters: randomParameters.parameters)
+                        parameters: randomParameters.parameters),
+                    withInputs: defaultValues
                 ).innerOutputs
 
                 if randomParameters.parameters.hasRestParameter && probability(0.2) {
                     b.getProperty("length", of: args.last!)
                 }
 
-                let this = args[0]
+                let this = args.first!
                 // Derived classes must call `super()` before accessing this, but non-derived classes must not call `super()`.
                 if b.currentClassDefinition.isDerivedClass {
                     b.hide(this)  // We need to hide |this| so it isn't used as argument for `super()`
@@ -1039,13 +1054,17 @@ public let CodeGenerators: [CodeGenerator] = [
                     b.randomCustomMethodName,
                     notIn: b.currentClassDefinition.instanceMethods)
 
-                let parameters = b.randomParameters()
+                let (parameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(parameters.parameterTypes)
                 b.emit(
                     BeginClassMethod(
                         methodName: methodName,
                         parameters: parameters.parameters,
-                        isStatic: false))
+                        isStatic: false),
+                    withInputs: defaultValues)
             },
             GeneratorStub(
                 "ClassInstanceMethodEndGenerator",
@@ -1067,13 +1086,16 @@ public let CodeGenerators: [CodeGenerator] = [
                 // Try to find a method that hasn't already been added to this class.
                 let methodName = b.randomJsVariable(
                     notIn: b.currentClassDefinition.instanceComputedMethods)
-                let parameters = b.randomParameters()
+                let (parameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
                 b.setParameterTypesForNextSubroutine(parameters.parameterTypes)
                 b.emit(
                     BeginClassComputedMethod(
                         parameters: parameters.parameters,
                         isStatic: false),
-                    withInputs: [methodName])
+                    withInputs: [methodName] + defaultValues)
             },
             GeneratorStub(
                 "ClassInstanceComputedMethodEndGenerator",
@@ -1197,14 +1219,18 @@ public let CodeGenerators: [CodeGenerator] = [
                 let methodName = b.generateString(
                     b.randomCustomMethodName,
                     notIn: b.currentClassDefinition.staticMethods)
-                let parameters = b.randomParameters()
+                let (parameters, defaultValues) = b.randomParameters()
+                    .withRandomDefaultParameters(
+                        probability: 0.1,
+                        randomVariable: { b.randomJsVariable() })
 
                 b.setParameterTypesForNextSubroutine(parameters.parameterTypes)
                 b.emit(
                     BeginClassMethod(
                         methodName: methodName,
                         parameters: parameters.parameters,
-                        isStatic: true))
+                        isStatic: true),
+                    withInputs: defaultValues)
 
             },
             GeneratorStub(

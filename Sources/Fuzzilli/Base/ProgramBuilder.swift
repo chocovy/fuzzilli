@@ -769,7 +769,10 @@ public class ProgramBuilder {
         // We only need to check against all base types from TypeSystem.swift, this works because we use .MayBe
         // TODO: Not sure how we should handle merge types, e.g. .string + .object(...).
         let typeGenerators: [(ILType, () -> Variable)] = [
-            (.integer, { return self.loadInt(self.randomInt()) }),
+            (
+                .integer,
+                { type.isEnumeration ? self.loadEnum(type) : self.loadInt(self.randomInt()) }
+            ),
             (
                 .string,
                 {
@@ -2643,8 +2646,8 @@ public class ProgramBuilder {
     }
 
     @discardableResult
-    public func loadInt(_ value: Int64) -> Variable {
-        return emit(LoadInteger(value: value)).output
+    public func loadInt(_ value: Int64, customName: String? = nil) -> Variable {
+        return emit(LoadInteger(value: value, customName: customName)).output
     }
 
     @discardableResult
@@ -2665,6 +2668,10 @@ public class ProgramBuilder {
     @discardableResult
     public func loadEnum(_ type: ILType) -> Variable {
         assert(type.isEnumeration)
+        if type.Is(.integer) {
+            let value = Int64(chooseUniform(from: type.enumValues))!
+            return loadInt(value, customName: type.group)
+        }
         return loadString(chooseUniform(from: type.enumValues), customName: type.group)
     }
 

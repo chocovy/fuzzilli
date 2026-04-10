@@ -24,6 +24,7 @@ message Parameters {
 
 message LoadInteger {
     int64 value = 1;
+    optional string customName = 2;
 }
 
 message LoadBigInt {

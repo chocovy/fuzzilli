@@ -1548,6 +1548,40 @@ class TypeSystemTests: XCTestCase {
         XCTAssertEqual(receiverObject.intersection(with: receiverNil), receiverObject)
     }
 
+    func testEnumerationTypeOperations() {
+        let enumA = ILType.enumeration(ofName: "EnumA", withValues: ["A", "B"])
+        let enumB = ILType.intEnumeration(ofName: "EnumB", withValues: [1, 2])
+        let genericString = ILType.string
+        let genericInt = ILType.integer
+
+        XCTAssertTrue(enumA.isEnumeration)
+        XCTAssertTrue(enumB.isEnumeration)
+        XCTAssertFalse(genericString.isEnumeration)
+        XCTAssertFalse(genericInt.isEnumeration)
+
+        // Union: enumA | genericString should be genericString, so not an enumeration.
+        XCTAssertFalse((enumA | genericString).isEnumeration)
+        // Union: enumB | genericInt should be genericInt, so not an enumeration.
+        XCTAssertFalse((enumB | genericInt).isEnumeration)
+        // Union: enumA (string) | enumB (int) should be number | string, so not an enumeration.
+        XCTAssertFalse((enumA | enumB).isEnumeration)
+
+        // Intersection: enumA & genericString should be enumA, so it should be an enumeration.
+        XCTAssertTrue((enumA & genericString).isEnumeration)
+        // Intersection: enumB & genericInt should be enumB, so it should be an enumeration.
+        XCTAssertTrue((enumB & genericInt).isEnumeration)
+
+        // Intersection of string enum and int enum should be .nothing, which is not an enumeration.
+        XCTAssertEqual(enumA & enumB, .nothing)
+        XCTAssertFalse((enumA & enumB).isEnumeration)
+
+        // Merging: enumA + object should maintain the isEnumeration flag.
+        let obj = ILType.object(withProperties: ["foo"])
+        XCTAssertFalse(obj.isEnumeration)
+        XCTAssertTrue((enumA + obj).isEnumeration)
+        XCTAssertTrue((enumB + obj).isEnumeration)
+    }
+
     let primitiveTypes: [ILType] = [
         .undefined, .integer, .float, .string, .boolean, .bigint, .regexp,
     ]

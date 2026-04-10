@@ -561,7 +561,12 @@ extension Instruction: ProtobufConvertible {
             case .nop:
                 $0.nop = Fuzzilli_Protobuf_Nop()
             case .loadInteger(let op):
-                $0.loadInteger = Fuzzilli_Protobuf_LoadInteger.with { $0.value = op.value }
+                $0.loadInteger = Fuzzilli_Protobuf_LoadInteger.with {
+                    $0.value = op.value
+                    if let customName = op.customName {
+                        $0.customName = customName
+                    }
+                }
             case .loadBigInt(let op):
                 $0.loadBigInt = Fuzzilli_Protobuf_LoadBigInt.with { $0.value = op.value }
             case .loadFloat(let op):
@@ -1959,7 +1964,8 @@ extension Instruction: ProtobufConvertible {
             }
             op = cachedOp
         case .loadInteger(let p):
-            op = LoadInteger(value: p.value)
+            let customName = p.customName.isEmpty ? nil : p.customName
+            op = LoadInteger(value: p.value, customName: customName)
         case .loadBigInt(let p):
             op = LoadBigInt(value: p.value)
         case .loadFloat(let p):

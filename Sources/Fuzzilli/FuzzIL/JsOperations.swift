@@ -177,9 +177,11 @@ final class LoadInteger: JsOperation {
     override var opcode: Opcode { .loadInteger(self) }
 
     let value: Int64
+    let customName: String?
 
-    init(value: Int64) {
+    init(value: Int64, customName: String? = nil) {
         self.value = value
+        self.customName = customName
         super.init(numOutputs: 1, attributes: [.isMutable])
     }
 }

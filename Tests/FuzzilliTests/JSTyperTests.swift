@@ -2262,4 +2262,26 @@ class JSTyperTests: XCTestCase {
 
         XCTAssertNil(unionType.group)
     }
+
+    func testIntEnumerationCustomName() {
+        let fuzzer = makeMockFuzzer()
+        let b = fuzzer.makeBuilder()
+
+        let mockIntEnum = ILType.intEnumeration(ofName: "MockIntEnum", withValues: [1337, 42])
+        fuzzer.environment.registerEnumeration(mockIntEnum)
+
+        let v1 = b.loadInt(1337, customName: "MockIntEnum")
+        let v2 = b.loadInt(1337)
+
+        // v1 should be typed as the enumeration
+        XCTAssertEqual(b.type(of: v1).group, "MockIntEnum")
+        XCTAssertTrue(b.type(of: v1).isEnumeration)
+        XCTAssert(b.type(of: v1).Is(mockIntEnum))
+        XCTAssert(b.type(of: v1).Is(.integer))
+
+        // v2 should be typed as a generic integer
+        XCTAssertNil(b.type(of: v2).group)
+        XCTAssertFalse(b.type(of: v2).isEnumeration)
+        XCTAssert(b.type(of: v2).Is(.integer))
+    }
 }

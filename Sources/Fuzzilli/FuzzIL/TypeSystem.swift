@@ -164,8 +164,18 @@ public struct ILType: Hashable {
     /// Constructs an enum type, which is a string with a limited set of allowed values.
     public static func enumeration(ofName name: String, withValues values: [String]) -> ILType {
         let ext = TypeExtension(
-            group: name, properties: Set(values), methods: Set(), signature: nil, wasmExt: nil)
+            group: name, properties: Set(values), methods: Set(), signature: nil, wasmExt: nil,
+            isEnumeration: true)
         return ILType(definiteType: .string, ext: ext)
+    }
+
+    /// Constructs an enum type, which is an integer with a limited set of allowed values.
+    public static func intEnumeration(ofName name: String, withValues values: [Int64]) -> ILType {
+        let stringValues = values.map { String($0) }
+        let ext = TypeExtension(
+            group: name, properties: Set(stringValues), methods: Set(), signature: nil,
+            wasmExt: nil, isEnumeration: true)
+        return ILType(definiteType: .integer, ext: ext)
     }
 
     /// Constructs an named string: this is a string that typically has some complex format.
@@ -597,11 +607,11 @@ public struct ILType: Hashable {
     }
 
     public var isEnumeration: Bool {
-        return Is(.string) && ext != nil && !ext!.properties.isEmpty
+        return ext?.isEnumeration ?? false
     }
 
-    public var isEnumerationOrNamedString: Bool {
-        return Is(.string) && ext != nil && group != nil
+    public var isNamedString: Bool {
+        return (Is(.string) && ext != nil && group != nil)
     }
 
     public var group: String? {
@@ -819,12 +829,14 @@ public struct ILType: Hashable {
         if wasmExt == nil && (self.wasmType ?? other.wasmType) != nil {
             group = nil
         }
+        let isEnumeration = self.isEnumeration && other.isEnumeration && group != nil
 
         return ILType(
             definiteType: definiteType, possibleType: possibleType,
             ext: TypeExtension(
                 group: group, properties: commonProperties, methods: commonMethods,
-                signature: signature, wasmExt: wasmExt, receiver: receiver))
+                signature: signature, wasmExt: wasmExt, receiver: receiver,
+                isEnumeration: isEnumeration))
     }
 
     public static func | (lhs: ILType, rhs: ILType) -> ILType {
@@ -924,11 +936,13 @@ public struct ILType: Hashable {
             wasmExt = wasmIntersection
         }
 
+        let isEnumeration = self.isEnumeration || other.isEnumeration
+
         return ILType(
             definiteType: definiteType, possibleType: possibleType,
             ext: TypeExtension(
                 group: group, properties: properties, methods: methods, signature: signature,
-                wasmExt: wasmExt, receiver: receiver))
+                wasmExt: wasmExt, receiver: receiver, isEnumeration: isEnumeration))
     }
 
     public static func & (lhs: ILType, rhs: ILType) -> ILType {
@@ -1001,11 +1015,13 @@ public struct ILType: Hashable {
 
         let wasmExt = self.wasmType ?? other.wasmType
 
+        let isEnumeration = self.isEnumeration || other.isEnumeration
+
         // We just take the self.wasmExt as they have to be the same, see `canMerge`.
         let ext = TypeExtension(
             group: group, properties: self.properties.union(other.properties),
             methods: self.methods.union(other.methods), signature: signature, wasmExt: wasmExt,
-            receiver: receiver)
+            receiver: receiver, isEnumeration: isEnumeration)
         return ILType(definiteType: definiteType, possibleType: possibleType, ext: ext)
     }
 
@@ -1032,7 +1048,7 @@ public struct ILType: Hashable {
         newProperties.insert(property)
         let newExt = TypeExtension(
             group: group, properties: newProperties, methods: methods, signature: signature,
-            wasmExt: wasmType)
+            wasmExt: wasmType, isEnumeration: isEnumeration)
         return ILType(definiteType: definiteType, possibleType: possibleType, ext: newExt)
     }
 
@@ -1054,7 +1070,7 @@ public struct ILType: Hashable {
         newMethods.remove(name)
         let newExt = TypeExtension(
             group: group, properties: newProperties, methods: newMethods, signature: signature,
-            wasmExt: wasmType)
+            wasmExt: wasmType, isEnumeration: isEnumeration)
         return ILType(definiteType: definiteType, possibleType: possibleType, ext: newExt)
     }
 
@@ -1067,7 +1083,7 @@ public struct ILType: Hashable {
         newMethods.insert(method)
         let newExt = TypeExtension(
             group: group, properties: properties, methods: newMethods, signature: signature,
-            wasmExt: wasmType)
+            wasmExt: wasmType, isEnumeration: isEnumeration)
         return ILType(definiteType: definiteType, possibleType: possibleType, ext: newExt)
     }
 
@@ -1085,7 +1101,7 @@ public struct ILType: Hashable {
         newMethods.remove(method)
         let newExt = TypeExtension(
             group: group, properties: properties, methods: newMethods, signature: signature,
-            wasmExt: wasmType)
+            wasmExt: wasmType, isEnumeration: isEnumeration)
         return ILType(definiteType: definiteType, possibleType: possibleType, ext: newExt)
     }
 
@@ -1094,7 +1110,8 @@ public struct ILType: Hashable {
             return self
         }
         let newExt = TypeExtension(
-            group: group, properties: properties, methods: methods, signature: signature)
+            group: group, properties: properties, methods: methods, signature: signature,
+            isEnumeration: isEnumeration)
         return ILType(definiteType: definiteType, possibleType: possibleType, ext: newExt)
     }
 
@@ -1378,9 +1395,12 @@ class TypeExtension: Hashable {
     // The receiver type of a function (used for unbound functions).
     let receiver: ILType?
 
+    // Used to indentify whether a type is an enumeration
+    let isEnumeration: Bool
+
     init?(
         group: String? = nil, properties: Set<String>, methods: Set<String>, signature: Signature?,
-        wasmExt: WasmTypeExtension? = nil, receiver: ILType? = nil
+        wasmExt: WasmTypeExtension? = nil, receiver: ILType? = nil, isEnumeration: Bool = false
     ) {
         if group == nil && properties.isEmpty && methods.isEmpty && signature == nil
             && wasmExt == nil && receiver == nil
@@ -1394,6 +1414,7 @@ class TypeExtension: Hashable {
         self.signature = signature
         self.wasmExt = wasmExt
         self.receiver = receiver
+        self.isEnumeration = isEnumeration
     }
 
     static func == (lhs: TypeExtension, rhs: TypeExtension) -> Bool {
@@ -1403,6 +1424,7 @@ class TypeExtension: Hashable {
             && lhs.signature == rhs.signature
             && lhs.wasmExt == rhs.wasmExt
             && lhs.receiver == rhs.receiver
+            && lhs.isEnumeration == rhs.isEnumeration
     }
 
     public func hash(into hasher: inout Hasher) {
@@ -1412,6 +1434,7 @@ class TypeExtension: Hashable {
         hasher.combine(signature)
         hasher.combine(wasmExt)
         hasher.combine(receiver)
+        hasher.combine(isEnumeration)
     }
 }
 

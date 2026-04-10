@@ -45,7 +45,16 @@ public class OperationMutator: BaseInstructionMutator {
     private func mutateOperation(_ instr: Instruction, _ b: ProgramBuilder) -> Instruction {
         let newOp: Operation
         switch instr.op.opcode {
-        case .loadInteger(_):
+        case .loadInteger(let op):
+            // Half the time we want to just hit the regular path
+            if Bool.random(),
+                let customName = op.customName,
+                let type = b.fuzzer.environment.getEnum(ofName: customName)
+            {
+                let value = Int64(chooseUniform(from: type.enumValues))!
+                newOp = LoadInteger(value: value, customName: customName)
+                break
+            }
             newOp = LoadInteger(value: b.randomInt())
         case .loadBigInt(_):
             newOp = LoadBigInt(value: b.randomInt())

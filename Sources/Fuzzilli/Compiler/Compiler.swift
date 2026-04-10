@@ -71,9 +71,10 @@ public class JavaScriptCompiler {
     private func compileClass(
         _ name: String, superClass: ExpressionNode?, fields: [ClassFieldNode], isExpression: Bool
     ) throws -> Variable {
-        // The expressions for property values and computed properties need to be emitted before the class declaration is opened.
+        // The expressions for property values, computed properties and method default parameters need to be emitted before the class declaration is opened.
         var propertyValues = [Variable]()
         var computedKeys = [Variable]()
+        var defaultValuesPerSubroutine = [[Variable]]()
         for field in fields {
             guard let field = field.field else {
                 throw CompilerError.invalidNodeError("missing concrete field in class declaration")
@@ -87,12 +88,17 @@ public class JavaScriptCompiler {
                 }
                 key = property.key
             case .method(let method):
+                defaultValuesPerSubroutine.append(try compileDefaultValues(for: method.parameters))
                 key = method.key
             case .getter(let getter):
                 key = getter.key
             case .setter(let setter):
                 key = setter.key
-            case .ctor, .staticInitializer:
+            case .ctor(let constructor):
+                defaultValuesPerSubroutine.append(
+                    try compileDefaultValues(for: constructor.parameters))
+                key = nil
+            case .staticInitializer:
                 key = nil
             }
 
@@ -104,6 +110,7 @@ public class JavaScriptCompiler {
         // Reverse the arrays since we'll remove the elements in FIFO order.
         propertyValues.reverse()
         computedKeys.reverse()
+        defaultValuesPerSubroutine.reverse()
 
         let classDecl: Instruction
         if let superClass = superClass {
@@ -146,8 +153,10 @@ public class JavaScriptCompiler {
                 emit(op, withInputs: inputs)
 
             case .ctor(let constructor):
+                let defaultValues = defaultValuesPerSubroutine.removeLast()
                 let parameters = convertParameters(constructor.parameters)
-                let head = emit(BeginClassConstructor(parameters: parameters))
+                let head = emit(
+                    BeginClassConstructor(parameters: parameters), withInputs: defaultValues)
 
                 try enterNewScope {
                     var parameters = head.innerOutputs
@@ -161,6 +170,7 @@ public class JavaScriptCompiler {
                 emit(EndClassConstructor())
 
             case .method(let method):
+                let defaultValues = defaultValuesPerSubroutine.removeLast()
                 let parameters = convertParameters(method.parameters)
                 let head: Instruction
 
@@ -171,16 +181,18 @@ public class JavaScriptCompiler {
                 case .name(let name):
                     head = emit(
                         BeginClassMethod(
-                            methodName: name, parameters: parameters, isStatic: method.isStatic))
+                            methodName: name, parameters: parameters, isStatic: method.isStatic),
+                        withInputs: defaultValues)
                 case .index(let index):
                     head = emit(
                         BeginClassMethod(
                             methodName: String(index), parameters: parameters,
-                            isStatic: method.isStatic))
+                            isStatic: method.isStatic),
+                        withInputs: defaultValues)
                 case .expression:
                     head = emit(
                         BeginClassComputedMethod(parameters: parameters, isStatic: method.isStatic),
-                        withInputs: [computedKeys.removeLast()])
+                        withInputs: [computedKeys.removeLast()] + defaultValues)
                 }
 
                 try enterNewScope {
@@ -886,9 +898,10 @@ public class JavaScriptCompiler {
             return rhs
 
         case .objectExpression(let objectExpression):
-            // The expressions for property values and computed properties need to be emitted before the object literal is opened.
+            // The expressions for property values, computed properties and method default parameters need to be emitted before the object literal is opened.
             var propertyValues = [Variable]()
             var computedKeys = [Variable]()
+            var methodDefaultValues = [[Variable]]()
             for field in objectExpression.fields {
                 guard let field = field.field else {
                     throw CompilerError.invalidNodeError(
@@ -901,6 +914,7 @@ public class JavaScriptCompiler {
                     propertyValues.append(try compileExpression(property.value))
                     key = property.key
                 case .method(let method):
+                    methodDefaultValues.append(try compileDefaultValues(for: method.parameters))
                     key = method.key
                 case .getter(let getter):
                     key = getter.key
@@ -915,6 +929,7 @@ public class JavaScriptCompiler {
             // Reverse the arrays since we'll remove the elements in FIFO order.
             propertyValues.reverse()
             computedKeys.reverse()
+            methodDefaultValues.reverse()
 
             // Now build the object literal.
             emit(BeginObjectLiteral())
@@ -937,6 +952,7 @@ public class JavaScriptCompiler {
                             withInputs: [computedKeys.removeLast()] + inputs)
                     }
                 case .method(let method):
+                    let defaultValues = methodDefaultValues.removeLast()
                     let parameters = convertParameters(method.parameters)
                     let head: Instruction
 
@@ -947,15 +963,17 @@ public class JavaScriptCompiler {
                     switch key {
                     case .name(let name):
                         head = emit(
-                            BeginObjectLiteralMethod(methodName: name, parameters: parameters))
+                            BeginObjectLiteralMethod(methodName: name, parameters: parameters),
+                            withInputs: defaultValues)
                     case .index(let index):
                         head = emit(
                             BeginObjectLiteralMethod(
-                                methodName: String(index), parameters: parameters))
+                                methodName: String(index), parameters: parameters),
+                            withInputs: defaultValues)
                     case .expression:
                         head = emit(
                             BeginObjectLiteralComputedMethod(parameters: parameters),
-                            withInputs: [computedKeys.removeLast()])
+                            withInputs: [computedKeys.removeLast()] + defaultValues)
                     }
 
                     try enterNewScope {

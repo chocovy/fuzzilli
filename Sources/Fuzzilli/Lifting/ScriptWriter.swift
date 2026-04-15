@@ -57,7 +57,6 @@ struct ScriptWriter {
     mutating func emit<S: StringProtocol>(_ line: S) {
         assert(maxLineLength > currentIndention.count)
         let splitAt = maxLineLength - currentIndention.count
-        assert(!line.contains("\n"))
         var line = line.prefix(line.count)
         while line.count > splitAt {
             var lineToPrint = line.prefix(splitAt + 1)

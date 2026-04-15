@@ -89,14 +89,14 @@ public class RuntimeAssistedMutator: Mutator {
     // If we can convert the instrumented program including its additional JS code to IL, the crash
     // reporting can perform proper minimization on it.
     private func tryRoundtripTranspileInstrumentedProgramToFuzzIL(
-        _ fuzzer: Fuzzer, _ instrumentedProgram: Program
+        _ fuzzer: Fuzzer, _ instrumentedProgram: Program, expectedSignal: Int
     )
         -> Program?
     {
         let instrumentedJavaScriptProgram = fuzzer.lifter.lift(instrumentedProgram)
-        var maybeProgramToMinimize: Program? = nil
         let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(
             UUID().uuidString + ".js")
+        defer { try? FileManager.default.removeItem(at: tempFile) }
         let errorPrefix = "Unable to compile instrumented JS program to FuzzIL because"
         guard
             let nodejs = JavaScriptExecutor(
@@ -113,13 +113,25 @@ public class RuntimeAssistedMutator: Mutator {
             try instrumentedJavaScriptProgram.write(
                 to: tempFile, atomically: true, encoding: .utf8)
             let ast = try parser.parse(tempFile.path)
-            maybeProgramToMinimize = try JavaScriptCompiler().compile(ast)
-            logger.warning("Successfully compiled instrumented JS program to FuzzIL")
+            let transpiledProgram = try JavaScriptCompiler().compile(ast)
+            logger.warning("Successfully compiled instrumented JS program back to FuzzIL")
+            let execution = fuzzer.execute(
+                transpiledProgram, withTimeout: fuzzer.config.timeout,
+                purpose: .runtimeAssistedMutation)
+            guard case .crashed(let signal) = execution.outcome else {
+                logger.warning("Transpiled program doesn't crash any more.")
+                return nil
+            }
+            guard signal == expectedSignal else {
+                logger.warning(
+                    "Transpiled program crashes with signal \(signal) instead of \(expectedSignal)")
+                return nil
+            }
+            return transpiledProgram
         } catch {
-            logger.warning("Failed to compile instrumented JS program to FuzzIL: \(error)")
+            logger.warning("Failed to compile instrumented JS program back to FuzzIL: \(error)")
+            return nil
         }
-        try? FileManager.default.removeItem(at: tempFile)
-        return maybeProgramToMinimize
     }
 
     override final func mutate(_ program: Program, using b: ProgramBuilder, for fuzzer: Fuzzer)
@@ -198,7 +210,8 @@ public class RuntimeAssistedMutator: Mutator {
                 "Mutated program did not crash, reporting original crash of the instrumented program"
             )
             let programToReport =
-                tryRoundtripTranspileInstrumentedProgramToFuzzIL(fuzzer, instrumentedProgram)
+                tryRoundtripTranspileInstrumentedProgramToFuzzIL(
+                    fuzzer, instrumentedProgram, expectedSignal: signal)
                 ?? instrumentedProgram
             fuzzer.processCrash(
                 programToReport, withSignal: signal,

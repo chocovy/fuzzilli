@@ -85,6 +85,43 @@ public class RuntimeAssistedMutator: Mutator {
         // May be overwritten by child classes
     }
 
+    // Lift the instrumented program to JS and try to transpile it back to FuzzIL.
+    // If we can convert the instrumented program including its additional JS code to IL, the crash
+    // reporting can perform proper minimization on it.
+    private func tryRoundtripTranspileInstrumentedProgramToFuzzIL(
+        _ fuzzer: Fuzzer, _ instrumentedProgram: Program
+    )
+        -> Program?
+    {
+        let instrumentedJavaScriptProgram = fuzzer.lifter.lift(instrumentedProgram)
+        var maybeProgramToMinimize: Program? = nil
+        let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(
+            UUID().uuidString + ".js")
+        let errorPrefix = "Unable to compile instrumented JS program to FuzzIL because"
+        guard
+            let nodejs = JavaScriptExecutor(
+                type: .nodejs, withArguments: ["--allow-natives-syntax"])
+        else {
+            logger.warning("\(errorPrefix) node.js is not available")
+            return nil
+        }
+        guard let parser = JavaScriptParser(executor: nodejs) else {
+            logger.warning("\(errorPrefix) the needed npm dependencies are not installed")
+            return nil
+        }
+        do {
+            try instrumentedJavaScriptProgram.write(
+                to: tempFile, atomically: true, encoding: .utf8)
+            let ast = try parser.parse(tempFile.path)
+            maybeProgramToMinimize = try JavaScriptCompiler().compile(ast)
+            logger.warning("Successfully compiled instrumented JS program to FuzzIL")
+        } catch {
+            logger.warning("Failed to compile instrumented JS program to FuzzIL: \(error)")
+        }
+        try? FileManager.default.removeItem(at: tempFile)
+        return maybeProgramToMinimize
+    }
+
     override final func mutate(_ program: Program, using b: ProgramBuilder, for fuzzer: Fuzzer)
         -> Program?
     {
@@ -155,38 +192,16 @@ public class RuntimeAssistedMutator: Mutator {
                 }
             }
 
-            // If we reach here, the process()'d program did not crash, so we need to report the instrumented program.
-            // First, get the instrumented JS program and try to compile it back to FuzzIL, so it can be minimized more effectively.
-            // We need this because instrumentation adds boilerplate JS code.
-            let instrumentedJavaScriptProgram = fuzzer.lifter.lift(instrumentedProgram)
-            var maybeProgramToMinimize: Program? = nil
-            let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(
-                UUID().uuidString + ".js")
-            if let nodejs = JavaScriptExecutor(
-                type: .nodejs, withArguments: ["--allow-natives-syntax"]),
-                let parser = JavaScriptParser(executor: nodejs)
-            {
-                do {
-                    try instrumentedJavaScriptProgram.write(
-                        to: tempFile, atomically: true, encoding: .utf8)
-                    let ast = try parser.parse(tempFile.path)
-                    maybeProgramToMinimize = try JavaScriptCompiler().compile(ast)
-                    logger.warning("Successfully compiled instrumented JS program to FuzzIL")
-                } catch {
-                    logger.warning("Failed to compile instrumented JS program to FuzzIL: \(error)")
-                }
-                try? FileManager.default.removeItem(at: tempFile)
-            } else {
-                logger.warning(
-                    "Unable to compile instrumented JS program to FuzzIL because node.js is not available"
-                )
-            }
-
+            // If we reach here, the process()'d program did not crash, so we need to report the
+            // instrumented program.
             logger.warning(
                 "Mutated program did not crash, reporting original crash of the instrumented program"
             )
+            let programToReport =
+                tryRoundtripTranspileInstrumentedProgramToFuzzIL(fuzzer, instrumentedProgram)
+                ?? instrumentedProgram
             fuzzer.processCrash(
-                maybeProgramToMinimize ?? instrumentedProgram, withSignal: signal,
+                programToReport, withSignal: signal,
                 withStderr: oldStderr, withStdout: stdout, origin: .local,
                 withExectime: execution.execTime)
         case .succeeded:

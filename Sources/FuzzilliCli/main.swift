@@ -48,6 +48,8 @@ if args["-h"] != nil || args["--help"] != nil || args.numPositionalArguments != 
                                            per round of sample selection. Used to ensure diversity between fuzzer instances
                                            (default: 0.10)
             --consecutiveMutations=n     : Perform this many consecutive mutations on each sample (default: 5).
+            --corpusGenerationIterations=n : Switch from corpus generation to the main fuzzing phase after this many
+                                           iterations without finding a new interesting sample (default: 100).
             --minimizationLimit=p        : When minimizing interesting programs, keep at least this percentage of the original instructions
                                            regardless of whether they are needed to trigger the interesting behaviour or not.
                                            See Minimizer.swift for an overview of this feature (default: 0.0).
@@ -142,6 +144,7 @@ let minCorpusSize = args.int(for: "--minCorpusSize") ?? 1000
 let maxCorpusSize = args.int(for: "--maxCorpusSize") ?? Int.max
 let markovDropoutRate = args.double(for: "--markovDropoutRate") ?? 0.10
 let consecutiveMutations = args.int(for: "--consecutiveMutations") ?? 5
+let corpusGenerationIterations = args.int(for: "--corpusGenerationIterations") ?? 100
 let minimizationLimit = args.double(for: "--minimizationLimit") ?? 0.0
 let storagePath = args["--storagePath"]
 var resume = args.has("--resume")
@@ -615,6 +618,7 @@ let mainConfig = Configuration(
     tag: tag,
     isWasmEnabled: enableWasm,
     storagePath: storagePath,
+    corpusGenerationIterations: corpusGenerationIterations,
     forDifferentialFuzzing: forDifferentialFuzzing,
     instanceId: 0,
     dumplingEnabled: profile.isDifferential)
@@ -794,6 +798,7 @@ for i in 1..<numJobs {
         tag: tag,
         isWasmEnabled: enableWasm,
         storagePath: storagePath,
+        corpusGenerationIterations: corpusGenerationIterations,
         forDifferentialFuzzing: forDifferentialFuzzing,
         instanceId: i,
         dumplingEnabled: profile.isDifferential)

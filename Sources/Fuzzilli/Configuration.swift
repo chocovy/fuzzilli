@@ -97,6 +97,10 @@ public struct Configuration {
     // The directory in which the corpus and additional diagnostics files are stored.
     public let storagePath: String?
 
+    // The number of iterations without finding a new interesting program after which
+    // the fuzzer switches from corpus generation to the main fuzzing phase.
+    public let corpusGenerationIterations: Int
+
     // Advises the fuzzer to generate cases that are more suitable for differential fuzzing.
     // Right now this only leads to the JavaScriptLifter emitting more local variables which
     // differential fuzzers can inspect (via mutating the JS program to print defined variables).
@@ -121,6 +125,7 @@ public struct Configuration {
         tag: String? = nil,
         isWasmEnabled: Bool = false,
         storagePath: String? = nil,
+        corpusGenerationIterations: Int = 100,
         forDifferentialFuzzing: Bool = false,
         instanceId: Int = -1,
         dumplingEnabled: Bool = false
@@ -138,6 +143,7 @@ public struct Configuration {
         self.tag = tag
         self.isWasmEnabled = isWasmEnabled
         self.storagePath = storagePath
+        self.corpusGenerationIterations = corpusGenerationIterations
         self.forDifferentialFuzzing = forDifferentialFuzzing
         self.diffConfig =
             dumplingEnabled

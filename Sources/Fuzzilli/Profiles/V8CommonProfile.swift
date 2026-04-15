@@ -1070,10 +1070,6 @@ public func v8ProcessArgs(randomize: Bool, forSandbox: Bool) -> [String] {
     }
 
     if probability(0.1) {
-        args.append("--turboshaft-wasm-in-js-inlining")
-    }
-
-    if probability(0.1) {
         args.append("--harmony-struct")
     }
 

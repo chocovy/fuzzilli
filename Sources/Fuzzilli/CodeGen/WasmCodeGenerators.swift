@@ -344,7 +344,8 @@ public let WasmCodeGenerators: [CodeGenerator] = [
 
     // TODO(pawkra): add shared variant.
     CodeGenerator(
-        "WasmRefI31Generator", inContext: .single(.wasmFunction), inputs: .required(.wasmi32)
+        "WasmRefI31Generator", inContext: .single(.wasmFunction), inputs: .required(.wasmi32),
+        produces: [.wasmI31Ref()]
     ) { b, value in
         b.currentWasmModule.currentWasmFunction.wasmRefI31(value, shared: false)
     },
@@ -367,7 +368,7 @@ public let WasmCodeGenerators: [CodeGenerator] = [
     // TODO(pawkra): add shared variant.
     CodeGenerator(
         "WasmExternConvertAnyGenerator", inContext: .single(.wasmFunction),
-        inputs: .required(.wasmAnyRef())
+        inputs: .required(.wasmAnyRef()), produces: [.wasmExternRef()]
     ) { b, ref in
         b.currentWasmModule.currentWasmFunction.wasmExternConvertAny(ref)
     },

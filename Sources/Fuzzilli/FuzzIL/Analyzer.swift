@@ -26,7 +26,7 @@ extension Analyzer {
     }
 
     mutating func analyze(_ code: Code) {
-        assert(code.isStaticallyValid())
+        code.assertIsStaticallyValid()
         for instr in code {
             analyze(instr)
         }

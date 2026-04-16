@@ -54,7 +54,7 @@ public final class Program: CustomStringConvertible {
 
     /// Constructs a program with the given code. The code must be statically valid.
     public init(with code: Code) {
-        assert(code.isStaticallyValid())
+        code.assertIsStaticallyValid()
         self.code = code
     }
 

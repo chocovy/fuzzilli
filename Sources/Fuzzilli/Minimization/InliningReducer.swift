@@ -258,7 +258,7 @@ struct InliningReducer: Reducer {
         c.renumberVariables()
 
         // The code must now be valid.
-        assert(c.isStaticallyValid())
+        c.assertIsStaticallyValid()
         return c
     }
 }

@@ -123,7 +123,11 @@ class MinimizationHelper {
     ) -> Bool {
         assert(!self.finalized)
         assert(numExecutions > 0)
-        assert(!expectCodeToBeValid || newCode.isStaticallyValid())
+        #if DEBUG
+            if expectCodeToBeValid {
+                newCode.assertIsStaticallyValid()
+            }
+        #endif
 
         // Reducers are allowed to nop instructions without verifying whether their outputs are used.
         // They are also allowed to remove blocks without verifying whether their opened contexts are required.

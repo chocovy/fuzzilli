@@ -118,7 +118,7 @@ public class Minimizer: ComponentBase {
                 assert(
                     helper.code.countIntructionsWith(flags: .notRemovable)
                         >= helper.numKeptInstructions)
-                assert(helper.code.isStaticallyValid())
+                helper.code.assertIsStaticallyValid()
             }
             iterations += 1
             guard iterations < 100 else {
@@ -145,7 +145,7 @@ public class Minimizer: ComponentBase {
             postProcessor.process(with: helper)
         }
 
-        assert(helper.code.isStaticallyValid())
+        helper.code.assertIsStaticallyValid()
         assert(!helper.code.contains(where: { $0.isNop }))
 
         return helper.finalize()

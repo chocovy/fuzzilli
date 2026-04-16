@@ -148,7 +148,7 @@ public struct Code: Collection {
 
     /// Computes the last variable (which will have the highest number) in this code or nil if there are no variables.
     public func lastVariable() -> Variable? {
-        assert(isStaticallyValid())
+        assertIsStaticallyValid()
         for instr in instructions.reversed() {
             if let v = instr.allOutputs.max() {
                 return v
@@ -159,7 +159,7 @@ public struct Code: Collection {
 
     /// Computes the next free variable in this code.
     public func nextFreeVariable() -> Variable {
-        assert(isStaticallyValid())
+        assertIsStaticallyValid()
         if let lastVar = lastVariable() {
             return Variable(number: lastVar.number + 1)
         }
@@ -319,6 +319,21 @@ public struct Code: Collection {
         } catch {
             return false
         }
+    }
+
+    // Helper function for asserting that the Code object is valid. Use this over
+    // assert(code.isValid()) to get more useful error messages if the assert triggers.
+    public func assertIsStaticallyValid() {
+        #if DEBUG
+            do {
+                try check()
+            } catch {
+                // This assumes that even if the code is invalid, the FuzzILLifter will be able to
+                // handle it without crashing. If that is not the case, it might be better to not print
+                // the code at all.
+                fatalError("Code is invalid: \(error)\n\(FuzzILLifter().lift(self))")
+            }
+        #endif
     }
 
     public func countIntructionsWith(flags: Instruction.Flags) -> Int {

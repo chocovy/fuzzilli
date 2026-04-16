@@ -85,7 +85,7 @@ struct WasmTypeGroupReducer: Reducer {
         var newCode = Code(
             helper.code
                 .filter { !toRemove.contains($0.index) }
-                .map { endTypeGroupReplacements[$0.index] ?? $0 })
+                .map { endTypeGroupReplacements[$0.index] ?? $0 }, isBundle: helper.code.isBundle)
 
         newCode.renumberVariables()
         helper.testAndCommit(newCode)

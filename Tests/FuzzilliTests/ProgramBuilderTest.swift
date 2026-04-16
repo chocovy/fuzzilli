@@ -3265,6 +3265,10 @@ class ProgramBuilderTests: XCTestCase {
             let b = fuzzer.makeBuilder()
             b.buildPrefix()
 
+            if generator.name == "BundleScriptGenerator" {
+                // Only buildable in the "bundle" configuration.
+                continue
+            }
             if let syntheticGenerator = b.assembleSyntheticGenerator(for: generator) {
                 let generatedInstructions = b.complete(
                     generator: syntheticGenerator, withBudget: 40)
@@ -3275,6 +3279,41 @@ class ProgramBuilderTests: XCTestCase {
                 XCTAssertLessThan(syntheticGenerator.parts.count, 10)
             } else {
                 XCTFail("Unable to generate synthetic CodeGenerator for \(generator.name) from JS.")
+            }
+        }
+
+        for (name, failureCount) in failures {
+            if failureCount == tries {
+                // This might fail very sparsely, if so, we might want to check the offending Generator to see if we can improve handling for it.
+                // OTOH this is a fuzzer and we sometimes have weird situations... :)
+                XCTFail("\(name) always failed to complete.")
+            }
+        }
+    }
+
+    func testThatBundleGeneratorsAreBuildableFromBundle() {
+        let config = Configuration(generateBundle: true)
+        let fuzzer = makeMockFuzzer(config: config)
+        let tries: Int = 10
+
+        var failures: [String: Int] = [:]
+
+        for generator in fuzzer.codeGenerators {
+            let b = fuzzer.makeBuilder()
+            b.buildPrefix()
+
+            if let syntheticGenerator = b.assembleSyntheticGenerator(for: generator) {
+                let generatedInstructions = b.complete(
+                    generator: syntheticGenerator, withBudget: 40)
+
+                if generatedInstructions == 0 {
+                    failures[generator.name, default: 0] += 1
+                }
+                XCTAssertLessThan(syntheticGenerator.parts.count, 10)
+            } else {
+                XCTFail(
+                    "Unable to generate synthetic CodeGenerator for \(generator.name) from a bundle."
+                )
             }
         }
 

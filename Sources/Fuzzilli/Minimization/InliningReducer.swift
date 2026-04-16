@@ -145,7 +145,7 @@ struct InliningReducer: Reducer {
         assert(index < code.count)
         assert(code[index].op is BeginAnyFunction)
 
-        var c = Code()
+        var c = Code(isBundle: code.isBundle)
         var i = 0
 
         // Append all code prior to the function that we're inlining.

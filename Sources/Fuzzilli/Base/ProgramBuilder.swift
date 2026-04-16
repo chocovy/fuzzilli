@@ -58,7 +58,7 @@ public class ProgramBuilder {
     private let logger = Logger(withLabel: "ProgramBuilder")
 
     /// The code and type information of the program that is being constructed.
-    private var code = Code()
+    private var code: Code
 
     /// Comments for the program that is being constructed.
     private var comments = ProgramComments()
@@ -77,7 +77,7 @@ public class ProgramBuilder {
     private var numVariables = 0
 
     /// Context analyzer to keep track of the currently active IL context.
-    private var contextAnalyzer = ContextAnalyzer()
+    private var contextAnalyzer: ContextAnalyzer
 
     /// Visible variables management.
     /// The `scopes` stack contains one entry per currently open scope containing all variables created in that scope.
@@ -191,15 +191,20 @@ public class ProgramBuilder {
         }
     }
 
+    public let isBundle: Bool
+
     /// Constructs a new program builder for the given fuzzer.
-    init(for fuzzer: Fuzzer, parent: Program?) {
+    init(for fuzzer: Fuzzer, parent: Program?, isBundle: Bool) {
         self.fuzzer = fuzzer
-        self.jsTyper = JSTyper(for: fuzzer.environment)
+        self.jsTyper = JSTyper(for: fuzzer.environment, isBundle: isBundle)
         self.parent = parent
+        self.isBundle = isBundle
 
         if fuzzer.config.logLevel.isAtLeast(.verbose) {
             self.buildLog = BuildLog()
         }
+        code = Code(isBundle: isBundle)
+        contextAnalyzer = ContextAnalyzer(isBundle: isBundle)
     }
 
     /// Resets this builder.
@@ -212,7 +217,7 @@ public class ProgramBuilder {
         variablesInScope.removeAll()
         hiddenVariables.removeAll()
         numberOfHiddenVariables = 0
-        contextAnalyzer = ContextAnalyzer()
+        contextAnalyzer = ContextAnalyzer(isBundle: isBundle)
         jsTyper.reset()
         activeObjectLiterals.removeAll()
         activeClassDefinitions.removeAll()
@@ -1106,6 +1111,10 @@ public class ProgramBuilder {
 
     /// Returns a random variable satisfying the given constraints or nil if none is found.
     public func findVariable(satisfying filter: ((Variable) -> Bool) = { _ in true }) -> Variable? {
+        if isBundle && !hasVisibleVariables {
+            // Bundles don't have visible variables before we've started generating the bundle items.
+            return nil
+        }
         assert(hasVisibleVariables)
 
         // TODO: we should implement some kind of fast lookup data structure to speed up the lookup of variables by type.
@@ -1730,7 +1739,7 @@ public class ProgramBuilder {
         // Step (2): determine which instructions can be part of the slice and attempt to find replacement variables for the outputs of instructions that cannot be included.
         //
         // We need a typer to be able to find compatible replacement variables if we are merging the dataflows of the two programs.
-        var typer = JSTyper(for: fuzzer.environment)
+        var typer = JSTyper(for: fuzzer.environment, isBundle: program.code.isBundle)
         // The set of variables that are available for a slice. A variable is available either because the instruction that outputs
         // it can be part of the slice or because the variable has been remapped to a host variable.
         var availableVariables = VariableSet()
@@ -2097,8 +2106,9 @@ public class ProgramBuilder {
             case .generating:
                 // This requirement might seem somewhat arbitrary but our JavaScript code generators make use of `b.randomVariable` and as such rely on the availability of
                 // visible Variables. Therefore we should always have some Variables visible if we want to use them.
+
                 assert(
-                    hasVisibleVariables,
+                    isBundle || hasVisibleVariables,
                     "CodeGenerators assume that there are visible variables to use. Use buildPrefix() to generate some initial variables in a new program"
                 )
 
@@ -2244,6 +2254,11 @@ public class ProgramBuilder {
     /// of prefix code is controlled in the same way as other generated code through the
     /// generator's respective weights.
     public func buildPrefix() {
+        if contextAnalyzer.context == .bundle {
+            // Don't emit a prefix into the bundle context. The items inside the bundle will emit their own prefixes.
+            return
+        }
+
         // Each value generators should generate at least 3 variables, and we probably want to run at least a
         // few of them (maybe roughly >= 3), so the number of variables to build shouldn't be set too low.
         assert(GeneratorStub.numberOfValuesToGenerateByValueGenerators == 3)
@@ -4058,6 +4073,16 @@ public class ProgramBuilder {
         emit(BeginBlockStatement())
         body()
         emit(EndBlockStatement())
+    }
+
+    public func maybeWrapInsideBundleScript(_ body: () -> Void) {
+        if isBundle {
+            emit(BeginBundleScript())
+        }
+        body()
+        if isBundle {
+            emit(EndBundleScript())
+        }
     }
 
     public func doPrint(_ value: Variable) {

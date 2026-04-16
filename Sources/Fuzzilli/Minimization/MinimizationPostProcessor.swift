@@ -25,7 +25,7 @@ struct MinimizationPostProcessor {
     func process(with helper: MinimizationHelper) -> Bool {
         // Step 1: Generate all changes that we'd like to perform and record them.
         var changes = [(index: Int, newInstruction: Instruction)]()
-        var codeWithNops = Code()
+        var codeWithNops = Code(isBundle: helper.code.isBundle)
 
         // This must happen on the fuzzer's queue as it requires a ProgramBuilder to obtain input variables.
         helper.performOnFuzzerQueue {

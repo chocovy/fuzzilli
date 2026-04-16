@@ -221,6 +221,8 @@ extension Operation {
             return endOp is EndCodeString
         case .beginBlockStatement:
             return endOp is EndBlockStatement
+        case .beginBundleScript:
+            return endOp is EndBundleScript
         case .beginWasmModule:
             return endOp is EndWasmModule
         case .beginWasmFunction:

@@ -104,6 +104,7 @@ if args["-h"] != nil || args["--help"] != nil || args.numPositionalArguments != 
                                            This can for example be used to remember the target revision that is being fuzzed.
             --wasm                       : Enable Wasm CodeGenerators (see WasmCodeGenerators.swift).
             --forDifferentialFuzzing     : Enable additional features for better support of external differential fuzzing.
+            --bundle                     : Generate bundles containing multiple JS scripts and modules
 
         """)
     exit(0)
@@ -163,6 +164,7 @@ let argumentRandomization = args.has("--argumentRandomization")
 let additionalArguments = args["--additionalArguments"] ?? ""
 let tag = args["--tag"]
 let enableWasm = args.has("--wasm")
+let generateBundle = args.has("--bundle")
 let forDifferentialFuzzing = args.has("--forDifferentialFuzzing")
 
 var timeout: Timeout
@@ -441,6 +443,8 @@ func makeFuzzer(with configuration: Configuration) -> Fuzzer {
         let finalArgs =
             baseArgs
             + configuration.getInstanceSpecificArguments(forReferenceRunner: forReferenceRunner)
+            // TODO(mliedtke): The flag should be controllable via the profile.
+            + (configuration.generateBundle ? ["--bundle"] : [])
         return REPRL(
             executable: jsShellPath,
             processArguments: finalArgs,
@@ -461,7 +465,13 @@ func makeFuzzer(with configuration: Configuration) -> Fuzzer {
     }()
 
     /// The mutation fuzzer responsible for mutating programs from the corpus and evaluating the outcome.
-    let disabledMutators = Set(profile.disabledMutators)
+    var disabledMutators = Set(profile.disabledMutators)
+
+    if configuration.generateBundle {
+        // TODO(marja): enable combining bundles.
+        disabledMutators.insert("CombineMutator")
+    }
+
     var mutators = WeightedList([
         (ExplorationMutator(), 3),
         (CodeGenMutator(), 2),
@@ -617,6 +627,7 @@ let mainConfig = Configuration(
     staticCorpus: staticCorpus,
     tag: tag,
     isWasmEnabled: enableWasm,
+    generateBundle: generateBundle,
     storagePath: storagePath,
     corpusGenerationIterations: corpusGenerationIterations,
     forDifferentialFuzzing: forDifferentialFuzzing,
@@ -797,6 +808,7 @@ for i in 1..<numJobs {
         staticCorpus: staticCorpus,
         tag: tag,
         isWasmEnabled: enableWasm,
+        generateBundle: generateBundle,
         storagePath: storagePath,
         corpusGenerationIterations: corpusGenerationIterations,
         forDifferentialFuzzing: forDifferentialFuzzing,

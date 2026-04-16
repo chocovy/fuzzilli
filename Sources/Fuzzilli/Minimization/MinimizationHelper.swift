@@ -195,7 +195,7 @@ class MinimizationHelper {
         assert(newInstr.flags.isEmpty)
 
         // For simplicity, just build a copy of the input code here. This logic is not particularly performance sensitive.
-        var newCode = Code()
+        var newCode = Code(isBundle: code.isBundle)
         for instr in code {
             if instr.index == index {
                 newCode.append(newInstr)

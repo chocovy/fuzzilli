@@ -113,7 +113,7 @@ public class JavaScriptLifter: Lifter {
         // This typer is shared across WasmLifters and a WasmLifter is only valid for a single WasmModule.
         var typer: JSTyper? = nil
         // The currently active WasmLifter, we can only have one of them.
-        var wasmInstructions = Code()
+        var wasmInstructions = Code(isBundle: false)
 
         // Map block start index to end index.
         let blockEndIndices = program.code.reduce(
@@ -139,7 +139,7 @@ public class JavaScriptLifter: Lifter {
 
         if needToSupportWasm {
             // If we need to support Wasm we need to type all instructions outside of Wasm such that the WasmLifter can access extra type information during lifting.
-            typer = JSTyper(for: environment)
+            typer = JSTyper(for: environment, isBundle: program.code.isBundle)
         }
 
         var w = JavaScriptWriter(
@@ -235,7 +235,8 @@ public class JavaScriptLifter: Lifter {
                     wasmTypeGroupStarts = instr.index
                 } else if instr.op is WasmEndTypeGroup {
                     w.emitComment("Wasm type group:")
-                    let code = Code(program.code[wasmTypeGroupStarts!...instr.index])
+                    let code = Code(
+                        program.code[wasmTypeGroupStarts!...instr.index], isBundle: false)
                     wasmTypeGroupStarts = nil
                     w.emitComment(FuzzILLifter().lift(code))
                 }
@@ -1514,6 +1515,12 @@ public class JavaScriptLifter: Lifter {
                 w.leaveCurrentBlock()
                 w.emit("}")
 
+            case .beginBundleScript:
+                w.emitRaw("// JS_BUNDLE_SCRIPT")
+
+            case .endBundleScript:
+                break
+
             case .loadNewTarget:
                 w.assign(Identifier.new("new.target"), to: instr.output)
 
@@ -1579,7 +1586,7 @@ public class JavaScriptLifter: Lifter {
             case .endWasmModule:
                 // Lift the FuzzILCode of this Block first.
                 w.emitComment("WasmModule Code:")
-                let code = Code(program.code[wasmCodeStarts!...instr.index])
+                let code = Code(program.code[wasmCodeStarts!...instr.index], isBundle: false)
 
                 wasmCodeStarts = nil
                 w.emitComment(FuzzILLifter().lift(code))
@@ -2472,6 +2479,11 @@ public class JavaScriptLifter: Lifter {
         mutating func emit(_ line: String) {
             emitPendingExpressions()
             writer.emitBlock(line)
+        }
+
+        mutating func emitRaw(_ line: String) {
+            emitPendingExpressions()
+            writer.emit(line)
         }
 
         /// Emit a (potentially multi-line) comment.

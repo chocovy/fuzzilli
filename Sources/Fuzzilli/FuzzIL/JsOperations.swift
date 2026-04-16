@@ -2624,6 +2624,23 @@ final class LoadNewTarget: JsOperation {
     }
 }
 
+final class BeginBundleScript: JsOperation {
+    override var opcode: Opcode { .beginBundleScript(self) }
+
+    init() {
+        super.init(
+            attributes: .isBlockStart, requiredContext: [.bundle], contextOpened: .javascript)
+    }
+}
+
+final class EndBundleScript: JsOperation {
+    override var opcode: Opcode { .endBundleScript(self) }
+
+    init() {
+        super.init(attributes: .isBlockEnd, requiredContext: .javascript)
+    }
+}
+
 final class BeginWasmModule: JsOperation {
     override var opcode: Opcode { .beginWasmModule(self) }
     init() {

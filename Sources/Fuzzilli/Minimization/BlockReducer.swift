@@ -90,7 +90,8 @@ struct BlockReducer: Reducer {
                 .beginWasmFunction,
                 .beginWasmModule,
                 .wasmBeginTryDelegate,
-                .wasmBeginTryTable:
+                .wasmBeginTryTable,
+                .beginBundleScript:
                 reduceGenericBlockGroup(group, with: helper)
 
             case .wasmBeginBlock,
@@ -347,7 +348,7 @@ struct BlockReducer: Reducer {
         varReplacements.merge(
             zip(endInstr.outputs, endInstrInputs.map { varReplacements[$0] ?? $0 }),
             uniquingKeysWith: { _, _ in fatalError("duplicate variables") })
-        var newCode = Code()
+        var newCode = Code(isBundle: helper.code.isBundle)
         for (i, instr) in helper.code.enumerated() {
             if i == group.head || i == group.tail {
                 continue  // Skip the block begin and end.
@@ -542,7 +543,7 @@ struct BlockReducer: Reducer {
                             varReplacements[$0] ?? $0
                         }),
                     uniquingKeysWith: { _, _ in fatalError("duplicate variables") })
-                var newCode = Code()
+                var newCode = Code(isBundle: helper.code.isBundle)
                 for (i, instr) in helper.code.enumerated() {
                     if i == ifBlock.head || (i >= elseBlock.head && i <= elseBlock.tail) {
                         continue  // Skip the WasmBeginIf and the else block.
@@ -572,7 +573,7 @@ struct BlockReducer: Reducer {
                             varReplacements[$0] ?? $0
                         }),
                     uniquingKeysWith: { _, _ in fatalError("duplicate variables") })
-                var newCode = Code()
+                var newCode = Code(isBundle: helper.code.isBundle)
                 for (i, instr) in helper.code.enumerated() {
                     if i == elseBlock.tail || (i >= ifBlock.head && i <= ifBlock.tail) {
                         continue  // Skip the WasmBeginIf and the if true block.

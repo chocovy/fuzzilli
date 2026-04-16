@@ -110,6 +110,9 @@ public struct Configuration {
     // be imported due to disabled wasm capabilities in the fuzzer.
     public static let excludedWasmDirectory = "excluded_wasm_programs"
 
+    // Whether the fuzzer generates bundles containing multiple JavaScript scripts or modules.
+    public let generateBundle: Bool
+
     public init(
         arguments: [String] = [],
         timeout: UInt32 = 250,
@@ -124,6 +127,7 @@ public struct Configuration {
         staticCorpus: Bool = false,
         tag: String? = nil,
         isWasmEnabled: Bool = false,
+        generateBundle: Bool = false,
         storagePath: String? = nil,
         corpusGenerationIterations: Int = 100,
         forDifferentialFuzzing: Bool = false,
@@ -142,6 +146,7 @@ public struct Configuration {
         self.staticCorpus = staticCorpus
         self.tag = tag
         self.isWasmEnabled = isWasmEnabled
+        self.generateBundle = generateBundle
         self.storagePath = storagePath
         self.corpusGenerationIterations = corpusGenerationIterations
         self.forDifferentialFuzzing = forDifferentialFuzzing

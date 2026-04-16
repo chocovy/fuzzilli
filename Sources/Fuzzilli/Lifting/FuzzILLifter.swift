@@ -817,6 +817,14 @@ public class FuzzILLifter: Lifter {
             w.decreaseIndentionLevel()
             w.emit("EndBlockStatement")
 
+        case .beginBundleScript:
+            w.emit("BeginBundleScript")
+            w.increaseIndentionLevel()
+
+        case .endBundleScript:
+            w.decreaseIndentionLevel()
+            w.emit("EndBundleScript")
+
         case .loadNewTarget:
             w.emit("\(output()) <- LoadNewTarget")
 

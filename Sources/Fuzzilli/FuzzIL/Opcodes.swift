@@ -363,4 +363,6 @@ enum Opcode {
     case endClassComputedGetter(EndClassComputedGetter)
     case beginClassComputedSetter(BeginClassComputedSetter)
     case endClassComputedSetter(EndClassComputedSetter)
+    case beginBundleScript(BeginBundleScript)
+    case endBundleScript(EndBundleScript)
 }

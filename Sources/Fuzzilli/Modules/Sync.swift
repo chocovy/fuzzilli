@@ -137,6 +137,7 @@ public class DistributedFuzzingNode {
                     $0.corpus = try fuzzer.corpus.exportState()
                     $0.evaluatorState = fuzzer.evaluator.exportState()
                     $0.isWasmEnabled = fuzzer.config.isWasmEnabled
+                    $0.areBundlesEnabled = fuzzer.config.generateBundle
                 }
                 return try state.serializedData()
             } else {
@@ -163,6 +164,15 @@ public class DistributedFuzzingNode {
                 let selfState = state.isWasmEnabled ? "enabled" : "disabled"
                 throw FuzzilliError.corpusImportError(
                     "Inconsistent state between distributed nodes: The parent has wasm \(parentState) while the current fuzzer has wasm \(selfState)!"
+                )
+            }
+
+            if state.areBundlesEnabled != fuzzer.config.generateBundle {
+                // Ditto for bundles.
+                let parentState = fuzzer.config.generateBundle ? "enabled" : "disabled"
+                let selfState = state.areBundlesEnabled ? "enabled" : "disabled"
+                throw FuzzilliError.corpusImportError(
+                    "Inconsistent state between distributed nodes: The parent has bundles \(parentState) while the current fuzzer has wasm \(selfState)!"
                 )
             }
 

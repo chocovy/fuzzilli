@@ -25,7 +25,7 @@ public struct JSTyper: Analyzer {
     // The current state
     private var state = AnalyzerState()
 
-    private var defUseAnalyzer = DefUseAnalyzer()
+    private var defUseAnalyzer: DefUseAnalyzer
 
     // Parameter types for subroutines defined in the analyzed program.
     // These are keyed by the index of the start of the subroutine definition.
@@ -441,8 +441,12 @@ public struct JSTyper: Analyzer {
     // The index of the last instruction that was processed. Just used for debug assertions.
     private var indexOfLastInstruction = -1
 
-    init(for environ: JavaScriptEnvironment) {
+    private let isBundle: Bool
+
+    init(for environ: JavaScriptEnvironment, isBundle: Bool) {
         self.environment = environ
+        self.isBundle = isBundle
+        self.defUseAnalyzer = DefUseAnalyzer(isBundle: isBundle)
     }
 
     public mutating func reset() {
@@ -451,7 +455,7 @@ public struct JSTyper: Analyzer {
         signatures.removeAll()
         typeGroups.removeAll()
         wasmTypeDefMap.removeAll()
-        defUseAnalyzer = DefUseAnalyzer()
+        defUseAnalyzer = DefUseAnalyzer(isBundle: isBundle)
         isWithinTypeGroup = false
         dynamicObjectGroupManager = ObjectGroupManager()
         assert(activeFunctionDefinitions.isEmpty)
@@ -1379,7 +1383,9 @@ public struct JSTyper: Analyzer {
             .beginClassStaticInitializer,
             .endClassStaticInitializer,
             .beginWasmModule,
-            .endWasmModule:
+            .endWasmModule,
+            .beginBundleScript,
+            .endBundleScript:
             // Object literals and class definitions don't create any conditional branches, only methods and accessors inside of them. These are handled further below.
             break
         case .beginIf:

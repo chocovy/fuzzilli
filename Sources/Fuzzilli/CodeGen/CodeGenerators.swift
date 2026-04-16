@@ -3394,4 +3394,24 @@ public let CodeGenerators: [CodeGenerator] = [
         let newSize = b.binary(currentByteLength, delta, with: .Add)
         b.callMethod("grow", on: buffer, withArgs: [newSize], guard: true)
     },
+
+    CodeGenerator(
+        "BundleScriptGenerator",
+        [
+            GeneratorStub(
+                "BundleScriptBeginGenerator",
+                inContext: .single(.bundle),
+                provides: [.javascript]
+            ) { b in
+                b.emit(BeginBundleScript())
+                // TODO(marja): Make variables created to scripts visible to other scripts.
+                b.buildPrefix()
+            },
+            GeneratorStub(
+                "BundleScriptEndGenerator",
+                inContext: .single([.javascript]),
+            ) { b in
+                b.emit(EndBundleScript())
+            },
+        ]),
 ]

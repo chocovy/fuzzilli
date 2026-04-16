@@ -4572,4 +4572,34 @@ class LifterTests: XCTestCase {
 
         XCTAssertEqual(actual, expected)
     }
+
+    func testBundleScripts() {
+        let config = Configuration(generateBundle: true)
+        let fuzzer = makeMockFuzzer(config: config)
+        let b = fuzzer.makeBuilder()
+
+        b.emit(BeginBundleScript())
+        let Object = b.createNamedVariable(forBuiltin: "Object")
+        b.construct(Object)
+        b.emit(EndBundleScript())
+
+        b.emit(BeginBundleScript())
+        let Array = b.createNamedVariable(forBuiltin: "Array")
+        b.construct(Array)
+        b.emit(EndBundleScript())
+
+        let program = b.finalize()
+        let actual = fuzzer.lifter.lift(program)
+
+        let expected = """
+            // JS_BUNDLE_SCRIPT
+            new Object();
+            // JS_BUNDLE_SCRIPT
+            new Array();
+
+            """
+
+        XCTAssertEqual(actual, expected)
+    }
+
 }

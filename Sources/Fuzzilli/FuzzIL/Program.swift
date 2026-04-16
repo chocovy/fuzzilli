@@ -47,8 +47,8 @@ public final class Program: CustomStringConvertible {
     public private(set) lazy var id = UUID()
 
     /// Constructs an empty program.
-    public init() {
-        self.code = Code()
+    public init(isBundle: Bool) {
+        self.code = Code(isBundle: isBundle)
         self.parent = nil
     }
 
@@ -141,6 +141,7 @@ extension Program: ProtobufConvertible {
             if let parent = parent {
                 $0.parent = parent.asProtobuf(opCache: opCache)
             }
+            $0.isBundle = code.isBundle
         }
     }
 
@@ -149,7 +150,7 @@ extension Program: ProtobufConvertible {
     }
 
     convenience init(from proto: ProtobufType, opCache: OperationCache? = nil) throws {
-        var code = Code()
+        var code = Code(isBundle: proto.isBundle)
         for (i, protoInstr) in proto.code.enumerated() {
             do {
                 code.append(try Instruction(from: protoInstr, with: opCache))

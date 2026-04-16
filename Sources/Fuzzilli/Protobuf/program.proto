@@ -359,6 +359,8 @@ message Instruction {
         EndClassComputedGetter endClassComputedGetter = 333;
         BeginClassComputedSetter beginClassComputedSetter = 334;
         EndClassComputedSetter endClassComputedSetter = 335;
+        BeginBundleScript beginBundleScript = 336;
+        EndBundleScript endBundleScript = 337;
     }
 }
 
@@ -367,4 +369,5 @@ message Program {
     repeated Instruction code = 2;
     map<sint32, string> comments = 3;
     Program parent = 4;
+    bool isBundle = 5;
 }

@@ -65,6 +65,8 @@ public struct Fuzzilli_Protobuf_FuzzerState: Sendable {
 
   public var isWasmEnabled: Bool = false
 
+  public var areBundlesEnabled: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -241,7 +243,7 @@ extension Fuzzilli_Protobuf_LogMessage: SwiftProtobuf.Message, SwiftProtobuf._Me
 
 extension Fuzzilli_Protobuf_FuzzerState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FuzzerState"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}corpus\0\u{1}evaluatorState\0\u{1}isWasmEnabled\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}corpus\0\u{1}evaluatorState\0\u{1}isWasmEnabled\0\u{1}areBundlesEnabled\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -252,6 +254,7 @@ extension Fuzzilli_Protobuf_FuzzerState: SwiftProtobuf.Message, SwiftProtobuf._M
       case 1: try { try decoder.decodeSingularBytesField(value: &self.corpus) }()
       case 2: try { try decoder.decodeSingularBytesField(value: &self.evaluatorState) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.isWasmEnabled) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.areBundlesEnabled) }()
       default: break
       }
     }
@@ -267,6 +270,9 @@ extension Fuzzilli_Protobuf_FuzzerState: SwiftProtobuf.Message, SwiftProtobuf._M
     if self.isWasmEnabled != false {
       try visitor.visitSingularBoolField(value: self.isWasmEnabled, fieldNumber: 3)
     }
+    if self.areBundlesEnabled != false {
+      try visitor.visitSingularBoolField(value: self.areBundlesEnabled, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -274,6 +280,7 @@ extension Fuzzilli_Protobuf_FuzzerState: SwiftProtobuf.Message, SwiftProtobuf._M
     if lhs.corpus != rhs.corpus {return false}
     if lhs.evaluatorState != rhs.evaluatorState {return false}
     if lhs.isWasmEnabled != rhs.isWasmEnabled {return false}
+    if lhs.areBundlesEnabled != rhs.areBundlesEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

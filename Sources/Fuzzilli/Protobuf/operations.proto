@@ -1672,3 +1672,9 @@ message WasmTableInit {
 
 message WasmTableCopy {
 }
+
+message BeginBundleScript {
+}
+
+message EndBundleScript {
+}

@@ -1194,6 +1194,10 @@ extension Instruction: ProtobufConvertible {
                 $0.bindMethod = Fuzzilli_Protobuf_BindMethod.with { $0.methodName = op.methodName }
             case .bindFunction(_):
                 $0.bindFunction = Fuzzilli_Protobuf_BindFunction()
+            case .beginBundleScript:
+                $0.beginBundleScript = Fuzzilli_Protobuf_BeginBundleScript()
+            case .endBundleScript:
+                $0.endBundleScript = Fuzzilli_Protobuf_EndBundleScript()
             case .print(_):
                 fatalError("Print operations should not be serialized")
             // Wasm Operations
@@ -2378,6 +2382,10 @@ extension Instruction: ProtobufConvertible {
             op = BeginBlockStatement()
         case .endBlockStatement:
             op = EndBlockStatement()
+        case .beginBundleScript:
+            op = BeginBundleScript()
+        case .endBundleScript:
+            op = EndBundleScript()
         case .loadNewTarget:
             op = LoadNewTarget()
         case .nop:

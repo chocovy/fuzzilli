@@ -1572,6 +1572,44 @@ class MinimizerTests: XCTestCase {
         XCTAssertEqual(expectedProgram, actualProgram)
     }
 
+    func testBundleMinimizing() {
+        let config = Configuration(generateBundle: true)
+        let evaluator = EvaluatorForMinimizationTests()
+        let fuzzer = makeMockFuzzer(config: config, evaluator: evaluator)
+        let b = fuzzer.makeBuilder()
+
+        // Build input program to be minimized.
+
+        // Script with an important instruction.
+        b.emit(BeginBundleScript())
+        var foo = b.createNamedVariable(forBuiltin: "foo")
+        evaluator.nextInstructionIsImportant(in: b)
+        b.callFunction(foo)
+        b.emit(EndBundleScript())
+
+        // Script with an unimportant instruction.
+        b.emit(BeginBundleScript())
+        foo = b.createNamedVariable(forBuiltin: "foo")
+        b.callFunction(foo)
+        b.emit(EndBundleScript())
+
+        let originalProgram = b.finalize()
+
+        // Build expected output program.
+
+        // Expect only the script with the important instruction to be preserved.
+        b.emit(BeginBundleScript())
+        foo = b.createNamedVariable(forBuiltin: "foo")
+        b.callFunction(foo)
+        b.emit(EndBundleScript())
+
+        let expectedProgram = b.finalize()
+
+        // Perform minimization and check that the two programs are equal.
+        let actualProgram = minimize(originalProgram, with: fuzzer)
+        XCTAssertEqual(expectedProgram, actualProgram)
+    }
+
     func testGuardedOperationSimplification() {
         let evaluator = EvaluatorForMinimizationTests()
         let fuzzer = makeMockFuzzer(evaluator: evaluator)
@@ -2468,11 +2506,11 @@ class MinimizerTests: XCTestCase {
         var keepReturnsInFunctions = false
 
         /// The program currently being evaluated.
-        var currentProgram = Program()
+        var currentProgram = Program(isBundle: false)
 
         /// The reference program against which reductions are performed.
         /// At the start, this is the original program. After a successful reduction, it is replaced by the current program.
-        var referenceProgram = Program()
+        var referenceProgram = Program(isBundle: false)
 
         func nextInstructionIsImportant(in b: ProgramBuilder) {
             initialIndicesOfTheImportantInstructions.append(b.indexOfNextInstruction())

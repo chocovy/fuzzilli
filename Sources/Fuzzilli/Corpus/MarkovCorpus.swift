@@ -51,7 +51,8 @@ public class MarkovCorpus: ComponentBase, Corpus {
         self.dropoutRate = dropoutRate
         covEvaluator.enableEdgeTracking()
         self.covEvaluator = covEvaluator
-        self.currentProg = Program()
+        // TODO(marja): Support bundles.
+        self.currentProg = Program(isBundle: false)
         super.init(name: "MarkovCorpus")
     }
 

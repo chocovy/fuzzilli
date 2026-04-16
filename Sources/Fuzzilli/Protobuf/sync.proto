@@ -29,6 +29,7 @@ message FuzzerState {
     bytes corpus = 1;
     bytes evaluatorState = 2;
     bool isWasmEnabled = 3;
+    bool areBundlesEnabled = 4;
 }
 
 message Statistics {

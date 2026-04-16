@@ -127,7 +127,7 @@ struct InstructionSimplifier: Reducer {
         // All simplifications are performed at once to keep this logic simple.
         // This logic needs to be somewhat careful not to perform no-op replacements as
         // these would cause the fixpoint iteration to not terminate.
-        var newCode = Code()
+        var newCode = Code(isBundle: helper.code.isBundle)
         var numCopiedInstructions = 0
         for instr in helper.code {
             var keepInstruction = true

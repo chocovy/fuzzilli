@@ -37,7 +37,7 @@ extension Analyzer {
 struct DefUseAnalyzer: Analyzer {
     private var assignments = VariableMap<[Int]>()
     private var uses = VariableMap<[Int]>()
-    private var code = Code()
+    private var code: Code
     private var isRunning = true
     private var analysisDone = false
 
@@ -46,7 +46,9 @@ struct DefUseAnalyzer: Analyzer {
         self.isRunning = false
     }
 
-    init() {}
+    init(isBundle: Bool) {
+        self.code = Code(isBundle: isBundle)
+    }
 
     mutating func finishAnalysis() {
         analysisDone = true
@@ -161,10 +163,15 @@ struct VariableAnalyzer: Analyzer {
 
 /// Keeps track of the current context during program construction.
 struct ContextAnalyzer: Analyzer {
-    private var contextStack = Stack([Context.javascript])
+    private var contextStack: Stack<Context>
 
     var context: Context {
         return contextStack.top
+    }
+
+    public init(isBundle: Bool = false) {
+        let startingContext = isBundle ? Context.bundle : Context.javascript
+        contextStack = Stack([startingContext])
     }
 
     mutating func analyze(_ instr: Instruction) {

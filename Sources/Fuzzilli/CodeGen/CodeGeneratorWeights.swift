@@ -236,6 +236,10 @@ public let codeGeneratorWeights = [
     "WasmTagGenerator":                         4,
     "WasmLegacyTryCatchComplexGenerator":       5,
 
+    // For generating bundles
+    // TODO(marja): Add modules.
+    "BundleScriptGenerator":                    1,
+
     //
     // Wasm generators
     //

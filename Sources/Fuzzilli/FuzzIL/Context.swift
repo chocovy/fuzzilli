@@ -30,6 +30,7 @@ public struct Context: OptionSet, Hashable, CaseIterable {
         .wasmFunction,
         .wasmTypeGroup,
         .empty,
+        .bundle,
     ]
 
     public let rawValue: UInt32
@@ -71,6 +72,8 @@ public struct Context: OptionSet, Hashable, CaseIterable {
     public static let wasmFunction = Context(rawValue: 1 << 12)
     // Inside a wasm recursive type group definition.
     public static let wasmTypeGroup = Context(rawValue: 1 << 13)
+    // Inside a bundle containing multiple scripts / modules
+    public static let bundle = Context(rawValue: 1 << 14)
 
     public static let empty = Context([])
 
@@ -114,6 +117,9 @@ extension Context: CustomStringConvertible {
         }
         if self.contains(.switchCase) {
             strings.append(".switchCase")
+        }
+        if self.contains(.bundle) {
+            strings.append(".bundle")
         }
         if self.contains(.wasm) {
             strings.append(".wasm")

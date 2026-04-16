@@ -150,7 +150,7 @@ public class ProgramCoverageEvaluator: ComponentBase, ProgramEvaluator {
             libcoverage.cov_shutdown(&self.context)
         }
 
-        let _ = fuzzer.execute(Program(), purpose: .startup)
+        let _ = fuzzer.execute(Program(isBundle: false), purpose: .startup)
         libcoverage.cov_finish_initialization(&context, shouldTrackEdgeCounts ? 1 : 0)
         logger.info("Initialized, \(context.num_edges) edges")
     }

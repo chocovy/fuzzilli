@@ -87,7 +87,7 @@ public class Fuzzer {
     public let minimizer: Minimizer
 
     /// The engine used for initial corpus generation (if performed).
-    public let corpusGenerationEngine = GenerativeEngine()
+    public let corpusGenerationEngine: GenerativeEngine
 
     /// The possible states of a fuzzer.
     public enum State {
@@ -212,6 +212,7 @@ public class Fuzzer {
         self.logger = Logger(withLabel: "Fuzzer")
         self.contextGraph = ContextGraph(for: codeGenerators, withLogger: self.logger)
 
+        self.corpusGenerationEngine = GenerativeEngine(generateBundle: configuration.generateBundle)
         // Pass-through any postprocessor to the generative engine.
         if let postProcessor = engine.postProcessor {
             corpusGenerationEngine.registerPostProcessor(postProcessor)
@@ -449,6 +450,7 @@ public class Fuzzer {
         case imported
         case dropped
         case needsWasm
+        case needsBundles
         case failed(ExecutionOutcome)
     }
 
@@ -485,6 +487,10 @@ public class Fuzzer {
                     as: "program_\(program.id).fzil", in: dirName)
             }
             return .needsWasm
+        }
+
+        if !config.generateBundle && program.code.isBundle {
+            return .needsBundles
         }
 
         let execution = execute(program, purpose: .programImport)
@@ -622,7 +628,7 @@ public class Fuzzer {
         // Only attempt fixup if the program failed to execute successfully. In particular, ignore timeouts and
         // crashes here, but also take into account that not all successfully executing programs will be imported.
         switch result {
-        case .dropped, .needsWasm, .imported:
+        case .dropped, .needsWasm, .needsBundles, .imported:
             return (result, 0)
         case .failed(_):
             break
@@ -646,7 +652,7 @@ public class Fuzzer {
         program = removeCallsTo(filteredFunctions, from: program)
         result = importProgram(program, origin: origin)
         switch result {
-        case .dropped, .needsWasm, .imported:
+        case .dropped, .needsWasm, .needsBundles, .imported:
             return (result, 1)
         case .failed(_):
             break
@@ -667,7 +673,7 @@ public class Fuzzer {
         }
         result = importProgram(program, origin: origin)
         switch result {
-        case .dropped, .needsWasm, .imported:
+        case .dropped, .needsWasm, .needsBundles, .imported:
             return (result, 2)
         case .failed(_):
             break
@@ -949,7 +955,7 @@ public class Fuzzer {
         dispatchPrecondition(condition: .onQueue(queue))
         // Program ancestor chains are only constructed if inspection mode is enabled
         let parent = config.enableInspection ? parent : nil
-        return ProgramBuilder(for: self, parent: parent)
+        return ProgramBuilder(for: self, parent: parent, isBundle: config.generateBundle)
     }
 
     /// Performs one round of fuzzing.
@@ -1038,6 +1044,11 @@ public class Fuzzer {
                         )
                     }
                 }
+                if !config.generateBundle {
+                    logger.info(
+                        "\(currentCorpusImportJob.numberOfProgramsRequiringBundlesButDisabled)/\(currentCorpusImportJob.totalNumberOfProgramsToImport) programs require bundles which are disabled"
+                    )
+                }
 
                 let successRatio =
                     Double(
@@ -1048,7 +1059,7 @@ public class Fuzzer {
                     let reason =
                         config.isWasmEnabled
                         ? "execute successfully"
-                        : "execute successfully or require currently disabled wasm"
+                        : "execute successfully or require currently disabled wasm or bundles"
                     logger.warning(
                         "\(String(format: "%.2f", failureRatio * 100))% of imported programs failed to \(reason) and therefore couldn't be imported."
                     )
@@ -1093,9 +1104,7 @@ public class Fuzzer {
     }
 
     /// Constructs a non-trivial program. Useful to measure program execution speed.
-    private func makeComplexProgram() -> Program {
-        let b = makeBuilder()
-
+    private func makeComplexProgram(builder b: ProgramBuilder) {
         let f = b.buildPlainFunction(with: .parameters(n: 2)) { params in
             let x = b.getProperty("x", of: params[0])
             let y = b.getProperty("y", of: params[0])
@@ -1111,8 +1120,6 @@ public class Fuzzer {
             let arg2 = i
             b.callFunction(f, withArgs: [arg1, arg2])
         }
-
-        return b.finalize()
     }
 
     /// Runs a number of startup tests to check whether everything is configured correctly.
@@ -1121,7 +1128,7 @@ public class Fuzzer {
         assert(isInitialized)
 
         // Check if we can execute programs
-        var execution = execute(Program(), purpose: .startup)
+        var execution = execute(Program(isBundle: false), purpose: .startup)
         guard case .succeeded = execution.outcome else {
             logger.fatal(
                 "Cannot execute programs (exit code must be zero when no exception was thrown, but execution outcome was \(execution.outcome)). Are the command line flags valid?"
@@ -1130,8 +1137,10 @@ public class Fuzzer {
 
         // Check if we can detect failed executions (i.e. an exception was thrown)
         var b = makeBuilder()
-        let exception = b.loadInt(42)
-        b.throwException(exception)
+        b.maybeWrapInsideBundleScript {
+            let exception = b.loadInt(42)
+            b.throwException(exception)
+        }
         execution = execute(b.finalize(), purpose: .startup)
         guard case .failed = execution.outcome else {
             logger.fatal(
@@ -1141,7 +1150,10 @@ public class Fuzzer {
 
         var maxExecutionTime: TimeInterval = 0
         // Dispatch a non-trivial program and measure its execution time
-        let complexProgram = makeComplexProgram()
+        b.maybeWrapInsideBundleScript {
+            makeComplexProgram(builder: b)
+        }
+        let complexProgram = b.finalize()
         for _ in 0..<5 {
             let execution = execute(complexProgram, purpose: .startup)
             maxExecutionTime = max(maxExecutionTime, execution.execTime)
@@ -1151,7 +1163,9 @@ public class Fuzzer {
         var hasAnyCrashTests = false
         for (test, expectedResult) in config.startupTests {
             b = makeBuilder()
-            b.eval(test)
+            b.maybeWrapInsideBundleScript {
+                b.eval(test)
+            }
             execution = execute(b.finalize(), purpose: .startup)
 
             if execution.outcome == .timedOut {
@@ -1183,6 +1197,8 @@ public class Fuzzer {
                 hasAnyCrashTests = true
             }
         }
+
+        // TODO(marja): when we have modules, add a "bundles" startup test which asserts that bundles are handled correctly.
 
         if !hasAnyCrashTests {
             logger.warning(
@@ -1216,8 +1232,10 @@ public class Fuzzer {
 
         // Check if we can receive program output
         b = makeBuilder()
-        let str = b.loadString("Hello World!")
-        b.doPrint(str)
+        b.maybeWrapInsideBundleScript {
+            let str = b.loadString("Hello World!")
+            b.doPrint(str)
+        }
         let output = execute(b.finalize(), purpose: .startup).fuzzout.trimmingCharacters(
             in: .whitespacesAndNewlines)
         if output != "Hello World!" {
@@ -1312,6 +1330,7 @@ public class Fuzzer {
         private(set) var numberOfProgramsThatNeededTwoFixupAttempts = 0
         private(set) var numberOfProgramsThatNeededThreeFixupAttempts = 0
         private(set) var numberOfProgramsRequiringWasmButDisabled = 0
+        private(set) var numberOfProgramsRequiringBundlesButDisabled = 0
 
         var numberOfProgramsThatNeededFixup: Int {
             assert(Fuzzer.maxProgramImportFixupAttempts == 3)
@@ -1354,6 +1373,8 @@ public class Fuzzer {
                 break
             case .needsWasm:
                 numberOfProgramsRequiringWasmButDisabled += 1
+            case .needsBundles:
+                numberOfProgramsRequiringBundlesButDisabled += 1
             case .failed(let outcome):
                 switch outcome {
                 case .crashed, .succeeded, .differential:

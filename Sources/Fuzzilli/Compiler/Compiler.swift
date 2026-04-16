@@ -31,7 +31,8 @@ public class JavaScriptCompiler {
     public init() {}
 
     /// The compiled code.
-    private var code = Code()
+    // TODO(marja): Make JavaScriptCompiler understand bundles.
+    private var code = Code(isBundle: false)
 
     /// The environment is used to determine if an identifier identifies a builtin object.
     /// TODO we should probably use the correct target environment, with any additional builtins etc. here. But for now, we just manually add `gc` since that's relatively common.
@@ -1559,7 +1560,8 @@ public class JavaScriptCompiler {
     }
 
     private func reset() {
-        code = Code()
+        // TODO(marja): Make JavaScriptCompiler understand bundles.
+        code = Code(isBundle: false)
         scopes.removeAll()
         nextVariable = 0
     }

@@ -17,7 +17,7 @@ import XCTest
 @testable import Fuzzilli
 
 class ContextGraphTests: XCTestCase {
-    func testReachabilityCalculation() {
+    func testReachabilityCalculationForJS() {
         let fuzzer = makeMockFuzzer()
         let contextGraph = ContextGraph(
             for: fuzzer.codeGenerators, withLogger: Logger(withLabel: "Test"))
@@ -25,6 +25,25 @@ class ContextGraphTests: XCTestCase {
         let reachableContexts = Set(contextGraph.getReachableContexts(from: .javascript))
 
         let reachableContexts2 = Set(contextGraph.getReachableContexts(from: .javascript))
+
+        XCTAssertEqual(reachableContexts, reachableContexts2)
+
+        var expectedReachedContexts = Set(Context.allCases)
+        expectedReachedContexts.remove(.empty)
+        // Only reachable in the "bundle" configuration.
+        expectedReachedContexts.remove(.bundle)
+        XCTAssertEqual(reachableContexts, expectedReachedContexts)
+    }
+
+    func testReachabilityCalculationForBundles() {
+        let config = Configuration(generateBundle: true)
+        let fuzzer = makeMockFuzzer(config: config)
+        let contextGraph = ContextGraph(
+            for: fuzzer.codeGenerators, withLogger: Logger(withLabel: "Test"))
+
+        let reachableContexts = Set(contextGraph.getReachableContexts(from: .bundle))
+
+        let reachableContexts2 = Set(contextGraph.getReachableContexts(from: .bundle))
 
         XCTAssertEqual(reachableContexts, reachableContexts2)
 

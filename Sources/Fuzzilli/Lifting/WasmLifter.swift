@@ -257,7 +257,7 @@ public class WasmLifter {
     private var typer: JSTyper
 
     // This contains the instructions that we need to lift.
-    private var instructionBuffer: Code = Code()
+    private var instructionBuffer: Code = Code(isBundle: false)
 
     // TODO(cffsmith): we could do some checking here that the function is actually defined, at that point it would not be static anymore though.
     private static func nameOfFunction(_ idx: Int) -> String {

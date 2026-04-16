@@ -31,7 +31,7 @@
 /// roughly the right type.
 struct DataFlowSimplifier: Reducer {
     func reduce(with helper: MinimizationHelper) {
-        var typer = JSTyper(for: helper.fuzzer.environment)
+        var typer = JSTyper(for: helper.fuzzer.environment, isBundle: helper.code.isBundle)
         var candidates = [Int]()
         var uses = VariableMap<Int>()
         for instr in helper.code {
@@ -83,7 +83,7 @@ struct DataFlowSimplifier: Reducer {
 
         // Finally try to remove each remaining candidate.
         for candidate in candidates {
-            var newCode = Code()
+            var newCode = Code(isBundle: helper.code.isBundle)
             var replacements = VariableMap<Variable>()
             for instr in helper.code {
                 if instr.index == candidate {

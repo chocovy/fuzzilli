@@ -748,6 +748,8 @@ public class OperationMutator: BaseInstructionMutator {
             .wrapSuspending(_),
             .bindMethod(_),
             .bindFunction(_),
+            .beginBundleScript(_),
+            .endBundleScript(_),
             // Wasm instructions
             .beginWasmModule(_),
             .endWasmModule(_),

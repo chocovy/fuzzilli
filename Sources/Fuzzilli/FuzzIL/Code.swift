@@ -22,11 +22,17 @@ public struct Code: Collection {
     /// Code is just a linear sequence of instructions.
     private var instructions = [Instruction]()
 
+    public let isBundle: Bool
+
     /// Creates an empty code instance.
-    public init() {}
+    public init(isBundle: Bool) {
+        self.isBundle = isBundle
+    }
 
     /// Creates a code instance containing the given instructions.
-    public init<S: Sequence>(_ instructions: S) where S.Element == Instruction {
+    public init<S: Sequence>(_ instructions: S, isBundle: Bool)
+    where S.Element == Instruction {
+        self.isBundle = isBundle
         for instr in instructions {
             append(instr)
         }
@@ -205,7 +211,7 @@ public struct Code: Collection {
     /// Checks if this code is statically valid, i.e. can be used as a Program.
     public func check() throws {
         var definedVariables = VariableMap<Int>()
-        var contextAnalyzer = ContextAnalyzer()
+        var contextAnalyzer = ContextAnalyzer(isBundle: isBundle)
         var scopeCounter = 0
         // Per-block information is stored in this struct and kept in a stack of active blocks.
         struct Block {

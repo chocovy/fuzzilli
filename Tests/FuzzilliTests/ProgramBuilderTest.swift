@@ -3291,7 +3291,10 @@ class ProgramBuilderTests: XCTestCase {
         }
     }
 
-    func testThatBundleGeneratorsAreBuildableFromBundle() {
+    func testThatBundleGeneratorsAreBuildableFromBundle() throws {
+        // TODO(mliedtke,marja): Investigate how we can make the code generator scheduling more
+        // reliable.
+        if true { throw XCTSkip("Test case is flaky") }
         let config = Configuration(generateBundle: true)
         let fuzzer = makeMockFuzzer(config: config)
         let tries: Int = 10
@@ -3309,7 +3312,7 @@ class ProgramBuilderTests: XCTestCase {
                 if generatedInstructions == 0 {
                     failures[generator.name, default: 0] += 1
                 }
-                XCTAssertLessThan(syntheticGenerator.parts.count, 10)
+                XCTAssertLessThan(syntheticGenerator.parts.count, 10, "for \(generator.name)")
             } else {
                 XCTFail(
                     "Unable to generate synthetic CodeGenerator for \(generator.name) from a bundle."

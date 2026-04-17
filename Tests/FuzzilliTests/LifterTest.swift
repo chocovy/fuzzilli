@@ -3990,7 +3990,7 @@ class LifterTests: XCTestCase {
         var newInouts = oldInstr.inouts
         // This is the mutation
         newInouts[1] = f
-        let instr = Instruction(oldInstr.op, inouts: newInouts, flags: .empty)
+        let instr = Instruction(oldInstr.op, inouts: newInouts)
         // Append the mutated instruction now.
         b.append(instr)
         // Adopt the rest of the Program.

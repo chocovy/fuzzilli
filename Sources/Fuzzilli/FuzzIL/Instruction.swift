@@ -250,7 +250,7 @@ public struct Instruction {
     }
 
     public init<Variables: Collection>(
-        _ op: Operation, inouts: Variables, index: Int? = nil, flags: Self.Flags
+        _ op: Operation, inouts: Variables, index: Int? = nil, flags: Self.Flags = .empty
     ) where Variables.Element == Variable {
         assert(op.numInputs + op.numOutputs + op.numInnerOutputs == inouts.count)
         self.op = op
@@ -263,33 +263,33 @@ public struct Instruction {
 
     public init(_ op: Operation, output: Variable) {
         assert(op.numInputs == 0 && op.numOutputs == 1 && op.numInnerOutputs == 0)
-        self.init(op, inouts: [output], flags: .empty)
+        self.init(op, inouts: [output])
     }
 
     public init(_ op: Operation, output: Variable, inputs: [Variable]) {
         assert(op.numOutputs == 1)
         assert(op.numInnerOutputs == 0)
         assert(op.numInputs == inputs.count)
-        self.init(op, inouts: inputs + [output], flags: .empty)
+        self.init(op, inouts: inputs + [output])
     }
 
     public init(_ op: Operation, inputs: [Variable]) {
         assert(op.numOutputs + op.numInnerOutputs == 0)
         assert(op.numInputs == inputs.count)
-        self.init(op, inouts: inputs, flags: .empty)
+        self.init(op, inouts: inputs)
     }
 
     public init(_ op: Operation, innerOutput: Variable) {
         assert(op.numInnerOutputs == 1)
         assert(op.numOutputs == 0)
         assert(op.numInputs == 0)
-        self.init(op, inouts: [innerOutput], flags: .empty)
+        self.init(op, inouts: [innerOutput])
     }
 
     public init(_ op: Operation) {
         assert(op.numOutputs + op.numInnerOutputs == 0)
         assert(op.numInputs == 0)
-        self.init(op, inouts: [], flags: .empty)
+        self.init(op, inouts: [])
     }
 
     /// Flags associated with an Instruction.
@@ -2812,7 +2812,7 @@ extension Instruction: ProtobufConvertible {
 
         opCache?.add(op)
 
-        self.init(op, inouts: inouts, flags: .empty)
+        self.init(op, inouts: inouts)
     }
 
     init(from proto: ProtobufType) throws {

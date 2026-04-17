@@ -289,8 +289,7 @@ class MinimizationHelper {
     func nop(for instr: Instruction) -> Instruction {
         // We must preserve outputs here to keep variable number contiguous.
         return Instruction(
-            Nop(numOutputs: instr.numOutputs + instr.numInnerOutputs), inouts: instr.allOutputs,
-            flags: .empty)
+            Nop(numOutputs: instr.numOutputs + instr.numInnerOutputs), inouts: instr.allOutputs)
     }
 }
 

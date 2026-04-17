@@ -848,7 +848,7 @@ public class OperationMutator: BaseInstructionMutator {
         // This assert is here to prevent subtle bugs if we ever decide to add flags that are "alive" during program building / mutation.
         // If we add flags, remove this assert and change the code below.
         assert(instr.flags == .empty)
-        return Instruction(newOp, inouts: instr.inouts, flags: .empty)
+        return Instruction(newOp, inouts: instr.inouts)
     }
 
     private func extendVariadicOperation(_ instr: Instruction, _ b: ProgramBuilder) -> Instruction {
@@ -945,7 +945,7 @@ public class OperationMutator: BaseInstructionMutator {
         // This assert is here to prevent subtle bugs if we ever decide to add flags that are "alive" during program building / mutation.
         // If we add flags, remove this assert and change the code below.
         assert(instr.flags == .empty)
-        return Instruction(newOp, inouts: inouts, flags: .empty)
+        return Instruction(newOp, inouts: inouts)
     }
 
     private func replaceRandomElement<T: Comparable>(

@@ -32,7 +32,7 @@ struct InstructionSimplifier: Reducer {
             let functionName = (begin as? BeginAnyNamedFunction)?.functionName ?? nil
             let newBegin = Instruction(
                 BeginPlainFunction(parameters: begin.parameters, functionName: functionName),
-                inouts: helper.code[group.head].inouts, flags: .empty)
+                inouts: helper.code[group.head].inouts)
             let newEnd = Instruction(EndPlainFunction())
 
             // The resulting code may be invalid as we may be changing the context inside the body (e.g. turning an async function into a plain one).
@@ -61,7 +61,7 @@ struct InstructionSimplifier: Reducer {
             if let op = newOp {
                 helper.tryReplacing(
                     instructionAt: instr.index,
-                    with: Instruction(op, inouts: instr.inouts, flags: .empty))
+                    with: Instruction(op, inouts: instr.inouts))
             }
         }
     }
@@ -100,7 +100,7 @@ struct InstructionSimplifier: Reducer {
             if let op = newOp {
                 helper.tryReplacing(
                     instructionAt: instr.index,
-                    with: Instruction(op, inouts: instr.inouts, flags: .empty))
+                    with: Instruction(op, inouts: instr.inouts))
             }
         }
     }
@@ -114,7 +114,7 @@ struct InstructionSimplifier: Reducer {
             if newOp !== op {
                 helper.tryReplacing(
                     instructionAt: instr.index,
-                    with: Instruction(newOp, inouts: instr.inouts, flags: .empty))
+                    with: Instruction(newOp, inouts: instr.inouts))
             }
         }
     }

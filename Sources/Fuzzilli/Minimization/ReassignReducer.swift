@@ -82,7 +82,7 @@ struct ReassignmentReducer: Reducer {
             } else {
                 let inouts = instr.inouts.map({ reassignedVariables[$0] ?? $0 })
                 if inouts[...] != instr.inouts { didChangeCode = true }
-                newCode.append(Instruction(instr.op, inouts: inouts, flags: .empty))
+                newCode.append(Instruction(instr.op, inouts: inouts))
             }
         }
 

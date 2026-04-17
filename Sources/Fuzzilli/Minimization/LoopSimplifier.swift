@@ -101,14 +101,14 @@ struct LoopSimplifier: Reducer {
         newCode.append(
             Instruction(
                 BeginRepeatLoop(iterations: 1, exposesLoopCounter: needLoopVariable),
-                inouts: needLoopVariable ? [loopVar!] : [], flags: .empty))
+                inouts: needLoopVariable ? [loopVar!] : []))
 
         // Append condition, body, and afterthought code
         var replacements = [Variable: Variable](
             uniqueKeysWithValues: beginConditionBlock.innerOutputs.map({ ($0, loopVar!) }))
         for instr in helper.code.body(of: conditionBlock) {
             let newInouts = instr.inouts.map({ replacements[$0] ?? $0 })
-            newCode.append(Instruction(instr.op, inouts: newInouts, flags: .empty))
+            newCode.append(Instruction(instr.op, inouts: newInouts))
         }
 
         let bodyBlock = group.block(3)
@@ -117,7 +117,7 @@ struct LoopSimplifier: Reducer {
             uniqueKeysWithValues: helper.code[bodyBlock.head].innerOutputs.map({ ($0, loopVar!) }))
         for instr in helper.code.body(of: bodyBlock) {
             let newInouts = instr.inouts.map({ replacements[$0] ?? $0 })
-            newCode.append(Instruction(instr.op, inouts: newInouts, flags: .empty))
+            newCode.append(Instruction(instr.op, inouts: newInouts))
         }
 
         let afterthoughtBlock = group.block(2)
@@ -128,7 +128,7 @@ struct LoopSimplifier: Reducer {
             }))
         for instr in helper.code.body(of: afterthoughtBlock) {
             let newInouts = instr.inouts.map({ replacements[$0] ?? $0 })
-            newCode.append(Instruction(instr.op, inouts: newInouts, flags: .empty))
+            newCode.append(Instruction(instr.op, inouts: newInouts))
         }
 
         // Append loop footer
@@ -244,7 +244,7 @@ struct LoopSimplifier: Reducer {
             if originalLoopHeader.exposesLoopCounter {
                 replacement = Instruction(
                     BeginRepeatLoop(iterations: numIterations, exposesLoopCounter: true),
-                    inouts: helper.code[group.head].inouts, flags: .empty)
+                    inouts: helper.code[group.head].inouts)
             } else {
                 replacement = Instruction(
                     BeginRepeatLoop(iterations: numIterations, exposesLoopCounter: false))
@@ -267,7 +267,7 @@ struct LoopSimplifier: Reducer {
             if newCode[headerIndex].numInnerOutputs > 0 {
                 newCode[headerIndex] = Instruction(
                     BeginRepeatLoop(iterations: numIterations, exposesLoopCounter: true),
-                    inouts: newCode[headerIndex].inouts, flags: .empty)
+                    inouts: newCode[headerIndex].inouts)
             } else {
                 newCode[headerIndex] = Instruction(
                     BeginRepeatLoop(iterations: numIterations, exposesLoopCounter: false))
@@ -370,7 +370,7 @@ struct LoopSimplifier: Reducer {
             for instr in helper.code[innerHead..<innerTail] {
                 if instr.inputs.contains(innerLoopVar) {
                     let newInouts = instr.inouts.map({ $0 == innerLoopVar ? loopVar : $0 })
-                    let replacement = Instruction(instr.op, inouts: newInouts, flags: .empty)
+                    let replacement = Instruction(instr.op, inouts: newInouts)
                     replacements.append((instr.index, replacement))
                 }
             }

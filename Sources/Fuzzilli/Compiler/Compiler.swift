@@ -1470,7 +1470,7 @@ public class JavaScriptCompiler {
         let outputs = (0..<op.numOutputs).map { _ in nextFreeVariable() }
         let innerOutputs = (0..<op.numInnerOutputs).map { _ in nextFreeVariable() }
         let inouts = inputs + outputs + innerOutputs
-        let instr = Instruction(op, inouts: inouts, flags: .empty)
+        let instr = Instruction(op, inouts: inouts)
         contextAnalyzer.analyze(instr)
         return code.append(instr)
     }

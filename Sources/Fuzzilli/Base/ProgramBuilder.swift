@@ -2657,7 +2657,7 @@ public class ProgramBuilder {
             }
         }
 
-        return internalAppend(Instruction(op, inouts: inouts, flags: .empty))
+        return internalAppend(Instruction(op, inouts: inouts))
     }
 
     @discardableResult

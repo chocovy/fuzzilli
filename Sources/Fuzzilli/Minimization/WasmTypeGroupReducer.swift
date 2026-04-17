@@ -75,7 +75,7 @@ struct WasmTypeGroupReducer: Reducer {
 
             let newInouts = keptInoutsMap.map { $0.0 } + keptInoutsMap.map { $0.1 }
             endTypeGroupReplacements[instr.index] = Instruction(
-                WasmEndTypeGroup(typesCount: keptInoutsMap.count), inouts: newInouts, flags: .empty)
+                WasmEndTypeGroup(typesCount: keptInoutsMap.count), inouts: newInouts)
         }
 
         if toRemove.isEmpty {

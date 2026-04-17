@@ -272,7 +272,7 @@ struct BlockReducer: Reducer {
             replacements.append(
                 (
                     ifBlock.head,
-                    Instruction(invertedIf, inouts: helper.code[ifBlock.head].inouts, flags: .empty)
+                    Instruction(invertedIf, inouts: helper.code[ifBlock.head].inouts)
                 ))
             // The rest of the if body is nopped ...
             for instr in helper.code.body(of: ifBlock) {
@@ -354,7 +354,7 @@ struct BlockReducer: Reducer {
                 continue  // Skip the block begin and end.
             }
             let newInouts = instr.inouts.map({ varReplacements[$0] ?? $0 })
-            newCode.append(Instruction(instr.op, inouts: newInouts, flags: .empty))
+            newCode.append(Instruction(instr.op, inouts: newInouts))
         }
         newCode.renumberVariables()
         return helper.testAndCommit(newCode)
@@ -503,7 +503,7 @@ struct BlockReducer: Reducer {
             // of the original WasmBeginElse block, so that users of them are rewired correctly.
             let inouts = helper.code[ifBlock.head].inputs + helper.code[elseBlock.head].allOutputs
             replacements.append(
-                (ifBlock.head, Instruction(invertedIf, inouts: inouts, flags: .empty)))
+                (ifBlock.head, Instruction(invertedIf, inouts: inouts)))
             // The rest of the if body is nopped ...
             for instr in helper.code.body(of: ifBlock) {
                 replacements.append((instr.index, helper.nop(for: instr)))
@@ -549,7 +549,7 @@ struct BlockReducer: Reducer {
                         continue  // Skip the WasmBeginIf and the else block.
                     }
                     let newInouts = instr.inouts.map { varReplacements[$0] ?? $0 }
-                    newCode.append(Instruction(instr.op, inouts: newInouts, flags: .empty))
+                    newCode.append(Instruction(instr.op, inouts: newInouts))
                 }
                 newCode.renumberVariables()
                 if helper.testAndCommit(newCode) {
@@ -579,7 +579,7 @@ struct BlockReducer: Reducer {
                         continue  // Skip the WasmBeginIf and the if true block.
                     }
                     let newInouts = instr.inouts.map { varReplacements[$0] ?? $0 }
-                    newCode.append(Instruction(instr.op, inouts: newInouts, flags: .empty))
+                    newCode.append(Instruction(instr.op, inouts: newInouts))
                 }
                 newCode.renumberVariables()
                 if helper.testAndCommit(newCode) {

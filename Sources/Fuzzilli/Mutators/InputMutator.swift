@@ -91,7 +91,7 @@ public class InputMutator: BaseInstructionMutator {
             // This assert is here to prevent subtle bugs if we ever decide to add flags that are "alive" during program building / mutation.
             // If we add flags, remove this assert and change the code below.
             assert(instr.flags == .empty)
-            b.append(Instruction(instr.op, inouts: inouts, flags: .empty))
+            b.append(Instruction(instr.op, inouts: inouts))
         }
     }
 }

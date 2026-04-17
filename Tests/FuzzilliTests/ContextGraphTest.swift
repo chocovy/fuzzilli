@@ -20,7 +20,7 @@ class ContextGraphTests: XCTestCase {
     func testReachabilityCalculationForJS() {
         let fuzzer = makeMockFuzzer()
         let contextGraph = ContextGraph(
-            for: fuzzer.codeGenerators, withLogger: Logger(withLabel: "Test"))
+            for: fuzzer.codeGenerators, isBundle: false, withLogger: Logger(withLabel: "Test"))
 
         let reachableContexts = Set(contextGraph.getReachableContexts(from: .javascript))
 
@@ -39,7 +39,7 @@ class ContextGraphTests: XCTestCase {
         let config = Configuration(generateBundle: true)
         let fuzzer = makeMockFuzzer(config: config)
         let contextGraph = ContextGraph(
-            for: fuzzer.codeGenerators, withLogger: Logger(withLabel: "Test"))
+            for: fuzzer.codeGenerators, isBundle: true, withLogger: Logger(withLabel: "Test"))
 
         let reachableContexts = Set(contextGraph.getReachableContexts(from: .bundle))
 
@@ -55,7 +55,7 @@ class ContextGraphTests: XCTestCase {
     func testSubsetReachabilityCalculation() {
         let fuzzer = makeMockFuzzer()
         let contextGraph = ContextGraph(
-            for: fuzzer.codeGenerators, withLogger: Logger(withLabel: "Test"))
+            for: fuzzer.codeGenerators, isBundle: false, withLogger: Logger(withLabel: "Test"))
         let reachableContextsWasm = Set(contextGraph.getReachableContexts(from: .wasm))
         let reachableContextsWasm2 = Set(contextGraph.getReachableContexts(from: .wasm))
 

@@ -54,9 +54,11 @@ public class ContextGraph {
     // This is the Graph, each pair of from and to, maps to a `GeneratorEdge`.
     var edges: [EdgeKey: GeneratorEdge] = [:]
 
-    public init(for generators: WeightedList<CodeGenerator>, withLogger logger: Logger) {
+    public init(
+        for generators: WeightedList<CodeGenerator>, isBundle: Bool, withLogger logger: Logger
+    ) {
         assertBasicConsistency(in: generators)
-        warnOfSuspiciousContexts(in: generators, withLogger: logger)
+        warnOfSuspiciousContexts(in: generators, isBundle: isBundle, withLogger: logger)
 
         // One can still try to build in a context that doesn't have generators, this will be caught in the build function, if we fail to find any suitable generator.
         // Otherwise we could assert here that the sets are equal.
@@ -96,10 +98,10 @@ public class ContextGraph {
     }
 
     private func warnOfSuspiciousContexts(
-        in generators: WeightedList<CodeGenerator>, withLogger logger: Logger
+        in generators: WeightedList<CodeGenerator>, isBundle: Bool, withLogger logger: Logger
     ) {
-        // Technically we don't need any generator to emit the .javascript context, as this is provided by the toplevel.
-        var providedContexts = Set<Context>([.javascript])
+        // Technically we don't need any generator to emit the .bundle or .javascript context, as they are provided by the toplevel.
+        var providedContexts = Set<Context>([isBundle ? .bundle : .javascript])
         var requiredContexts = Set<Context>()
 
         for generator in generators {
@@ -112,6 +114,9 @@ public class ContextGraph {
         for generator in generators {
             // Now check which generators don't have providers
             if !providedContexts.contains(generator.requiredContext) {
+                if !isBundle && generator.requiredContext == .bundle {
+                    continue
+                }
                 logger.warning(
                     "Generator \(generator.name) cannot be run as it doesn't have a Generator that can provide this context."
                 )

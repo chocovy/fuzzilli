@@ -210,7 +210,8 @@ public class Fuzzer {
         self.referenceRunner = referenceScriptRunner
         self.minimizer = minimizer
         self.logger = Logger(withLabel: "Fuzzer")
-        self.contextGraph = ContextGraph(for: codeGenerators, withLogger: self.logger)
+        self.contextGraph = ContextGraph(
+            for: codeGenerators, isBundle: configuration.generateBundle, withLogger: self.logger)
 
         self.corpusGenerationEngine = GenerativeEngine(generateBundle: configuration.generateBundle)
         // Pass-through any postprocessor to the generative engine.
@@ -252,7 +253,8 @@ public class Fuzzer {
             fatalError("Code generators must contain at least one value generator")
         }
         // This builds a graph that we need later for scheduling generators.
-        self.contextGraph = ContextGraph(for: generators, withLogger: self.logger)
+        self.contextGraph = ContextGraph(
+            for: generators, isBundle: self.config.generateBundle, withLogger: self.logger)
         self.codeGenerators = generators
     }
 

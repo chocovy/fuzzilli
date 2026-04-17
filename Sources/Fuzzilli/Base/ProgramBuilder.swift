@@ -4932,7 +4932,7 @@ public class ProgramBuilder {
             #if DEBUG
                 var argIndex = signature.parameterTypes.count
                 let assertLabelTypeData: (ILType) -> Void = { labelType in
-                    assert(labelType.Is(.anyLabel))
+                    assert(labelType.Is(.anyWasmLabel))
                     assert(labelType.wasmLabelType!.parameters.last!.Is(.wasmExnRef()))
                 }
                 for catchKind in catches {
@@ -4944,14 +4944,14 @@ public class ProgramBuilder {
                         argIndex += 2
                     case .NoRef:
                         assert(b.type(of: args[argIndex]).Is(.object(ofGroup: "WasmTag")))
-                        assert(b.type(of: args[argIndex + 1]).Is(.anyLabel))
+                        assert(b.type(of: args[argIndex + 1]).Is(.anyWasmLabel))
                         argIndex += 2
                     case .AllRef:
                         let labelType = b.type(of: args[argIndex])
                         assertLabelTypeData(labelType)
                         argIndex += 1
                     case .AllNoRef:
-                        assert(b.type(of: args[argIndex]).Is(.anyLabel))
+                        assert(b.type(of: args[argIndex]).Is(.anyWasmLabel))
                         argIndex += 1
                     }
                 }
@@ -5087,8 +5087,8 @@ public class ProgramBuilder {
             b.emit(WasmThrowRef(), withInputs: [exception], types: [.wasmExnRef()])
         }
 
-        public func wasmBuildLegacyRethrow(_ exceptionLabel: Variable) {
-            b.emit(WasmRethrow(), withInputs: [exceptionLabel], types: [.exceptionLabel])
+        public func wasmBuildLegacyRethrow(_ wasmExceptionLabel: Variable) {
+            b.emit(WasmRethrow(), withInputs: [wasmExceptionLabel], types: [.wasmExceptionLabel])
         }
 
         public func wasmBuildLegacyTryDelegate(
@@ -5120,7 +5120,7 @@ public class ProgramBuilder {
                 b.emit(
                     WasmEndTryDelegate(outputCount: signature.outputTypes.count),
                     withInputs: [signatureDef, delegate] + results,
-                    types: [.wasmTypeDef(), .anyLabel] + signature.outputTypes
+                    types: [.wasmTypeDef(), .anyWasmLabel] + signature.outputTypes
                 ).outputs)
         }
 

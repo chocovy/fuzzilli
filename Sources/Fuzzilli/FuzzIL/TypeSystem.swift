@@ -222,21 +222,21 @@ public struct ILType: Hashable {
     // Internal types
 
     // This type is used to indicate block labels in wasm.
-    public static func label(_ parameterTypes: [ILType] = [], isCatch: Bool = false) -> ILType {
+    public static func wasmLabel(_ parameterTypes: [ILType] = [], isCatch: Bool = false) -> ILType {
         return ILType(
-            definiteType: .label,
+            definiteType: .wasmLabel,
             ext: TypeExtension(
                 group: "WasmLabel", properties: [], methods: [], signature: nil,
                 wasmExt: WasmLabelType(parameterTypes, isCatch: isCatch)))
     }
 
-    public static let anyLabel: ILType = ILType(
-        definiteType: .label,
+    public static let anyWasmLabel: ILType = ILType(
+        definiteType: .wasmLabel,
         ext: TypeExtension(
             group: "WasmLabel", properties: [], methods: [], signature: nil, wasmExt: nil))
 
     /// A label that allows rethrowing the caught exception of a catch block.
-    public static let exceptionLabel: ILType = ILType(definiteType: .exceptionLabel)
+    public static let wasmExceptionLabel: ILType = ILType(definiteType: .wasmExceptionLabel)
 
     public static func wasmMemory(limits: Limits, isShared: Bool = false, isMemory64: Bool = false)
         -> ILType
@@ -1245,11 +1245,11 @@ extension ILType: CustomStringConvertible {
             return ".wasmPackedI8"
         case .wasmPackedI16:
             return ".wasmPackedI16"
-        case .label:
+        case .wasmLabel:
             if let labelType = self.wasmLabelType {
-                return ".label(\(labelType.parameters))"
+                return ".wasmLabel(\(labelType.parameters))"
             }
-            return ".label"
+            return ".wasmLabel"
         case .wasmRef:
             guard let refType = self.wasmReferenceType else {
                 return ".wasmGenericRef"
@@ -1276,8 +1276,8 @@ extension ILType: CustomStringConvertible {
                 return ".wasmTypeDef(\(desc))"
             }
             return ".wasmTypeDef(nil)"
-        case .exceptionLabel:
-            return ".exceptionLabel"
+        case .wasmExceptionLabel:
+            return ".wasmExceptionLabel"
         case .wasmDataSegment:
             return ".wasmDataSegment"
         case .wasmElementSegment:
@@ -1336,11 +1336,11 @@ struct BaseType: OptionSet, Hashable {
     static let wasmf64 = BaseType(rawValue: 1 << 15)
 
     // These are wasm internal types, these are never lifted as such and are only used to glue together dataflow in wasm.
-    static let label = BaseType(rawValue: 1 << 16)
+    static let wasmLabel = BaseType(rawValue: 1 << 16)
     // Any catch block exposes such a label now to rethrow the exception caught by that catch.
     // Note that in wasm the label is actually the try block's label but as rethrows are only possible inside a catch
     // block, semantically having a label on the catch makes more sense.
-    static let exceptionLabel = BaseType(rawValue: 1 << 17)
+    static let wasmExceptionLabel = BaseType(rawValue: 1 << 17)
     // This is a reference to a table, which can be passed around to table instructions
     // The lifter will resolve this to the proper index when lifting.
     static let wasmSimd128 = BaseType(rawValue: 1 << 18)

@@ -710,7 +710,7 @@ public struct JSTyper: Analyzer {
 
     // Helper function to type a "regular" wasm begin block (block, if, try).
     mutating func wasmTypeBeginBlock(_ instr: Instruction, _ signature: WasmSignature) {
-        setType(of: instr.innerOutputs.first!, to: .label(signature.outputTypes))
+        setType(of: instr.innerOutputs.first!, to: .wasmLabel(signature.outputTypes))
         for (innerOutput, paramType) in zip(
             instr.innerOutputs.dropFirst(), signature.parameterTypes)
         {
@@ -971,7 +971,7 @@ public struct JSTyper: Analyzer {
                 // of the block, not the result types (because a branch to a loop label jumps to the
                 // beginning of the loop block instead of the end.)
                 let signature = type(of: instr.input(0)).wasmFunctionSignatureDefSignature
-                setType(of: instr.innerOutputs.first!, to: .label(signature.parameterTypes))
+                setType(of: instr.innerOutputs.first!, to: .wasmLabel(signature.parameterTypes))
                 for (innerOutput, paramType) in zip(
                     instr.innerOutputs.dropFirst(), signature.parameterTypes)
                 {
@@ -999,11 +999,11 @@ public struct JSTyper: Analyzer {
                 wasmTypeBeginBlock(instr, signature)
             case .wasmBeginCatchAll(_):
                 let signature = type(of: instr.input(0)).wasmFunctionSignatureDefSignature
-                setType(of: instr.innerOutputs.first!, to: .label(signature.outputTypes))
+                setType(of: instr.innerOutputs.first!, to: .wasmLabel(signature.outputTypes))
             case .wasmBeginCatch(_):
                 let blockSignature = type(of: instr.input(0)).wasmFunctionSignatureDefSignature
                 // Type the label (used for branch instructions).
-                setType(of: instr.innerOutput(0), to: .label(blockSignature.outputTypes))
+                setType(of: instr.innerOutput(0), to: .wasmLabel(blockSignature.outputTypes))
                 // Register the tag (Wasm exception) in the dynamicObjectGroupManager as being used
                 // by this Wasm module.
                 let tag = instr.input(1)
@@ -1014,7 +1014,7 @@ public struct JSTyper: Analyzer {
                 // The second inner output is the exception label which is used for rethrowing the
                 // exception with the legacy exception handling proposal. (This is similar to the
                 // exnref in the standard exception handling spec.)
-                setType(of: instr.innerOutput(1), to: .exceptionLabel)
+                setType(of: instr.innerOutput(1), to: .wasmExceptionLabel)
                 // Type the tag parameters based on the tag's signature definition.
                 // This guarantees that the inner outputs are properly typed, even if a mutator
                 // changed the tag variable to something that's not typed as a Wasm tag anymore.

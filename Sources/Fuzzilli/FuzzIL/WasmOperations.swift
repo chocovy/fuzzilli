@@ -1452,7 +1452,7 @@ final class WasmBeginCatch: WasmOperation {
         // branching as well as for rethrowing the exception. However, rethrows may only use labels
         // from catch blocks and branches may use any label but need to be very precise on the type
         // of the label parameters, so typing the label would require different subtyping based on
-        // the usage. For now, we just emit a label for branching and the ".exceptionLabel" for
+        // the usage. For now, we just emit a label for branching and the ".wasmExceptionLabel" for
         // rethrows.
         super.init(
             // Inputs: The block signature, the tag, the tag signature, and the outputs of the preceding try or catch

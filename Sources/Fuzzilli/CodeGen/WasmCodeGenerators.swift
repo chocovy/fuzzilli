@@ -1609,7 +1609,7 @@ public let WasmCodeGenerators: [CodeGenerator] = [
 
     CodeGenerator(
         "WasmLegacyTryDelegateGenerator", inContext: .single(.wasmFunction),
-        inputs: .required(.anyLabel)
+        inputs: .required(.anyWasmLabel)
     ) { b, label in
         let function = b.currentWasmModule.currentWasmFunction
         // Choose a few random wasm values as arguments if available.
@@ -1734,7 +1734,7 @@ public let WasmCodeGenerators: [CodeGenerator] = [
     CodeGenerator(
         "WasmLegacyRethrowGenerator",
         inContext: .single(.wasmFunction),
-        inputs: .required(.exceptionLabel)
+        inputs: .required(.wasmExceptionLabel)
     ) { b, exception in
         let function = b.currentWasmModule.currentWasmFunction
         function.wasmBuildLegacyRethrow(exception)
@@ -1800,7 +1800,7 @@ public let WasmCodeGenerators: [CodeGenerator] = [
     CodeGenerator(
         "WasmBranchGenerator",
         inContext: .single(.wasmFunction),
-        inputs: .required(.anyLabel)
+        inputs: .required(.anyWasmLabel)
     ) { b, label in
         let function = b.currentWasmModule.currentWasmFunction
         let args = b.type(of: label).wasmLabelType!.parameters.map(
@@ -1810,7 +1810,7 @@ public let WasmCodeGenerators: [CodeGenerator] = [
 
     CodeGenerator(
         "WasmBranchIfGenerator", inContext: .single(.wasmFunction),
-        inputs: .required(.anyLabel, .wasmi32)
+        inputs: .required(.anyWasmLabel, .wasmi32)
     ) { b, label, conditionVar in
         let function = b.currentWasmModule.currentWasmFunction
         let args = b.type(of: label).wasmLabelType!.parameters.map(
@@ -1828,7 +1828,7 @@ public let WasmCodeGenerators: [CodeGenerator] = [
         // Choose parameter types for the br_table. If we can find an existing label, just use that
         // label types as it allows use to reuse existing (and therefore more interesting) blocks.
         let parameterTypes =
-            if let label = b.randomVariable(ofType: .anyLabel) {
+            if let label = b.randomVariable(ofType: .anyWasmLabel) {
                 b.type(of: label).wasmLabelType!.parameters
             } else {
                 b.randomWasmBlockOutputTypes(upTo: 3)
@@ -1841,7 +1841,7 @@ public let WasmCodeGenerators: [CodeGenerator] = [
             b.emit(WasmBeginBlock(parameterCount: 0), withInputs: [signatureDef])
         }
         let labels = (0...valueCount).map { _ in
-            b.randomVariable(ofType: .label(parameterTypes))!
+            b.randomVariable(ofType: .wasmLabel(parameterTypes))!
         }
         let args = parameterTypes.map(function.findOrGenerateWasmVar)
         function.wasmBranchTable(on: value, labels: labels, args: args)
@@ -1897,7 +1897,7 @@ public let WasmCodeGenerators: [CodeGenerator] = [
                 // same parameter types could also be mapped to the same block.)
                 let labels = signatureDefs.map { signatureDef in
                     b.randomVariable(
-                        ofType: .label(
+                        ofType: .wasmLabel(
                             b.type(of: signatureDef).wasmFunctionSignatureDefSignature.outputTypes))!
                 }
                 let catches = zip(tags, withExnRef).map {

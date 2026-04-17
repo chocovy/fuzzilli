@@ -1408,7 +1408,7 @@ public class WasmLifter {
         for input in instr.inputs {
             // Skip "internal" inputs, i.e. ones that don't map to a slot, such as .label variables
             let inputType = typer.type(of: input)
-            if inputType.Is(.anyLabel) || inputType.Is(.exceptionLabel) {
+            if inputType.Is(.anyWasmLabel) || inputType.Is(.wasmExceptionLabel) {
                 continue
             }
 
@@ -1444,7 +1444,7 @@ public class WasmLifter {
 
         // If we have an output, make sure we store it on the stack as this is a "complex" instruction, i.e. has inputs and outputs.
         if instr.numOutputs > 0 {
-            assert(instr.outputs.allSatisfy { !typer.type(of: $0).Is(.anyLabel) })
+            assert(instr.outputs.allSatisfy { !typer.type(of: $0).Is(.anyWasmLabel) })
             for output in instr.outputs.reversed() {
                 // Also spill the instruction
                 currentFunction!.spillLocal(forVariable: output)
@@ -1460,7 +1460,7 @@ public class WasmLifter {
             // As the parameters are pushed "in order" to the stack, they need to be popped in reverse order.
             for innerOutput in instr.innerOutputs.reversed() {
                 let t = typer.type(of: innerOutput)
-                if !t.Is(.anyLabel) && !t.Is(.exceptionLabel) {
+                if !t.Is(.anyWasmLabel) && !t.Is(.wasmExceptionLabel) {
                     currentFunction!.spillLocal(forVariable: innerOutput)
                 }
             }

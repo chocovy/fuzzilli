@@ -412,7 +412,7 @@ class WasmFoundationTests: XCTestCase {
             wasmModule.addWasmFunction(with: [] => [.wasmi32]) { function, _, _ in
                 let ctr = function.consti32(10)
                 function.wasmBuildLoop(with: [] => [], args: []) { label, args in
-                    XCTAssert(b.type(of: label).Is(.anyLabel))
+                    XCTAssert(b.type(of: label).Is(.anyWasmLabel))
                     let result = function.wasmi32BinOp(ctr, function.consti32(1), binOpKind: .Sub)
                     function.wasmReassign(variable: ctr, to: result)
                     // The backedge, loop if we are not at zero yet.
@@ -3742,7 +3742,7 @@ class WasmFoundationTests: XCTestCase {
                 let one = function.consti32(1)
 
                 function.wasmBuildLoop(with: [] => [], args: []) { label, args in
-                    XCTAssert(b.type(of: label).Is(.anyLabel))
+                    XCTAssert(b.type(of: label).Is(.anyWasmLabel))
                     let result = function.wasmi32BinOp(ctr, one, binOpKind: .Add)
                     let varUpdate = function.wasmi64BinOp(
                         variable, function.consti64(2), binOpKind: .Add)
@@ -4023,7 +4023,7 @@ class WasmFoundationTests: XCTestCase {
         let module = b.buildWasmModule { wasmModule in
             wasmModule.addWasmFunction(with: [] => [.wasmi64]) { function, _, _ in
                 function.wasmBuildLegacyTryVoid { label in
-                    XCTAssert(b.type(of: label).Is(.anyLabel))
+                    XCTAssert(b.type(of: label).Is(.anyWasmLabel))
                     function.wasmReturn(function.consti64(42))
                 }
                 return [function.consti64(-1)]
@@ -4056,7 +4056,7 @@ class WasmFoundationTests: XCTestCase {
         let module = b.buildWasmModule { wasmModule in
             wasmModule.addWasmFunction(with: [] => [.wasmi64]) { function, _, _ in
                 function.wasmBuildLegacyTryVoid { label in
-                    XCTAssert(b.type(of: label).Is(.anyLabel))
+                    XCTAssert(b.type(of: label).Is(.anyWasmLabel))
                     // Manually set the availableTypes here for testing.
                     let wasmSignature = ProgramBuilder.convertJsSignatureToWasmSignature(
                         b.type(of: functionA).signature!, availableTypes: WeightedList([]))
@@ -4102,7 +4102,7 @@ class WasmFoundationTests: XCTestCase {
                 wasmModule.addWasmFunction(with: [] => [.wasmi64]) { function, _, _ in
                     function.wasmBuildLegacyTryVoid(
                         body: { label in
-                            XCTAssert(b.type(of: label).Is(.anyLabel))
+                            XCTAssert(b.type(of: label).Is(.anyWasmLabel))
                             let wasmSignature = ProgramBuilder.convertJsSignatureToWasmSignature(
                                 b.type(of: functionA).signature!, availableTypes: WeightedList([]))
                             function.wasmJsCall(
@@ -4167,7 +4167,7 @@ class WasmFoundationTests: XCTestCase {
             wasmModule.addWasmFunction(with: [] => [.wasmi64]) { function, _, _ in
                 function.wasmBuildLegacyTryVoid(
                     body: { label in
-                        XCTAssert(b.type(of: label).Is(.anyLabel))
+                        XCTAssert(b.type(of: label).Is(.anyWasmLabel))
                         function.WasmBuildThrow(
                             tag: throwTag, inputs: [function.consti64(123), function.consti32(234)])
                         function.wasmUnreachable()
@@ -4221,7 +4221,7 @@ class WasmFoundationTests: XCTestCase {
                     catchClauses: [
                         (
                             tag: tag,
-                            body: { catchLabel, exceptionLabel, args in
+                            body: { catchLabel, wasmExceptionLabel, args in
                                 function.wasmBranch(to: catchLabel)
                             }
                         )
@@ -4374,7 +4374,7 @@ class WasmFoundationTests: XCTestCase {
                     signature: signature, signatureDef: signatureDef,
                     args: [argI64, argI32],
                     body: { label, args in
-                        XCTAssert(b.type(of: label).Is(.anyLabel))
+                        XCTAssert(b.type(of: label).Is(.anyWasmLabel))
                         XCTAssertEqual(b.type(of: args[0]), .wasmi64)
                         XCTAssertEqual(b.type(of: args[1]), .wasmi32)
                         function.WasmBuildThrow(tag: tag, inputs: args)

@@ -57,6 +57,7 @@ public let profiles = [
     "jerryscript": jerryscriptProfile,
     "xs": xsProfile,
     "v8holefuzzing": v8HoleFuzzingProfile,
+    "v8TrapFuzzing": v8TrapFuzzingProfile,
     "serenity": serenityProfile,
     "njs": njsProfile,
 ]

@@ -1,0 +1,126 @@
+diff --git a/BUILD.gn b/BUILD.gn
+index ef591b6c5d4..6348e87cbe6 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -6241,7 +6241,6 @@ v8_cluster_source_set("v8_base_without_compiler") {
+     "src/sandbox/sandbox.cc",
+     "src/sandbox/sandboxable-thread.cc",
+     "src/sandbox/testing.cc",
+-    "src/sandbox/trap-fuzzer.cc",
+     "src/sandbox/trusted-pointer-scope.cc",
+     "src/sandbox/trusted-pointer-table.cc",
+     "src/snapshot/code-serializer.cc",
+@@ -6893,10 +6892,26 @@ v8_cluster_source_set("v8_base_without_compiler") {
+   }
+ }
+ 
++v8_source_set("v8_trap_fuzzer") {
++  visibility = [ ":*" ]
++  sources = [ "src/sandbox/trap-fuzzer.cc" ]
++  configs = [
++    ":internal_config_base",
++    ":internal_config",
++  ]
++  remove_configs = [ "//build/config/sanitizers:default_sanitizer_flags" ]
++  configs += [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
++  deps = [
++    ":v8_internal_headers",
++    ":v8_libbase",
++  ]
++}
++
+ group("v8_base") {
+   public_deps = [
+     ":v8_base_without_compiler",
+     ":v8_compiler",
++    ":v8_trap_fuzzer",
+   ]
+ }
+ 
+diff --git a/src/d8/d8.cc b/src/d8/d8.cc
+index d2985041ff5..26d0fdc3819 100644
+--- a/src/d8/d8.cc
++++ b/src/d8/d8.cc
+@@ -6852,6 +6852,11 @@ bool Shell::RunMainIsolate(v8::Isolate* isolate, bool keep_context_alive) {
+   HandleScope scope(isolate);
+   Global<Context> global_context;
+   {
++#ifdef V8_SANDBOX_TRAP_FUZZER_AVAILABLE
++    if (i::v8_flags.sandbox_trap_fuzzing && i::SandboxTrapFuzzer::IsEnabled()) {
++      i::SandboxTrapFuzzer::PauseTimer();
++    }
++#endif
+     Local<Context> context;
+     if (!CreateEvaluationContext(isolate).ToLocal(&context)) {
+       DCHECK(isolate->IsExecutionTerminating());
+@@ -6865,6 +6870,11 @@ bool Shell::RunMainIsolate(v8::Isolate* isolate, bool keep_context_alive) {
+     if (keep_context_alive) {
+       evaluation_context_.Reset(isolate, context);
+     }
++#ifdef V8_SANDBOX_TRAP_FUZZER_AVAILABLE
++    if (i::v8_flags.sandbox_trap_fuzzing && i::SandboxTrapFuzzer::IsEnabled()) {
++      i::SandboxTrapFuzzer::ResumeTimer();
++    }
++#endif
+   }
+   PerIsolateData::RealmScope realm_scope(isolate, global_context);
+   InspectorClient inspector_client(isolate, global_context,
+diff --git a/src/sandbox/trap-fuzzer.cc b/src/sandbox/trap-fuzzer.cc
+index e665c23ec6b..796087ff9cd 100644
+--- a/src/sandbox/trap-fuzzer.cc
++++ b/src/sandbox/trap-fuzzer.cc
+@@ -135,11 +135,7 @@ void SandboxTrapFuzzer::Enable() {
+     FATAL("Could not set timer: %s", strerror(errno));
+   }
+ 
+-  printf("Trap-based sandbox fuzzer initialized. Interval: %.2fms\n",
+-         static_cast<double>(interval) / 1000);
+-  printf(
+-      "NOTE: Crashes will NOT be reproducible. Instead, any crash must "
+-      "manually be reconstructed from the generated logs.\n");
++  // Logging omitted to avoid interfering with REPRL empty-program checks.
+ }
+ 
+ void SandboxTrapFuzzer::Disable() {
+@@ -173,6 +169,28 @@ void SandboxTrapFuzzer::Disable() {
+ 
+ bool SandboxTrapFuzzer::IsEnabled() { return enabled_; }
+ 
++void SandboxTrapFuzzer::PauseTimer() {
++  struct itimerval timer = {};
++  setitimer(ITIMER_VIRTUAL, &timer, NULL);
++  remaining_accesses_to_trap_ = 0;
++  single_stepping_active_ = false;
++  have_pending_write_ = false;
++  base::MemoryProtectionKey::SetPermissionsForKey(
++      sandbox_pkey_, base::MemoryProtectionKey::Permission::kNoRestrictions);
++}
++
++void SandboxTrapFuzzer::ResumeTimer() {
++  constexpr int kMaxInterval = 50000;
++  uint64_t interval = fuzz_rng_.NextInt(kMaxInterval);
++  interval += 1;
++  struct itimerval timer;
++  timer.it_value.tv_sec = 0;
++  timer.it_value.tv_usec = interval;
++  timer.it_interval.tv_sec = 0;
++  timer.it_interval.tv_usec = interval;
++  setitimer(ITIMER_VIRTUAL, &timer, NULL);
++}
++
+ void SandboxTrapFuzzer::RegisterMutationRequest(int accesses_before_mutation) {
+   remaining_accesses_to_trap_ = accesses_before_mutation;
+   base::MemoryProtectionKey::SetPermissionsForKey(
+diff --git a/src/sandbox/trap-fuzzer.h b/src/sandbox/trap-fuzzer.h
+index f2731c62e9b..184a871dea9 100644
+--- a/src/sandbox/trap-fuzzer.h
++++ b/src/sandbox/trap-fuzzer.h
+@@ -70,6 +70,8 @@ class SandboxTrapFuzzer : public AllStatic {
+   static void Enable();
+   static void Disable();
+   static bool IsEnabled();
++  static void PauseTimer();
++  static void ResumeTimer();
+ 
+   // Requests a mutation after the given number of memory accesses.
+   //
